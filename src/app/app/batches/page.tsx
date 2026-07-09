@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { idbDeleteBatch, mergeBatchLists } from "@/lib/store/idb-store";
 import type { Batch } from "@/types";
 
 export default function BatchesPage() {
@@ -15,25 +16,29 @@ export default function BatchesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/batches")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setBatches(data.batches || []);
-      })
-      .catch(() => {
-        if (!cancelled) setBatches([]);
-      });
+    (async () => {
+      try {
+        const res = await fetch("/api/batches");
+        const data = await res.json();
+        const merged = await mergeBatchLists(data.batches || []);
+        if (!cancelled) setBatches(merged);
+      } catch {
+        const merged = await mergeBatchLists([]);
+        if (!cancelled) setBatches(merged);
+      }
+    })();
     return () => {
       cancelled = true;
     };
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Excluir este lote localmente?")) return;
-    const res = await fetch(`/api/batches/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      toast.error("Falha ao excluir");
-      return;
+    if (!confirm("Excluir este lote?")) return;
+    await idbDeleteBatch(id);
+    try {
+      await fetch(`/api/batches/${id}`, { method: "DELETE" });
+    } catch {
+      // ignore
     }
     toast.success("Lote excluído");
     setBatches((prev) => (prev || []).filter((b) => b.id !== id));

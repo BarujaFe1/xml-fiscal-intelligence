@@ -2,25 +2,46 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { BatchStore } from "@/types";
+import { useBatchStore } from "@/lib/store/use-batch-store";
 
 export default function FieldsPage() {
   const params = useParams<{ id: string }>();
-  const [store, setStore] = useState<BatchStore | null>(null);
+  const { store } = useBatchStore(params.id);
   const [q, setQ] = useState("");
 
-  useEffect(() => {
-    fetch(`/api/batches/${params.id}`)
-      .then((r) => r.json())
-      .then((d) => setStore(d.error ? null : d));
-  }, [params.id]);
+  const derivedFields = useMemo(() => {
+    if (!store) return [];
+    if (store.fields.length) return store.fields;
+    // Client-import mode may omit fields[]; rebuild from flattenedJson
+    return store.documents.flatMap((d) =>
+      Object.entries(d.flattenedJson).map(([pathNormalized, value]) => ({
+        id: `${d.id}:${pathNormalized}`,
+        workspaceId: d.workspaceId,
+        batchId: d.batchId,
+        documentId: d.id,
+        documentType: d.documentType,
+        pathOriginal: pathNormalized,
+        pathNormalized,
+        fieldName: pathNormalized.split(".").pop() || pathNormalized,
+        valueText: value === null || value === undefined ? undefined : String(value),
+        inferredType:
+          value === null || value === ""
+            ? ("empty" as const)
+            : typeof value === "number"
+              ? ("number" as const)
+              : typeof value === "boolean"
+                ? ("boolean" as const)
+                : ("string" as const),
+        isEmpty: value === null || value === undefined || value === "",
+      })),
+    );
+  }, [store]);
 
   const rows = useMemo(() => {
-    if (!store) return [];
-    const filtered = store.fields.filter((f) => {
+    const filtered = derivedFields.filter((f) => {
       if (!q) return true;
       return (
         f.pathNormalized.toLowerCase().includes(q.toLowerCase()) ||
@@ -28,12 +49,11 @@ export default function FieldsPage() {
       );
     });
     return filtered.slice(0, 500);
-  }, [store, q]);
+  }, [derivedFields, q]);
 
   const uniqueTags = useMemo(() => {
-    if (!store) return 0;
-    return new Set(store.fields.map((f) => f.pathNormalized)).size;
-  }, [store]);
+    return new Set(derivedFields.map((f) => f.pathNormalized)).size;
+  }, [derivedFields]);
 
   if (!store) return <div className="skeleton h-64 rounded-2xl" />;
 

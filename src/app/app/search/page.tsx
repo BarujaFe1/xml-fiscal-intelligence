@@ -7,7 +7,9 @@ import { Badge, typeTone } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { Batch, SearchResult } from "@/types";
+import { searchBatchStore, searchAllStores } from "@/lib/search";
+import { idbGetBatchStore, idbListBatches, mergeBatchLists } from "@/lib/store/idb-store";
+import type { Batch, BatchStore, SearchResult } from "@/types";
 
 export default function SearchPage() {
   const [q, setQ] = useState("");
@@ -18,9 +20,15 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/batches")
-      .then((r) => r.json())
-      .then((d) => setBatches(d.batches || []));
+    (async () => {
+      try {
+        const res = await fetch("/api/batches");
+        const data = await res.json();
+        setBatches(await mergeBatchLists(data.batches || []));
+      } catch {
+        setBatches(await mergeBatchLists([]));
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -29,6 +37,31 @@ export default function SearchPage() {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
+        // Prefer IndexedDB (client-processed lots)
+        if (batchId) {
+          const store = await idbGetBatchStore(batchId);
+          if (store) {
+            setResults(searchBatchStore(store, query, { documentType: type || undefined, limit: 80 }));
+            return;
+          }
+        } else {
+          const localBatches = await idbListBatches();
+          const stores: BatchStore[] = [];
+          for (const b of localBatches) {
+            const s = await idbGetBatchStore(b.id);
+            if (s) stores.push(s);
+          }
+          if (stores.length) {
+            const localResults = type
+              ? stores.flatMap((s) => searchBatchStore(s, query, { documentType: type, limit: 40 }))
+              : searchAllStores(stores, query, 80);
+            if (localResults.length) {
+              setResults(localResults.slice(0, 80));
+              return;
+            }
+          }
+        }
+
         const params = new URLSearchParams({ q: query });
         if (batchId) params.set("batchId", batchId);
         if (type) params.set("type", type);

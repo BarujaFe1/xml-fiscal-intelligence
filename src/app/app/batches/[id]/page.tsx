@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -15,7 +15,7 @@ import {
 import { Badge, typeTone } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import type { BatchStore } from "@/types";
+import { useBatchStore } from "@/lib/store/use-batch-store";
 
 const tabs = [
   { href: "", label: "Dashboard" },
@@ -28,13 +28,7 @@ const tabs = [
 
 export default function BatchDashboardPage() {
   const params = useParams<{ id: string }>();
-  const [store, setStore] = useState<BatchStore | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/batches/${params.id}`)
-      .then((r) => r.json())
-      .then((d) => setStore(d.error ? null : d));
-  }, [params.id]);
+  const { store } = useBatchStore(params.id);
 
   const typeData = useMemo(() => {
     if (!store) return [];

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge, typeTone } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { BatchStore } from "@/types";
+import { useBatchStore } from "@/lib/store/use-batch-store";
 
 function BatchTabs({ id, active }: { id: string; active: string }) {
   const tabs = [
@@ -39,15 +39,9 @@ function BatchTabs({ id, active }: { id: string; active: string }) {
 
 export default function DocumentsPage() {
   const params = useParams<{ id: string }>();
-  const [store, setStore] = useState<BatchStore | null>(null);
+  const { store } = useBatchStore(params.id);
   const [q, setQ] = useState("");
   const [type, setType] = useState("ALL");
-
-  useEffect(() => {
-    fetch(`/api/batches/${params.id}`)
-      .then((r) => r.json())
-      .then((d) => setStore(d.error ? null : d));
-  }, [params.id]);
 
   const rows = useMemo(() => {
     if (!store) return [];

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Download } from "lucide-react";
 import { Badge, typeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatCnpjCpf, formatDate } from "@/lib/utils";
-import type { DocumentField, DocumentItem, DocumentSummary } from "@/types";
+import { inflateFromFlattened } from "@/lib/store/process-memory";
+import { useBatchStore } from "@/lib/store/use-batch-store";
 
 function TreeNode({ data, name }: { data: unknown; name?: string }) {
   const [open, setOpen] = useState(true);
@@ -50,29 +51,51 @@ function TreeNode({ data, name }: { data: unknown; name?: string }) {
 
 export default function DocumentDetailPage() {
   const params = useParams<{ id: string; documentId: string }>();
-  const [document, setDocument] = useState<DocumentSummary | null>(null);
-  const [items, setItems] = useState<DocumentItem[]>([]);
-  const [fields, setFields] = useState<DocumentField[]>([]);
+  const { store } = useBatchStore(params.id);
   const [tab, setTab] = useState<"resumo" | "itens" | "tags" | "tree" | "json">("resumo");
   const [mask, setMask] = useState(true);
 
-  useEffect(() => {
-    fetch(`/api/batches/${params.id}/documents/${params.documentId}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) return;
-        setDocument(d.document);
-        setItems(d.items || []);
-        setFields(d.fields || []);
-      });
-  }, [params.id, params.documentId]);
+  const document = store?.documents.find((d) => d.id === params.documentId) || null;
+  const items = store?.items.filter((i) => i.documentId === params.documentId) || [];
 
-  const sortedFields = useMemo(
-    () => [...fields].sort((a, b) => a.pathNormalized.localeCompare(b.pathNormalized)),
-    [fields],
-  );
+  const sortedFields = useMemo(() => {
+    const fields = store?.fields.filter((f) => f.documentId === params.documentId) || [];
+    if (fields.length) {
+      return [...fields].sort((a, b) => a.pathNormalized.localeCompare(b.pathNormalized));
+    }
+    if (!document) return [];
+    return Object.entries(document.flattenedJson)
+      .map(([pathNormalized, value]) => ({
+        id: pathNormalized,
+        workspaceId: document.workspaceId,
+        batchId: document.batchId,
+        documentId: document.id,
+        documentType: document.documentType,
+        pathOriginal: pathNormalized,
+        pathNormalized,
+        fieldName: pathNormalized.split(".").pop() || pathNormalized,
+        valueText: value === null || value === undefined ? undefined : String(value),
+        inferredType:
+          value === null || value === ""
+            ? ("empty" as const)
+            : typeof value === "number"
+              ? ("number" as const)
+              : typeof value === "boolean"
+                ? ("boolean" as const)
+                : ("string" as const),
+        isEmpty: value === null || value === undefined || value === "",
+      }))
+      .sort((a, b) => a.pathNormalized.localeCompare(b.pathNormalized));
+  }, [store, document, params.documentId]);
 
-  if (!document) return <div className="skeleton h-64 rounded-2xl" />;
+  const treeData = useMemo(() => {
+    if (!document) return {};
+    const keys = Object.keys(document.rawJson || {});
+    if (keys.length) return document.rawJson;
+    return inflateFromFlattened(document.flattenedJson);
+  }, [document]);
+
+  if (!store || !document) return <div className="skeleton h-64 rounded-2xl" />;
 
   async function copyKey() {
     if (!document?.accessKey) return;
@@ -97,11 +120,6 @@ export default function DocumentDetailPage() {
           <Button size="sm" variant="secondary" onClick={copyKey}>
             <Copy className="h-4 w-4" /> Copiar chave
           </Button>
-          <a href={`/api/batches/${params.id}/documents/${params.documentId}?format=xml`}>
-            <Button size="sm" variant="outline">
-              <Download className="h-4 w-4" /> XML
-            </Button>
-          </a>
           <Button
             size="sm"
             variant="outline"
@@ -116,7 +134,7 @@ export default function DocumentDetailPage() {
               a.click();
             }}
           >
-            JSON flat
+            <Download className="h-4 w-4" /> JSON flat
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setMask((v) => !v)}>
             {mask ? "Mostrar docs" : "Mascarar"}
@@ -280,7 +298,7 @@ export default function DocumentDetailPage() {
             <CardTitle>XML tree viewer</CardTitle>
           </CardHeader>
           <CardContent className="max-h-[70vh] overflow-auto rounded-xl bg-slate-950/60 p-4">
-            <TreeNode data={document.rawJson} name="root" />
+            <TreeNode data={treeData} name="root" />
           </CardContent>
         </Card>
       )}

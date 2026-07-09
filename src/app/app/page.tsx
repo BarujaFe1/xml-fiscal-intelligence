@@ -6,6 +6,7 @@ import { FolderOpen, Upload, Activity, FileStack } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { mergeBatchLists } from "@/lib/store/idb-store";
 import type { Batch } from "@/types";
 
 export default function AppHomePage() {
@@ -13,10 +14,19 @@ export default function AppHomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/batches")
-      .then((r) => r.json())
-      .then((d) => setBatches(d.batches || []))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const res = await fetch("/api/batches");
+        const data = await res.json();
+        const merged = await mergeBatchLists(data.batches || []);
+        setBatches(merged);
+      } catch {
+        const merged = await mergeBatchLists([]);
+        setBatches(merged);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const totalDocs = batches.reduce((a, b) => a + b.validXml, 0);

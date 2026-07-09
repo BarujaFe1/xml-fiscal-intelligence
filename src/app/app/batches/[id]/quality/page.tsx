@@ -2,20 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { BatchStore } from "@/types";
+import { useBatchStore } from "@/lib/store/use-batch-store";
 
 export default function QualityPage() {
   const params = useParams<{ id: string }>();
-  const [store, setStore] = useState<BatchStore | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/batches/${params.id}`)
-      .then((r) => r.json())
-      .then((d) => setStore(d.error ? null : d));
-  }, [params.id]);
+  const { store } = useBatchStore(params.id);
 
   if (!store) return <div className="skeleton h-64 rounded-2xl" />;
   const q = store.batch.quality;
