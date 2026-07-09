@@ -1,0 +1,57 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+
+const links = [
+  { href: "/app", label: "Visão geral" },
+  { href: "/app/upload", label: "Upload" },
+  { href: "/app/batches", label: "Lotes" },
+  { href: "/app/search", label: "Busca" },
+  { href: "/app/settings", label: "Settings" },
+];
+
+export function AppTopbar() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  return (
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
+      <div className="flex h-14 items-center justify-between px-4 lg:px-6">
+        <div className="flex items-center gap-3">
+          <button className="lg:hidden text-slate-300" onClick={() => setOpen((v) => !v)}>
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="text-sm text-slate-400">
+            Workspace <span className="text-slate-200">Local Demo</span>
+          </div>
+        </div>
+        <Link
+          href="/app/upload"
+          className="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-sky-400"
+        >
+          Analisar lote
+        </Link>
+      </div>
+      {open && (
+        <div className="lg:hidden border-t border-white/10 p-3 space-y-1 bg-slate-950">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              className={cn(
+                "block rounded-lg px-3 py-2 text-sm",
+                pathname.startsWith(l.href) ? "bg-white/10 text-white" : "text-slate-400",
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}

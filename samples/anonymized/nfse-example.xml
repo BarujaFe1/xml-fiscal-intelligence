@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse>
+    <InfNfse Id="NFSe1001">
+      <Numero>1001</Numero>
+      <CodigoVerificacao>ABCD1234</CodigoVerificacao>
+      <DataEmissao>2026-03-20T09:00:00</DataEmissao>
+      <Competencia>2026-03-01</Competencia>
+      <ValoresNfse>
+        <BaseCalculo>1200.00</BaseCalculo>
+        <Aliquota>5.00</Aliquota>
+        <ValorIss>60.00</ValorIss>
+        <ValorLiquidoNfse>1140.00</ValorLiquidoNfse>
+      </ValoresNfse>
+      <PrestadorServico>
+        <IdentificacaoPrestador>
+          <CpfCnpj>
+            <Cnpj>55667788000199</Cnpj>
+          </CpfCnpj>
+          <InscricaoMunicipal>123456</InscricaoMunicipal>
+        </IdentificacaoPrestador>
+        <RazaoSocial>PRESTADOR SERVICOS DEMO LTDA</RazaoSocial>
+        <Endereco>
+          <Endereco>Rua Augusta</Endereco>
+          <Numero>200</Numero>
+          <Bairro>Consolacao</Bairro>
+          <CodigoMunicipio>3550308</CodigoMunicipio>
+          <Cidade>Sao Paulo</Cidade>
+          <Uf>SP</Uf>
+          <Cep>01305000</Cep>
+        </Endereco>
+      </PrestadorServico>
+      <OrgaoGerador>
+        <CodigoMunicipio>3550308</CodigoMunicipio>
+        <Uf>SP</Uf>
+      </OrgaoGerador>
+      <DeclaracaoPrestacaoServico>
+        <InfDeclaracaoPrestacaoServico>
+          <Competencia>2026-03-01</Competencia>
+          <Servico>
+            <Valores>
+              <ValorServicos>1200.00</ValorServicos>
+              <ValorDeducoes>0.00</ValorDeducoes>
+              <ValorPis>0.00</ValorPis>
+              <ValorCofins>0.00</ValorCofins>
+              <ValorInss>0.00</ValorInss>
+              <ValorIr>0.00</ValorIr>
+              <ValorCsll>0.00</ValorCsll>
+              <OutrasRetencoes>0.00</OutrasRetencoes>
+              <ValorIss>60.00</ValorIss>
+              <Aliquota>5.00</Aliquota>
+              <DescontoIncondicionado>0.00</DescontoIncondicionado>
+              <DescontoCondicionado>0.00</DescontoCondicionado>
+            </Valores>
+            <IssRetido>2</IssRetido>
+            <ItemListaServico>01.07</ItemListaServico>
+            <CodigoCnae>6201501</CodigoCnae>
+            <CodigoTributacaoMunicipio>0107</CodigoTributacaoMunicipio>
+            <Discriminacao>Servicos de desenvolvimento de software - demonstracao anonima</Discriminacao>
+            <CodigoMunicipio>3550308</CodigoMunicipio>
+            <MunicipioIncidencia>3550308</MunicipioIncidencia>
+          </Servico>
+          <Prestador>
+            <CpfCnpj>
+              <Cnpj>55667788000199</Cnpj>
+            </CpfCnpj>
+            <InscricaoMunicipal>123456</InscricaoMunicipal>
+          </Prestador>
+          <Tomador>
+            <IdentificacaoTomador>
+              <CpfCnpj>
+                <Cnpj>12345678000190</Cnpj>
+              </CpfCnpj>
+            </IdentificacaoTomador>
+            <RazaoSocial>EMPRESA DEMO EMITENTE LTDA</RazaoSocial>
+            <Endereco>
+              <Endereco>Rua das Flores</Endereco>
+              <Numero>100</Numero>
+              <Bairro>Centro</Bairro>
+              <CodigoMunicipio>3550308</CodigoMunicipio>
+              <Cidade>Sao Paulo</Cidade>
+              <Uf>SP</Uf>
+              <Cep>01001000</Cep>
+            </Endereco>
+          </Tomador>
+          <OptanteSimplesNacional>1</OptanteSimplesNacional>
+          <IncentivoFiscal>2</IncentivoFiscal>
+        </InfDeclaracaoPrestacaoServico>
+      </DeclaracaoPrestacaoServico>
+    </InfNfse>
+  </Nfse>
+</CompNfse>

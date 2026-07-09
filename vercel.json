@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "src/app/api/batches/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/batches/[id]/export/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
+}

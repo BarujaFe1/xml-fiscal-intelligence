@@ -1,0 +1,57 @@
+# dependencies
+node_modules
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+coverage
+playwright-report
+test-results
+
+# next.js
+.next/
+out/
+build
+dist
+
+# env & secrets
+.env
+.env*.local
+.env.production
+
+# local data & real fiscal XMLs — NEVER commit
+data/**
+!data/.gitkeep
+private-test-data/**
+!private-test-data/README.md
+*.zip
+!samples/**/*.xml
+
+# real XML dumps outside samples
+**/real-xml/**
+**/xml-reais/**
+
+# debug / OS
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+*.pem
+
+# typescript
+next-env.d.ts
+*.tsbuildinfo
+
+# vercel
+.vercel
+
+# IDE
+.idea
+.vscode
+*.swp
