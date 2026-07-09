@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, Loader2 } from "lucide-react";
+import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BatchTabs } from "@/components/batches/batch-tabs";
 import {
   buildBatchWorkbook,
   buildDocumentsCsv,
@@ -15,15 +17,6 @@ import {
 } from "@/lib/export/excel";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 import type { BatchStore } from "@/types";
-
-const exportsList = [
-  { type: "xlsx", label: "Excel completo (múltiplas abas)", desc: "Resumo, Documentos, Itens, Campos, Erros, Insights" },
-  { type: "csv-documents", label: "CSV Documentos", desc: "Uma linha por documento" },
-  { type: "csv-items", label: "CSV Itens", desc: "Uma linha por item" },
-  { type: "json", label: "JSON completo", desc: "Store inteiro do lote" },
-  { type: "json-flat", label: "JSON achatado", desc: "Documentos com flattened paths" },
-  { type: "html", label: "Relatório HTML", desc: "Resumo executivo para compartilhar" },
-] as const;
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -34,9 +27,158 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-async function exportClient(store: BatchStore, type: string) {
+async function workbookFromRows(name: string, rows: Record<string, unknown>[]) {
+  const wb = new ExcelJS.Workbook();
+  const sheet = wb.addWorksheet(name.slice(0, 31));
+  if (!rows.length) {
+    sheet.addRow(["Sem dados"]);
+  } else {
+    const columns = Array.from(
+      rows.reduce((set, row) => {
+        Object.keys(row).forEach((k) => set.add(k));
+        return set;
+      }, new Set<string>()),
+    );
+    sheet.columns = columns.map((key) => ({
+      header: key,
+      key,
+      width: Math.min(40, Math.max(12, key.length + 2)),
+    }));
+    for (const row of rows) sheet.addRow(row);
+    sheet.getRow(1).font = { bold: true };
+  }
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
+
+async function exportPreset(store: BatchStore, preset: string) {
   const id = store.batch.id;
-  if (type === "xlsx") {
+  if (preset === "icms") {
+    const rows = store.items
+      .filter((i) => i.documentType === "NFE")
+      .map((i) => {
+        const d = store.documents.find((x) => x.id === i.documentId);
+        return {
+          chave: d?.accessKey || "",
+          numero: d?.number || "",
+          emissao: d?.issueDate || "",
+          emitente: d?.emitterName || "",
+          cfop: i.cfop || "",
+          ncm: i.ncm || "",
+          item: i.itemNumber,
+          descricao: i.description || "",
+          valor_item: i.totalValue ?? "",
+          valor_nota: d?.totalValue ?? "",
+          uf_emit: d?.emitterUf || "",
+          uf_dest: d?.receiverUf || "",
+        };
+      });
+    const buf = await workbookFromRows("ICMS", rows);
+    downloadBlob(
+      new Blob([new Uint8Array(buf)], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `apuracao-icms-${id}.xlsx`,
+    );
+    return;
+  }
+
+  if (preset === "entradas-saidas") {
+    const rows = store.documents.map((d) => ({
+      tipo: d.documentType,
+      chave: d.accessKey || "",
+      numero: d.number || "",
+      emissao: d.issueDate || "",
+      emitente_doc: d.emitterDoc || "",
+      emitente: d.emitterName || "",
+      dest_doc: d.receiverDoc || "",
+      destinatario: d.receiverName || "",
+      uf_emit: d.emitterUf || "",
+      uf_dest: d.receiverUf || "",
+      valor: d.totalValue ?? "",
+      produtos: d.productsValue ?? "",
+      servicos: d.servicesValue ?? "",
+      frete: d.freightValue ?? "",
+      impostos: d.taxValue ?? "",
+    }));
+    const buf = await workbookFromRows("Movimento", rows);
+    downloadBlob(
+      new Blob([new Uint8Array(buf)], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `entradas-saidas-${id}.xlsx`,
+    );
+    return;
+  }
+
+  if (preset === "itens-ncm-cfop") {
+    const rows = store.items.map((i) => {
+      const d = store.documents.find((x) => x.id === i.documentId);
+      return {
+        tipo: i.documentType,
+        chave: d?.accessKey || "",
+        numero: d?.number || "",
+        item: i.itemNumber,
+        codigo: i.code || "",
+        descricao: i.description || "",
+        ncm: i.ncm || "",
+        cfop: i.cfop || "",
+        qtd: i.quantity ?? "",
+        unidade: i.unit || "",
+        valor_unit: i.unitValue ?? "",
+        valor_total: i.totalValue ?? "",
+      };
+    });
+    const buf = await workbookFromRows("Itens", rows);
+    downloadBlob(
+      new Blob([new Uint8Array(buf)], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `itens-ncm-cfop-${id}.xlsx`,
+    );
+    return;
+  }
+
+  if (preset === "divergencias") {
+    const warnings = store.batch.quality?.warnings || [];
+    const noKey = store.documents.filter((d) => d.documentType !== "NFSE" && !d.accessKey);
+    const noProt = store.documents.filter(
+      (d) => (d.documentType === "NFE" || d.documentType === "CTE") && !d.protocol,
+    );
+    const rows = [
+      ...noKey.map((d) => ({
+        problema: "SEM_CHAVE",
+        tipo: d.documentType,
+        numero: d.number || "",
+        arquivo: d.fileName,
+        valor: d.totalValue ?? "",
+      })),
+      ...noProt.map((d) => ({
+        problema: "SEM_PROTOCOLO",
+        tipo: d.documentType,
+        numero: d.number || "",
+        arquivo: d.fileName,
+        valor: d.totalValue ?? "",
+      })),
+      ...warnings.map((w) => ({
+        problema: w.code,
+        tipo: "",
+        numero: "",
+        arquivo: w.message,
+        valor: w.count,
+      })),
+    ];
+    const buf = await workbookFromRows("Divergencias", rows);
+    downloadBlob(
+      new Blob([new Uint8Array(buf)], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `divergencias-${id}.xlsx`,
+    );
+    return;
+  }
+
+  if (preset === "xlsx") {
     const buffer = await buildBatchWorkbook(store);
     downloadBlob(
       new Blob([new Uint8Array(buffer)], {
@@ -46,38 +188,58 @@ async function exportClient(store: BatchStore, type: string) {
     );
     return;
   }
-  if (type === "csv-documents") {
+  if (preset === "csv-documents") {
     downloadBlob(new Blob([buildDocumentsCsv(store)], { type: "text/csv;charset=utf-8" }), `documentos-${id}.csv`);
     return;
   }
-  if (type === "csv-items") {
+  if (preset === "csv-items") {
     downloadBlob(new Blob([buildItemsCsv(store)], { type: "text/csv;charset=utf-8" }), `itens-${id}.csv`);
     return;
   }
-  if (type === "json") {
+  if (preset === "json") {
     downloadBlob(new Blob([JSON.stringify(store, null, 2)], { type: "application/json" }), `lote-${id}.json`);
     return;
   }
-  if (type === "json-flat") {
+  if (preset === "json-flat") {
     const flat = store.documents.map((d) => ({ id: d.id, type: d.documentType, ...d.flattenedJson }));
     downloadBlob(new Blob([JSON.stringify(flat, null, 2)], { type: "application/json" }), `flat-${id}.json`);
     return;
   }
-  if (type === "html") {
+  if (preset === "html") {
     downloadBlob(new Blob([buildHtmlReport(store)], { type: "text/html;charset=utf-8" }), `relatorio-${id}.html`);
   }
 }
+
+const presets = [
+  { type: "icms", label: "Apuração ICMS (itens)", desc: "CFOP, NCM, UF e valores por item NF-e" },
+  { type: "entradas-saidas", label: "Entradas x Saídas", desc: "Movimento documental consolidado" },
+  { type: "itens-ncm-cfop", label: "Itens com NCM/CFOP", desc: "Planilha operacional de itens" },
+  { type: "divergencias", label: "Só divergências", desc: "Sem chave, sem protocolo e alertas" },
+  { type: "xlsx", label: "Excel completo", desc: "Múltiplas abas padrão" },
+  { type: "csv-documents", label: "CSV Documentos", desc: "Uma linha por documento" },
+  { type: "csv-items", label: "CSV Itens", desc: "Uma linha por item" },
+  { type: "html", label: "Relatório HTML", desc: "Resumo executivo" },
+] as const;
 
 export default function ExportsPage() {
   const params = useParams<{ id: string }>();
   const { store } = useBatchStore(params.id);
   const [busy, setBusy] = useState<string | null>(null);
 
+  const summary = useMemo(() => {
+    if (!store) return null;
+    return {
+      docs: store.documents.length,
+      items: store.items.length,
+      value: store.batch.totalValue,
+    };
+  }, [store]);
+
   async function handleExport(type: string) {
     if (!store) return;
     setBusy(type);
     try {
-      await exportClient(store, type);
+      await exportPreset(store, type);
       toast.success("Download iniciado");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na exportação");
@@ -90,32 +252,19 @@ export default function ExportsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Exportações</h1>
-      <div className="flex flex-wrap gap-2">
-        {[
-          ["", "Dashboard"],
-          ["/documents", "Documentos"],
-          ["/items", "Itens"],
-          ["/fields", "Campos"],
-          ["/quality", "Quality"],
-          ["/exports", "Exportações"],
-        ].map(([href, label]) => (
-          <Link
-            key={href}
-            href={`/app/batches/${params.id}${href}`}
-            className={`rounded-xl px-3 py-1.5 text-sm border ${
-              href === "/exports"
-                ? "border-sky-400/30 bg-sky-500/15 text-sky-100"
-                : "border-white/10 text-slate-400 hover:bg-white/5"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Exportações</p>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
+          Presets contábeis
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">
+          {summary?.docs} docs · {summary?.items} itens · gerado no navegador
+        </p>
       </div>
+      <BatchTabs batchId={params.id} />
       <div className="grid gap-4 md:grid-cols-2">
-        {exportsList.map((item) => (
-          <Card key={item.type}>
+        {presets.map((item) => (
+          <Card key={item.type} className="hover:border-sky-400/20 transition-colors">
             <CardHeader>
               <CardTitle>{item.label}</CardTitle>
               <CardDescription>{item.desc}</CardDescription>
@@ -136,6 +285,23 @@ export default function ExportsPage() {
             </CardContent>
           </Card>
         ))}
+        <Card>
+          <CardHeader>
+            <CardTitle>JSON completo / flat</CardTitle>
+            <CardDescription>Para pipelines e BI</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => handleExport("json")}>
+              JSON
+            </Button>
+            <Button variant="outline" onClick={() => handleExport("json-flat")}>
+              JSON flat
+            </Button>
+            <Link href={`/app/batches/${params.id}/quality`} className="text-sm text-sky-300 self-center ml-2">
+              Ver quality →
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

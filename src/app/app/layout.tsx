@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <AppTopbar />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

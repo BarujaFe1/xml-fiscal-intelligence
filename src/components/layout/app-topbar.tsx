@@ -28,12 +28,21 @@ export function AppTopbar() {
             Workspace <span className="text-slate-200">Local Demo</span>
           </div>
         </div>
-        <Link
-          href="/app/upload"
-          className="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-sky-400"
-        >
-          Analisar lote
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
+            className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200"
+          >
+            Busca rápida
+            <kbd className="rounded border border-white/10 px-1">Ctrl K</kbd>
+          </button>
+          <Link
+            href="/app/upload"
+            className="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-sky-400"
+          >
+            Analisar lote
+          </Link>
+        </div>
       </div>
       {open && (
         <div className="lg:hidden border-t border-white/10 p-3 space-y-1 bg-slate-950">

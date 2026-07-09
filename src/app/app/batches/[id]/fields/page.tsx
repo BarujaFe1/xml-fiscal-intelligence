@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { BatchTabs } from "@/components/batches/batch-tabs";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 
 export default function FieldsPage() {
@@ -59,34 +60,18 @@ export default function FieldsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{store.batch.name} · Campos / tags</h1>
-      <div className="flex flex-wrap gap-2">
-        {[
-          ["", "Dashboard"],
-          ["/documents", "Documentos"],
-          ["/items", "Itens"],
-          ["/fields", "Campos"],
-          ["/quality", "Quality"],
-          ["/exports", "Exportações"],
-        ].map(([href, label]) => (
-          <Link
-            key={href}
-            href={`/app/batches/${params.id}${href}`}
-            className={`rounded-xl px-3 py-1.5 text-sm border ${
-              href === "/fields"
-                ? "border-sky-400/30 bg-sky-500/15 text-sky-100"
-                : "border-white/10 text-slate-400 hover:bg-white/5"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+      <div>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
+          Campos / tags
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">
+          {uniqueTags} tags únicas · mostrando {rows.length}
+        </p>
       </div>
+      <BatchTabs batchId={params.id} />
       <Card>
         <CardHeader>
-          <CardTitle>
-            Mapa de campos · {uniqueTags} tags únicas · mostrando {rows.length}
-          </CardTitle>
+          <CardTitle>Mapa de campos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input

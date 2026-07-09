@@ -12,19 +12,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Badge, typeTone } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BatchTabs } from "@/components/batches/batch-tabs";
+import { alertHref } from "@/lib/analytics";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useBatchStore } from "@/lib/store/use-batch-store";
-
-const tabs = [
-  { href: "", label: "Dashboard" },
-  { href: "/documents", label: "Documentos" },
-  { href: "/items", label: "Itens" },
-  { href: "/fields", label: "Campos" },
-  { href: "/quality", label: "Quality" },
-  { href: "/exports", label: "Exportações" },
-];
 
 export default function BatchDashboardPage() {
   const params = useParams<{ id: string }>();
@@ -40,6 +34,20 @@ export default function BatchDashboardPage() {
     ];
   }, [store]);
 
+  const daily = useMemo(() => {
+    if (!store) return [];
+    const map = new Map<string, { day: string; count: number; value: number }>();
+    for (const d of store.documents) {
+      if (!d.issueDate) continue;
+      const day = d.issueDate.slice(0, 10);
+      const cur = map.get(day) || { day, count: 0, value: 0 };
+      cur.count += 1;
+      cur.value += d.totalValue || 0;
+      map.set(day, cur);
+    }
+    return [...map.values()].sort((a, b) => a.day.localeCompare(b.day)).slice(-31);
+  }, [store]);
+
   if (!store) {
     return <div className="skeleton h-64 rounded-2xl" />;
   }
@@ -49,47 +57,61 @@ export default function BatchDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-            {batch.name}
-          </h1>
-          <p className="text-slate-400 mt-1">
-            {batch.uploadedFileName} · {formatDateTime(batch.createdAt)}
-          </p>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-950 p-6 md:p-8">
+        <div className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "radial-gradient(600px 200px at 10% 0%, rgba(56,189,248,0.18), transparent), radial-gradient(400px 160px at 90% 20%, rgba(52,211,153,0.12), transparent)",
+          }}
+        />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs text-sky-300/90 mb-2">
+              <Sparkles className="h-3.5 w-3.5" /> Dashboard do lote
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display), sans-serif" }}>
+              {batch.name}
+            </h1>
+            <p className="text-slate-400 mt-1">
+              {batch.uploadedFileName} · {formatDateTime(batch.createdAt)}
+              {batch.month && batch.year ? ` · ${batch.month}/${batch.year}` : ""}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <Badge tone={batch.healthScore >= 80 ? "success" : batch.healthScore >= 60 ? "warning" : "error"}>
+              Health Score {batch.healthScore}
+            </Badge>
+            <div className="flex gap-2">
+              <Link
+                href={`/app/batches/${batch.id}/parties`}
+                className="text-xs text-slate-400 hover:text-sky-300"
+              >
+                Partes
+              </Link>
+              <Link
+                href={`/app/batches/${batch.id}/compare`}
+                className="text-xs text-slate-400 hover:text-sky-300"
+              >
+                Comparar
+              </Link>
+            </div>
+          </div>
         </div>
-        <Badge tone={batch.healthScore >= 80 ? "success" : batch.healthScore >= 60 ? "warning" : "error"}>
-          Health Score {batch.healthScore}
-        </Badge>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((t) => (
-          <Link
-            key={t.href}
-            href={`/app/batches/${batch.id}${t.href}`}
-            className={`rounded-xl px-3 py-1.5 text-sm border ${
-              t.href === ""
-                ? "border-sky-400/30 bg-sky-500/15 text-sky-100"
-                : "border-white/10 text-slate-400 hover:bg-white/5"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <BatchTabs batchId={batch.id} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           { label: "XMLs", value: batch.totalXml },
           { label: "Válidos", value: batch.validXml },
-          { label: "Inválidos", value: batch.invalidXml },
+          { label: "Itens", value: store.items.length },
           { label: "Valor total", value: formatCurrency(batch.totalValue) },
         ].map((m) => (
-          <Card key={m.label}>
+          <Card key={m.label} className="bg-slate-900/40">
             <CardContent className="p-5">
               <div className="text-sm text-slate-400">{m.label}</div>
-              <div className="mt-1 text-2xl font-semibold">{m.value}</div>
+              <div className="mt-1 text-2xl font-semibold tracking-tight">{m.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -117,27 +139,54 @@ export default function BatchDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Alertas automáticos</CardTitle>
-            <CardDescription>Sinais de qualidade do lote</CardDescription>
+            <CardTitle>Alertas acionáveis</CardTitle>
+            <CardDescription>Clique para abrir documentos já filtrados</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {(q?.warnings || []).length === 0 && (
               <div className="text-sm text-slate-400">Nenhum alerta crítico.</div>
             )}
             {(q?.warnings || []).map((w) => (
-              <div
+              <Link
                 key={w.code}
-                className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2 text-sm"
+                href={alertHref(batch.id, w.code)}
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2.5 text-sm hover:border-sky-400/30 hover:bg-sky-500/5 transition-colors"
               >
-                <Badge tone={w.severity === "error" ? "error" : w.severity === "warning" ? "warning" : "info"}>
-                  {w.severity}
-                </Badge>
-                <span className="ml-2 text-slate-300">{w.message}</span>
-              </div>
+                <span className="flex items-center gap-2 min-w-0">
+                  <Badge tone={w.severity === "error" ? "error" : w.severity === "warning" ? "warning" : "info"}>
+                    {w.severity}
+                  </Badge>
+                  <span className="text-slate-300 truncate">{w.message}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-slate-500" />
+              </Link>
             ))}
           </CardContent>
         </Card>
       </div>
+
+      {daily.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Emissões no período</CardTitle>
+            <CardDescription>Quantidade de documentos por dia</CardDescription>
+          </CardHeader>
+          <CardContent className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={daily}>
+                <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                <XAxis dataKey="day" stroke="#64748b" fontSize={10} tickFormatter={(v) => String(v).slice(8)} />
+                <YAxis stroke="#64748b" fontSize={12} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)" }}
+                  formatter={(value) => [String(value ?? ""), "docs"]}
+                />
+                <Bar dataKey="count" fill="#34d399" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -146,13 +195,17 @@ export default function BatchDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {(q?.metrics.topEmitters || []).slice(0, 5).map((e) => (
-              <div key={e.doc} className="flex justify-between text-sm border-b border-white/5 py-2">
+              <Link
+                key={e.doc}
+                href={`/app/batches/${batch.id}/documents?emitter=${encodeURIComponent(e.doc)}`}
+                className="flex justify-between text-sm border-b border-white/5 py-2 hover:bg-white/[0.03] rounded-lg px-1"
+              >
                 <div>
                   <div className="text-slate-200">{e.name}</div>
                   <div className="text-xs text-slate-500">{e.doc} · {e.count} docs</div>
                 </div>
                 <div className="text-slate-300">{formatCurrency(e.total)}</div>
-              </div>
+              </Link>
             ))}
           </CardContent>
         </Card>
@@ -164,19 +217,27 @@ export default function BatchDashboardPage() {
             <div>
               <div className="text-xs text-slate-500 mb-2">CFOP</div>
               {(q?.metrics.topCfop || []).slice(0, 5).map((x) => (
-                <div key={x.value} className="flex justify-between py-1">
+                <Link
+                  key={x.value}
+                  href={`/app/batches/${batch.id}/documents?cfop=${encodeURIComponent(x.value)}`}
+                  className="flex justify-between py-1 hover:text-sky-300"
+                >
                   <span>{x.value}</span>
                   <span className="text-slate-500">{x.count}</span>
-                </div>
+                </Link>
               ))}
             </div>
             <div>
               <div className="text-xs text-slate-500 mb-2">NCM</div>
               {(q?.metrics.topNcm || []).slice(0, 5).map((x) => (
-                <div key={x.value} className="flex justify-between py-1">
+                <Link
+                  key={x.value}
+                  href={`/app/batches/${batch.id}/documents?ncm=${encodeURIComponent(x.value)}`}
+                  className="flex justify-between py-1 hover:text-sky-300"
+                >
                   <span>{x.value}</span>
                   <span className="text-slate-500">{x.count}</span>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
