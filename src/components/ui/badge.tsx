@@ -34,7 +34,7 @@ export function Badge({
 }
 
 export function typeTone(type?: string) {
-  if (type === "NFE") return "nfe" as const;
+  if (type === "NFE" || type === "NFCE") return "nfe" as const;
   if (type === "CTE") return "cte" as const;
   if (type === "NFSE") return "nfse" as const;
   return "unknown" as const;

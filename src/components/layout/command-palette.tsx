@@ -21,6 +21,10 @@ const NAV = [
   { href: "/app/upload", label: "Upload de ZIP", icon: Upload },
   { href: "/app/batches", label: "Histórico de lotes", icon: FolderOpen },
   { href: "/app/search", label: "Busca global", icon: Search },
+  { href: "/app/audit", label: "Auditoria fiscal", icon: FileSearch },
+  { href: "/app/relationships", label: "Relacionamentos", icon: GitCompare },
+  { href: "/app/sped", label: "SPED preview", icon: FileSearch },
+  { href: "/app/ai", label: "IA fiscal", icon: Search },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 

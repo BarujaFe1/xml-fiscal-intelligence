@@ -26,22 +26,24 @@ export function detectDocumentType(parsed: unknown, rawXml = ""): DocumentType {
   const keys = collectKeys(parsed);
   const keyStr = [...keys].join(" ");
 
-  const nfeSignals = [
-    "nfeproc",
-    "nfe",
-    "infnfe",
-    "protNFe".toLowerCase(),
-    "ide",
-    "det",
-  ];
-  const cteSignals = [
-    "cteproc",
-    "cte",
-    "infcte",
-    "protcte",
-    "vprest",
-    "infcarga",
-  ];
+  // Events / cancel / CC-e first (more specific)
+  if (
+    keys.has("proceventonfe") ||
+    keys.has("eventonfe") ||
+    keys.has("infevento") ||
+    hasAny(raw, ["proceventonfe", "eventonfe", "retEvento".toLowerCase()])
+  ) {
+    if (hasAny(raw, ["cancelamento", "110111", "tpEvento>110111".toLowerCase()])) {
+      return "CANCELATION";
+    }
+    if (hasAny(raw, ["cartadecorrecao", "110110", "cce"])) {
+      return "CORRECTION_LETTER";
+    }
+    return "EVENT";
+  }
+
+  const nfeSignals = ["nfeproc", "nfe", "infnfe", "protnfe", "ide", "det"];
+  const cteSignals = ["cteproc", "cte", "infcte", "protcte", "vprest", "infcarga"];
   const nfseSignals = [
     "compnfse",
     "nfse",
@@ -64,9 +66,10 @@ export function detectDocumentType(parsed: unknown, rawXml = ""): DocumentType {
     score(nfseSignals) +
     (hasAny(raw, ["compnfse", "infnfse", "prestadorservico", "abrasf"]) ? 2 : 0);
 
-  // Prefer more specific roots
-  if (keys.has("nfeproc") || keys.has("nfe")) {
-    if (nfeScore >= cteScore && nfeScore >= nfseScore) return "NFE";
+  // NFC-e: model 65
+  if (nfeScore >= cteScore && nfeScore >= nfseScore && nfeScore > 0) {
+    if (hasAny(raw, [">65<", "<mod>65</mod>", "nfc-e", "nfce"])) return "NFCE";
+    return "NFE";
   }
   if (keys.has("cteproc") || keys.has("cte")) {
     if (cteScore >= nfeScore && cteScore >= nfseScore) return "CTE";

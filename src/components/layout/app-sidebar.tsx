@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bot,
   FileSearch,
   FolderOpen,
+  GitBranch,
   LayoutDashboard,
+  Scale,
   Search,
   Settings,
+  ShieldAlert,
   Upload,
   FileCode2,
 } from "lucide-react";
@@ -18,6 +22,10 @@ const links = [
   { href: "/app/upload", label: "Upload", icon: Upload },
   { href: "/app/batches", label: "Lotes", icon: FolderOpen },
   { href: "/app/search", label: "Busca", icon: Search },
+  { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
+  { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
+  { href: "/app/sped", label: "SPED preview", icon: Scale },
+  { href: "/app/ai", label: "IA fiscal", icon: Bot },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
@@ -36,7 +44,7 @@ export function AppSidebar() {
           </div>
         </Link>
       </div>
-      <nav className="p-3 space-y-1 flex-1">
+      <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
         {links.map((link) => {
           const active = pathname === link.href || (link.href !== "/app" && pathname.startsWith(link.href));
           const Icon = link.icon;
@@ -65,6 +73,9 @@ export function AppSidebar() {
         <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-slate-400">
           Atalho <kbd className="text-slate-200">Ctrl</kbd>+<kbd className="text-slate-200">K</kbd>
         </div>
+        <p className="text-[10px] leading-relaxed text-slate-600">
+          Diagnóstico fiscal auxiliar — não substitui PVA/SPED nem consultoria.
+        </p>
       </div>
     </aside>
   );

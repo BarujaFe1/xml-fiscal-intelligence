@@ -1,48 +1,60 @@
-# Architecture
+# Architecture (enterprise upgrade)
 
-## Decision
+## Current runtime (MVP+)
 
-**MVP = full Next.js on Vercel** with local filesystem persistence.
+```txt
+Browser (Next.js client)
+  └─ ZIP parse (jszip) + fiscal parser + audit + relationships
+  └─ IndexedDB BatchStore (source of truth on Vercel)
 
-Rationale:
-
-- Fastest path to a portfolio-ready product
-- ZIP/XML of a typical monthly batch fits serverless limits with `MAX_UPLOAD_MB` (default 50)
-- Single deploy surface
-- Clear seam to extract a FastAPI parser later (`PARSER_API_URL`)
-
-## Components
-
-```
-Browser
-  └─ Next.js App Router (landing + /app/*)
-       ├─ API Route Handlers
-       │    ├─ POST /api/batches          upload + process ZIP
-       │    ├─ GET  /api/batches/:id      batch store
-       │    ├─ GET  /api/batches/:id/export
-       │    ├─ GET  /api/search
-       │    └─ GET  /api/batches/:id/documents/:documentId
-       ├─ Parser pipeline (TypeScript)
-       │    detect → parse → flatten → extract → quality
-       └─ Store: data/batches/{id}.json + xml/
+Next.js App Router
+  └─ UI /app/*
+  └─ API /api/batches* (metadata sync best-effort)
+  └─ Optional FS store under data/ (local only)
 ```
 
-## Future split
+## Target modular layout
 
+```txt
+src/
+  app/                 # routes
+  components/          # UI
+  modules/
+    audit/             # fiscal-audit-engine
+    relationships/     # document graph inference
+    validation/        # XSD + XML signature stubs
+    sped/              # SPED preview tree
+    ai/                # mock RAG + SQL guard
+  lib/
+    parser/            # detect / extract / flatten
+    fiscal/            # CFOP table + classification
+    security/          # hash, doc format checks
+    store/             # process-memory, idb
+    quality/           # health score
+    export/            # excel/csv/json
+  types/
+docs/
+supabase/              # schema.sql + schema-enterprise.sql
 ```
-Vercel (Next.js UI + BFF)
-   │ PARSER_API_URL
-   ▼
-FastAPI (defusedxml / lxml, zipfile, polars)
-   │
-   ▼
-Supabase Postgres + Storage + Auth + RLS
-```
 
-## Security boundaries
+## Data flow (import)
 
-- Never execute ZIP contents
-- Reject `..` paths and absolute paths (zip slip)
-- Ignore dangerous extensions
-- XML parser with `processEntities: false`
-- Real XMLs only in gitignored paths
+1. User drops ZIP in `/app/upload`  
+2. Optional incremental: load known SHA-256 from prior IDB batches  
+3. Extract XMLs (zip-slip safe)  
+4. Per file: hash → parse → classify CFOP → mark in-batch duplicates  
+5. Batch quality score  
+6. Audit findings + relationships  
+7. Persist `BatchStore` to IndexedDB  
+
+## Persistence strategy
+
+| Environment | Store |
+|-------------|--------|
+| Vercel / browser | IndexedDB |
+| Local Node | optional `data/batches` |
+| Future | Postgres (`schema-enterprise.sql`) + object storage for XML |
+
+## Analytics (planned)
+
+DuckDB + Parquet module documented in `docs/DUCKDB_ANALYTICS.md` — not required for Priority 1 acceptance.

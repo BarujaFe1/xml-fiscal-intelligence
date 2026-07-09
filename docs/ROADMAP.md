@@ -1,27 +1,23 @@
 # Roadmap
 
-## Now (MVP shipped)
+## Done in enterprise upgrade (this branch)
 
-- ZIP upload + safe extract
-- NFe / CTe / NFSe parsing
-- Dashboard, search, detail, quality, exports
-- Local persistence
-- Docs + samples + tests
+- Modular modules: audit, relationships, validation stubs, SPED preview, AI mock  
+- Incremental import by SHA-256  
+- CFOP classification on parse  
+- Audit + relationships persisted in BatchStore  
+- UI: `/app/audit`, `/relationships`, `/sped`, `/ai` + batch tabs  
+- Docs + OpenAPI draft + `schema-enterprise.sql`  
+- Hardened `.gitignore` / `.env.example` / private folders  
 
 ## Next
 
-- [ ] Supabase Auth + workspace RLS wired to UI
-- [ ] Persist batches/documents in Postgres
-- [ ] Async job queue for large ZIPs
-- [ ] FastAPI parser service option
-- [ ] Full-text search indexes
-- [ ] Batch comparator (month vs month)
-- [ ] Automatic data dictionary UI
-- [ ] Recurring supplier/customer detector
-- [ ] Playwright e2e in CI
+1. Wire Postgres + RLS for multi-user  
+2. DuckDB/Parquet analytics module  
+3. XSD schemas + real signature crypto checks  
+4. Custom rules no-code builder  
+5. OCR/PDF compare  
+6. Full REST surface from `openapi.yaml`  
+7. React Flow relationship graph visualization  
 
-## Later
-
-- Multi-tenant SaaS billing
-- Role-based export audit log
-- Optional on-prem mode
+See `docs/ENTERPRISE_UPGRADE_PLAN.md` and `docs/HANDOFF.md`.
