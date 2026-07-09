@@ -1,62 +1,33 @@
-# XML Fiscal Intelligence
+# README — XML Fiscal Intelligence
 
-**Transforme lotes de XML fiscal em inteligência de dados.**
+**Plataforma fiscal/data product para importar, processar, pesquisar, auditar e exportar lotes de XML (NF-e, CT-e, NFS-e).**
 
-Envie um ZIP com NF-e, CT-e e NFS-e. O sistema lê as tags, cria planilhas, permite busca avançada e gera análises fiscais em minutos.
+![stack](https://img.shields.io/badge/Next.js-16-black) ![ts](https://img.shields.io/badge/TypeScript-5-blue) ![privacy](https://img.shields.io/badge/privacy-fiscal%20first-emerald)
 
-![stack](https://img.shields.io/badge/Next.js-16-black) ![ts](https://img.shields.io/badge/TypeScript-5-blue) ![license](https://img.shields.io/badge/privacy-fiscal%20first-emerald)
+> Este sistema auxilia análise, organização, auditoria e diagnóstico fiscal, mas **não substitui** validação contábil/fiscal profissional, legislação aplicável, consultoria tributária, nem o PVA/SPED oficial.
 
 ---
 
-## Problema real
+## Problema
 
-Fluxos com SIEG (e similares) terminam em ZIPs mensais por CNPJ. O trabalho manual — extrair, classificar tipos, abrir tags, lidar com múltiplos itens, buscar notas e consolidar — é lento e frágil.
+ZIPs mensais (SIEG e similares) exigem extrair, classificar, buscar tags, consolidar itens e auditar inconsistências — trabalho lento e frágil.
 
 ## Solução
 
-**XML Fiscal Intelligence** é um laboratório web de análise fiscal:
+1. Upload seguro de ZIP (parse no navegador — sem limite de 4,5 MB da Vercel)  
+2. Detecção NF-e / NFC-e / CT-e / NFS-e / eventos  
+3. Flatten de tags + itens + classificação CFOP  
+4. Importação **incremental** (SHA-256) e duplicidade por chave/hash  
+5. Busca, dashboards, quality score  
+6. Auditoria fiscal + relacionamentos NF-e↔CT-e  
+7. SPED preview (diagnóstico) + IA mock segura  
+8. Export Excel / CSV / JSON / HTML  
 
-1. Upload seguro de ZIP  
-2. Detecção automática NF-e / CT-e / NFS-e  
-3. Flatten de **todas** as tags em colunas/paths  
-4. Tabelas de documentos, itens e campos  
-5. Busca global  
-6. Detalhe completo da nota (tree + tags + JSON)  
-7. Data Quality & Fiscal Insights (Health Score 0–100)  
-8. Exportações Excel / CSV / JSON / HTML  
+## Stack
 
-## Arquitetura (MVP)
+Next.js App Router · TypeScript · Tailwind · Recharts · Zod-ready types · IndexedDB · Postgres schema (Supabase) · OpenAPI draft
 
-**Opção A — full Next.js (escolhida para o MVP)**
-
-| Camada | Tecnologia |
-|--------|------------|
-| Frontend | Next.js App Router, TypeScript, Tailwind, Recharts |
-| API | Route Handlers Node.js |
-| Parser | `fast-xml-parser` (XXE mitigado: `processEntities: false`) |
-| ZIP | `jszip` + validação zip-slip |
-| Excel | `exceljs` |
-| Persistência MVP | Filesystem `data/batches/*.json` (+ XML locais) |
-| Schema futuro | Supabase Postgres + RLS (`supabase/schema.sql`) |
-| Deploy | Vercel |
-
-Evolução documentada: separar parser pesado em FastAPI (Render/Fly/Railway) via `PARSER_API_URL`.
-
-## Health Score (0–100)
-
-| Componente | Peso |
-|------------|------|
-| Validade XML | 20% |
-| Campos essenciais | 20% |
-| Duplicidades | 10% |
-| Consistência de datas | 10% |
-| Consistência de valores | 15% |
-| Completude de itens | 15% |
-| Identificação fiscal | 10% |
-
-Fórmula implementada em `src/lib/quality/index.ts`.
-
-## Como rodar local
+## Como rodar
 
 ```bash
 npm install
@@ -64,118 +35,64 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) → **Analisar lote**.
+Abra [http://localhost:3000](http://localhost:3000) → **Upload**.
 
-### Testar com samples anonimizados
+### Samples anonimizados
 
-```bash
-# Crie um ZIP a partir dos samples
-cd samples/anonymized
-# PowerShell:
-Compress-Archive -Path *.xml -DestinationPath ..\..\private-test-data\samples.zip
+```powershell
+Compress-Archive -Path samples\anonymized\*.xml -DestinationPath private-imports\samples.zip
 ```
 
-Depois faça upload em `/app/upload`.
+### ZIP real
 
-### Testar com seu ZIP real (SIEG)
-
-1. Coloque o arquivo em `private-test-data/lote-xml.zip` (pasta **gitignored**)  
-2. Faça upload pela UI  
-3. **Nunca** commit XMLs reais  
-
-### Anonimizar XML
-
-```bash
-npx tsx scripts/anonymize-xml.ts entrada.xml samples/anonymized/saida.xml
-```
+Coloque em `private-imports/` ou `private-test-data/` (gitignored). **Nunca** committe XMLs reais.
 
 ## Scripts
 
 ```bash
-npm run dev
 npm run lint
 npm run typecheck
 npm run test
 npm run build
 ```
 
-## Funcionalidades
+## Documentação
 
-- Upload ZIP com progresso e relatório de processamento  
-- Detecção NF-e / NFC-e, CT-e, NFS-e (ABRASF-like)  
-- Flatten genérico de tags + tabelas normalizadas  
-- Dashboard do lote + gráficos  
-- Busca global (documentos / itens / campos)  
-- Detalhe da nota: resumo, itens, tags, tree, JSON  
-- Quality & Insights  
-- Export Excel multi-aba, CSV, JSON, HTML  
-- Histórico de lotes  
-- Mascaramento de CNPJ/CPF  
+| Doc | Conteúdo |
+|-----|----------|
+| [ENTERPRISE_UPGRADE_PLAN.md](docs/ENTERPRISE_UPGRADE_PLAN.md) | Plano e fases |
+| [HANDOFF.md](docs/HANDOFF.md) | O que foi entregue |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitetura |
+| [SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md) | LGPD / privacidade |
+| [IMPORT_PIPELINE.md](docs/IMPORT_PIPELINE.md) | Pipeline de import |
+| [openapi.yaml](docs/openapi.yaml) | Contrato API |
 
-## Tipos de XML
+## Segurança
 
-- **NF-e / NFC-e** — `nfeProc`, `det[]`, impostos, protocolo  
-- **CT-e** — prestação, carga, `infDoc` vinculados  
-- **NFS-e** — parser resiliente a variações municipais/ABRASF  
-
-## Segurança e privacidade
-
-- Sem integração SIEG / certificado / scraping  
-- Zip slip bloqueado; extensões perigosas ignoradas  
-- XMLs reais fora do Git (`.gitignore` forte)  
-- Samples apenas anonimizados em `samples/anonymized`  
-- Ver `docs/SECURITY_AND_PRIVACY.md`  
+- Sem scraping SEFAZ / automação indevida  
+- Pastas `private-*` ignoradas  
+- IA desligada por padrão (`ENABLE_AI=false`)  
+- Assinatura/XSD: stubs documentados (sem promessa jurídica)  
 
 ## Deploy
 
-### Vercel
-
 ```bash
 npx vercel
-npx vercel --prod
 ```
 
-### Supabase (opcional)
+Em produção, lotes ficam no **IndexedDB do navegador** (FS efêmero na Vercel).
 
-1. Crie projeto Supabase  
-2. Rode `supabase/schema.sql`  
-3. Preencha `.env` com URL/keys  
-4. Migre o store filesystem → Postgres (roadmap)  
+## Limitações
 
-## Documentação
+- Persistência multi-usuário Postgres ainda schema-ready  
+- SPED é preview/diagnóstico  
+- DuckDB/Parquet e OCR: preparados na documentação  
+- NFS-e municipal: best-effort  
 
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md)  
-- [DATA_MODEL.md](docs/DATA_MODEL.md)  
-- [PARSER_DESIGN.md](docs/PARSER_DESIGN.md)  
-- [SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md)  
-- [DEPLOYMENT.md](docs/DEPLOYMENT.md)  
-- [ROADMAP.md](docs/ROADMAP.md)  
-- [PORTFOLIO_CASE.md](docs/PORTFOLIO_CASE.md)  
+## Portfólio
 
-## Limitações conhecidas (MVP)
-
-- Persistência local (não multi-usuário ainda)  
-- Auth Supabase schema-ready, UI em modo demo local  
-- NFS-e varia por município — cobertura best-effort  
-- Processamento síncrono no request (lotes muito grandes podem exigir backend separado)  
-- Export “campos completos” limita colunas dinâmicas às top paths  
-
-## Roadmap (resumo)
-
-- Supabase Auth + RLS real  
-- Fila assíncrona / FastAPI parser  
-- Comparador mês a mês  
-- Full-text search Postgres  
-- Dicionário de dados automático  
-
-## Case de portfólio
-
-Narrativa completa em [docs/PORTFOLIO_CASE.md](docs/PORTFOLIO_CASE.md).
-
-## Aviso
-
-Este software **não** é consultoria fiscal nem garante conformidade tributária. É uma ferramenta de engenharia de dados sobre XML fiscal. Trate XMLs como dados sensíveis.
+Narrativa em [docs/PORTFOLIO_CASE.md](docs/PORTFOLIO_CASE.md).
 
 ---
 
-Feito para transformar o ZIP do mês em decisão — rápido, auditável e bonito.
+Feito para transformar o ZIP do mês em decisão — rápido, auditável e responsável.

@@ -76,3 +76,23 @@ export async function mergeBatchLists(apiBatches: Batch[]): Promise<Batch[]> {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 }
+
+/** Collect XML hashes from all local batches for incremental import. */
+export async function idbCollectKnownHashes(workspaceId?: string): Promise<Set<string>> {
+  const db = await openDb();
+  const stores = await new Promise<BatchStore[]>((resolve, reject) => {
+    const tx = db.transaction(STORE, "readonly");
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => resolve((req.result as BatchStore[]) || []);
+    req.onerror = () => reject(req.error);
+  });
+  db.close();
+  const hashes = new Set<string>();
+  for (const s of stores) {
+    if (workspaceId && s.batch.workspaceId !== workspaceId) continue;
+    for (const d of s.documents) {
+      if (d.xmlHash) hashes.add(d.xmlHash);
+    }
+  }
+  return hashes;
+}

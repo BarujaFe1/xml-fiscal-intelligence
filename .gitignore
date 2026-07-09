@@ -29,8 +29,21 @@ data/**
 !data/.gitkeep
 private-test-data/**
 !private-test-data/README.md
+private-data/**
+!private-data/README.md
+private-imports/**
+!private-imports/README.md
+private-exports/**
+!private-exports/README.md
+private-certificates/**
+!private-certificates/README.md
 *.zip
 !samples/**/*.xml
+*.pfx
+*.p12
+*.cer
+*.crt
+*.key
 
 # real XML dumps outside samples
 **/real-xml/**

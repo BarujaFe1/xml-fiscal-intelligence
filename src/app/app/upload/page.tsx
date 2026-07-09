@@ -8,7 +8,7 @@ import { FileArchive, Loader2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
-import { idbSaveBatchStore } from "@/lib/store/idb-store";
+import { idbCollectKnownHashes, idbSaveBatchStore } from "@/lib/store/idb-store";
 import { processZipBatchInMemory } from "@/lib/store/process-memory";
 
 export default function UploadPage() {
@@ -18,6 +18,7 @@ export default function UploadPage() {
   const [cnpjLabel, setCnpjLabel] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
+  const [incremental, setIncremental] = useState(true);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState("");
@@ -59,6 +60,12 @@ export default function UploadPage() {
 
     try {
       const buffer = await file.arrayBuffer();
+      let knownHashes: Set<string> | undefined;
+      if (incremental) {
+        setProgressMessage("Carregando hashes de lotes anteriores…");
+        knownHashes = await idbCollectKnownHashes();
+      }
+
       const store = await processZipBatchInMemory({
         buffer,
         fileName: file.name,
@@ -68,13 +75,19 @@ export default function UploadPage() {
         year: year ? Number(year) : undefined,
         keepRawJson: false,
         keepFields: false,
+        incremental,
+        knownHashes,
         onProgress: (pct, message) => {
           setProgress(Math.min(95, pct));
           setProgressMessage(message);
         },
       });
 
-      if (!store.documents.length && store.batch.totalXml === 0) {
+      if (
+        !store.documents.length &&
+        store.batch.totalXml === 0 &&
+        !(store.batch.skippedDuplicateCount || 0)
+      ) {
         throw new Error("Nenhum XML encontrado no ZIP");
       }
 
@@ -82,7 +95,6 @@ export default function UploadPage() {
       setProgressMessage("Salvando lote no navegador…");
       await idbSaveBatchStore(store);
 
-      // Best-effort sync to server (may fail on Vercel ephemeral FS / size — IDB is source of truth)
       try {
         await fetch("/api/batches/import", {
           method: "POST",
@@ -97,8 +109,11 @@ export default function UploadPage() {
       }
 
       setProgress(100);
+      const skipped = store.batch.skippedDuplicateCount || 0;
       toast.success(
-        `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · score ${store.batch.healthScore}`,
+        skipped
+          ? `Lote: ${store.batch.newDocumentCount} novos · ${skipped} já conhecidos · score ${store.batch.healthScore}`
+          : `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · score ${store.batch.healthScore}`,
       );
       router.push(`/app/batches/${store.batch.id}`);
     } catch (err) {
@@ -125,7 +140,7 @@ export default function UploadPage() {
         <CardHeader>
           <CardTitle>Arquivo ZIP</CardTitle>
           <CardDescription>
-            Extração segura, detecção NF-e/CT-e/NFS-e e flatten de todas as tags.
+            Extração segura, detecção NF-e/CT-e/NFS-e, flatten, auditoria e relacionamentos.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -157,7 +172,7 @@ export default function UploadPage() {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="CNPJ · Jun/2026"
+                  placeholder="CNPJ · jun/2026"
                 />
               </div>
               <div className="space-y-2">
@@ -195,6 +210,21 @@ export default function UploadPage() {
               </div>
             </div>
 
+            <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={incremental}
+                onChange={(e) => setIncremental(e.target.checked)}
+              />
+              <span>
+                <span className="font-medium text-slate-100">Importação incremental</span>
+                <span className="block text-xs text-slate-500 mt-0.5">
+                  Pula XMLs cujo SHA-256 já existe em lotes anteriores neste navegador.
+                </span>
+              </span>
+            </label>
+
             {loading && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-slate-300">
@@ -222,10 +252,17 @@ export default function UploadPage() {
       </Card>
 
       <Card>
-        <CardContent className="p-5 text-sm text-slate-400">
-          Seu <code className="text-sky-300">202606 NFe.zip</code> (~5,3 MB / ~1.1k NF-e) estourava o
-          limite de upload da Vercel. Agora o parse roda no navegador. Dados ficam neste dispositivo
-          (IndexedDB) — não vão para o GitHub.
+        <CardContent className="p-5 text-sm text-slate-400 space-y-2">
+          <p>
+            Seu <code className="text-sky-300">202606 NFe.zip</code> (~5,3 MB / ~1.1k NF-e) estourava o
+            limite de upload da Vercel. Agora o parse roda no navegador. Dados ficam neste dispositivo
+            (IndexedDB) — não vão para o GitHub.
+          </p>
+          <p className="text-xs text-amber-200/80 border border-amber-500/20 rounded-lg px-3 py-2 bg-amber-500/5">
+            Este sistema auxilia análise, organização, auditoria e diagnóstico fiscal, mas não
+            substitui validação contábil/fiscal profissional, legislação aplicável, consultoria
+            tributária, nem o PVA/SPED oficial.
+          </p>
         </CardContent>
       </Card>
     </div>

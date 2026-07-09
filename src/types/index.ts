@@ -1,4 +1,12 @@
-export type DocumentType = "NFE" | "CTE" | "NFSE" | "UNKNOWN";
+export type DocumentType =
+  | "NFE"
+  | "NFCE"
+  | "CTE"
+  | "NFSE"
+  | "EVENT"
+  | "CANCELATION"
+  | "CORRECTION_LETTER"
+  | "UNKNOWN";
 
 export type ParseStatus = "ok" | "partial" | "error";
 
@@ -10,6 +18,38 @@ export type BatchStatus =
   | "completed"
   | "failed"
   | "partial";
+
+export type FindingSeverity = "info" | "warning" | "error" | "critical";
+
+export type FindingStatus = "open" | "reviewed" | "ignored" | "false_positive";
+
+export type RelationshipType =
+  | "nfe_to_cte"
+  | "cte_to_nfe"
+  | "nfe_to_cancellation"
+  | "nfe_to_correction_letter"
+  | "nfe_to_event"
+  | "nfe_to_return"
+  | "duplicate"
+  | "possible_duplicate"
+  | "manual_link";
+
+export type OperationClassification =
+  | "compra"
+  | "venda"
+  | "devolucao"
+  | "transferencia"
+  | "remessa"
+  | "bonificacao"
+  | "consignacao"
+  | "industrializacao"
+  | "exportacao"
+  | "importacao"
+  | "retorno"
+  | "comodato"
+  | "transporte"
+  | "servico"
+  | "desconhecido";
 
 export interface Workspace {
   id: string;
@@ -35,6 +75,8 @@ export interface Batch {
   nfseCount: number;
   unknownCount: number;
   duplicateCount: number;
+  skippedDuplicateCount?: number;
+  newDocumentCount?: number;
   totalValue: number;
   healthScore: number;
   progress: number;
@@ -42,6 +84,7 @@ export interface Batch {
   createdAt: string;
   updatedAt: string;
   quality?: QualityReport;
+  incremental?: boolean;
 }
 
 export interface DocumentSummary {
@@ -74,6 +117,14 @@ export interface DocumentSummary {
   taxValue?: number;
   status?: string;
   protocol?: string;
+  natureOperation?: string;
+  cfopMain?: string;
+  operationClassification?: OperationClassification;
+  operationConfidence?: number;
+  xmlHash?: string;
+  isDuplicate?: boolean;
+  duplicateOfId?: string;
+  qualityScore?: number;
   rawXmlPath?: string;
   rawJson: Record<string, unknown>;
   flattenedJson: Record<string, string | number | boolean | null>;
@@ -92,7 +143,10 @@ export interface DocumentItem {
   code?: string;
   description?: string;
   ncm?: string;
+  cest?: string;
   cfop?: string;
+  cst?: string;
+  csosn?: string;
   unit?: string;
   quantity?: number;
   unitValue?: number;
@@ -137,6 +191,54 @@ export interface ExportRecord {
   exportType: string;
   filePath: string;
   status: "ready" | "failed";
+  createdAt: string;
+}
+
+export interface AuditFinding {
+  id: string;
+  workspaceId: string;
+  batchId: string;
+  documentId?: string;
+  itemId?: string;
+  severity: FindingSeverity;
+  category: string;
+  code: string;
+  title: string;
+  description: string;
+  evidence?: Record<string, unknown>;
+  recommendation?: string;
+  status: FindingStatus;
+  createdAt: string;
+}
+
+export interface DocumentRelationship {
+  id: string;
+  workspaceId: string;
+  sourceDocumentId: string;
+  targetDocumentId: string;
+  relationshipType: RelationshipType;
+  confidenceScore: number;
+  evidence?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ImportLog {
+  id: string;
+  batchId: string;
+  level: "info" | "warn" | "error";
+  step: string;
+  message: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface SavedSearch {
+  id: string;
+  workspaceId: string;
+  name: string;
+  queryText: string;
+  filtersJson: Record<string, unknown>;
+  isFavorite: boolean;
   createdAt: string;
 }
 
@@ -190,6 +292,9 @@ export interface BatchStore {
   fields: DocumentField[];
   errors: ParseError[];
   exports: ExportRecord[];
+  findings?: AuditFinding[];
+  relationships?: DocumentRelationship[];
+  importLogs?: ImportLog[];
 }
 
 export interface SearchResult {
@@ -212,7 +317,7 @@ export interface ProcessReport {
   totalXml: number;
   validXml: number;
   invalidXml: number;
-  byType: Record<DocumentType, number>;
+  byType: Record<string, number>;
   duplicates: number;
   withoutKey: number;
   unknownStructure: number;

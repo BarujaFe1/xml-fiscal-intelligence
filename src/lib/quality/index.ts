@@ -54,7 +54,7 @@ export function calculateBatchQuality(
   const validXmlPct = (validDocs.length / total) * 100;
 
   const typeDistribution: Record<string, number> = {
-    NFE: documents.filter((d) => d.documentType === "NFE").length,
+    NFE: documents.filter((d) => d.documentType === "NFE" || d.documentType === "NFCE").length,
     CTE: documents.filter((d) => d.documentType === "CTE").length,
     NFSE: documents.filter((d) => d.documentType === "NFSE").length,
     UNKNOWN: documents.filter((d) => d.documentType === "UNKNOWN").length,
@@ -104,7 +104,7 @@ export function calculateBatchQuality(
   const zeroMonetary = documents.filter((d) => d.totalValue === 0).length;
 
   let itemSumDivergences = 0;
-  for (const d of documents.filter((x) => x.documentType === "NFE")) {
+  for (const d of documents.filter((x) => x.documentType === "NFE" || x.documentType === "NFCE")) {
     const docItems = items.filter((i) => i.documentId === d.id);
     if (!docItems.length || d.totalValue === undefined) continue;
     const sum = docItems.reduce((acc, i) => acc + (i.totalValue || 0), 0);
@@ -114,7 +114,7 @@ export function calculateBatchQuality(
     100 - ((negativeOrWeird + itemSumDivergences) / total) * 50 - (zeroMonetary / total) * 10,
   );
 
-  const nfeItems = items.filter((i) => i.documentType === "NFE");
+  const nfeItems = items.filter((i) => i.documentType === "NFE" || i.documentType === "NFCE");
   const itemsWithoutNcm = nfeItems.filter((i) => !i.ncm).length;
   const itemsWithoutCfop = nfeItems.filter((i) => !i.cfop).length;
   const itemBase = nfeItems.length || 1;
@@ -127,7 +127,8 @@ export function calculateBatchQuality(
   ).length;
   const withoutKey = missingEssential.accessKey;
   const withoutProtocol = documents.filter(
-    (d) => (d.documentType === "NFE" || d.documentType === "CTE") && !d.protocol,
+    (d) =>
+      (d.documentType === "NFE" || d.documentType === "NFCE" || d.documentType === "CTE") && !d.protocol,
   ).length;
   const fiscalIdentification = clamp(
     100 - ((invalidCnpjFormat + withoutKey + withoutProtocol) / (total * 3)) * 100,

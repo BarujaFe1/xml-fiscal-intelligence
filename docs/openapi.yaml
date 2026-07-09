@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: XML Fiscal Intelligence API
+  version: 0.2.0-enterprise
+  description: |
+    API REST (draft) para importação, documentos, busca, auditoria, SPED preview e analytics.
+    O MVP atual persiste lotes no IndexedDB do navegador; estes endpoints descrevem o contrato alvo
+    e rotas já existentes sob `/api/batches*`.
+  contact:
+    name: BarujaFe1
+servers:
+  - url: /api
+    description: App Router handlers
+paths:
+  /batches:
+    get:
+      summary: List batches
+      responses:
+        "200":
+          description: Batch list
+  /batches/import:
+    post:
+      summary: Register or process import metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: create
+                batch:
+                  type: object
+      responses:
+        "200":
+          description: Created
+  /batches/{id}:
+    get:
+      summary: Get batch store
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: BatchStore JSON
+  /documents:
+    get:
+      summary: List fiscal documents (planned)
+      parameters:
+        - name: batchId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "501":
+          description: Not fully wired — use batch store
+  /search:
+    get:
+      summary: Global search (planned server-side)
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        "501":
+          description: Client-side search via IndexedDB in MVP
+  /audit:
+    get:
+      summary: List audit findings (planned)
+      responses:
+        "501":
+          description: Findings embedded in BatchStore.findings
+  /exports:
+    post:
+      summary: Request export
+      responses:
+        "200":
+          description: Export ready (local download in MVP)
+  /webhooks:
+    post:
+      summary: Register webhook (planned)
+      responses:
+        "501":
+          description: Not implemented
+components:
+  schemas:
+    AuditFinding:
+      type: object
+      properties:
+        id: { type: string }
+        severity: { type: string, enum: [info, warning, error, critical] }
+        code: { type: string }
+        title: { type: string }
+        status: { type: string }

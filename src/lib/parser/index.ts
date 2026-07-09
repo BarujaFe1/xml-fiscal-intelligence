@@ -10,6 +10,7 @@ import {
   extractNFeSummary,
 } from "@/lib/parser/extract";
 import { flatFieldsToRecord, flattenXmlObject } from "@/lib/parser/flatten";
+import { classifyOperation } from "@/lib/fiscal/cfop";
 import type {
   DocumentField,
   DocumentItem,
@@ -132,12 +133,30 @@ export function parseXmlDocument(params: {
 
   const parseErrors: string[] = [];
   if (documentType === "UNKNOWN") parseErrors.push("Estrutura documental desconhecida");
-  if (documentType !== "NFSE" && !summary.accessKey) parseErrors.push("Documento sem chave de acesso");
-  if (!summary.number && documentType !== "UNKNOWN") parseErrors.push("Número não identificado");
+  if (
+    documentType !== "NFSE" &&
+    documentType !== "EVENT" &&
+    documentType !== "CANCELATION" &&
+    documentType !== "CORRECTION_LETTER" &&
+    !summary.accessKey
+  ) {
+    parseErrors.push("Documento sem chave de acesso");
+  }
+  if (!summary.number && documentType !== "UNKNOWN" && documentType !== "EVENT") {
+    parseErrors.push("Número não identificado");
+  }
 
   let parseStatus: ParseStatus = "ok";
   if (documentType === "UNKNOWN") parseStatus = "error";
   else if (parseErrors.length) parseStatus = "partial";
+
+  const cfopMain =
+    summary.cfop || extractedItems.find((i) => i.cfop)?.cfop || undefined;
+  const classification = classifyOperation({
+    documentType,
+    cfopMain,
+    natureOperation: summary.nature,
+  });
 
   const document: DocumentSummary = {
     id: documentId,
@@ -168,6 +187,10 @@ export function parseXmlDocument(params: {
     taxValue: summary.taxValue,
     status: summary.status,
     protocol: summary.protocol,
+    natureOperation: summary.nature,
+    cfopMain,
+    operationClassification: classification.classification,
+    operationConfidence: classification.confidence,
     rawJson: parsed as Record<string, unknown>,
     flattenedJson,
     parseStatus,
