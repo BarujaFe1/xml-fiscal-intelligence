@@ -84,51 +84,21 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch(`/api/obligations/${obligationId}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          store: effectiveStore || {
-            batch: {
-              id: "empty",
-              workspaceId: "ws_local",
-              name: "empty",
-              uploadedFileName: "",
-              status: "completed",
-              totalFiles: 0,
-              totalXml: 0,
-              validXml: 0,
-              invalidXml: 0,
-              nfeCount: 0,
-              cteCount: 0,
-              nfseCount: 0,
-              unknownCount: 0,
-              duplicateCount: 0,
-              totalValue: 0,
-              healthScore: null,
-              progress: 100,
-              progressMessage: "",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            documents: [],
-            items: [],
-            fields: [],
-            errors: [],
-            exports: [],
-          },
-          establishment: form,
-          planId: "trial",
-        }),
+      // Gera no navegador (mesmo motivo do upload ZIP): evita body limit / Unexpected token.
+      const { generateObligationLocal } = await import("@/modules/obligations/generate-local");
+      const data = await generateObligationLocal({
+        obligationId,
+        store: effectiveStore,
+        establishment: form,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setResult(data);
-        toast.error(data.error || "Falha na geração");
+      setResult(data);
+      if (data.error && !data.content) {
+        toast.error(data.error);
         return;
       }
-      setResult(data);
-      toast.success("Arquivo gerado (pré-validação interna)");
+      toast.success(
+        `Arquivo gerado no navegador (${data.recordCount ?? 0} registros · pré-validação interna)`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     } finally {
@@ -209,7 +179,7 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
           </select>
           <div className="flex flex-wrap gap-2">
             <Button type="button" disabled={loading} onClick={() => void generate()}>
-              {loading ? "Gerando…" : "Gerar rascunho assistido"}
+              {loading ? "Gerando no navegador…" : "Gerar rascunho assistido"}
             </Button>
             {result?.content && (
               <Button type="button" variant="secondary" onClick={download}>

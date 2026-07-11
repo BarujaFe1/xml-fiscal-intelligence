@@ -143,18 +143,22 @@ export default function ObligationsEfdPage() {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch("/api/obligations/efd-icms-ipi/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ store, establishment: form, planId: "trial" }),
+      // Gera no navegador — lotes mensais (~30MB JSON) estouram o body limit da API
+      // e o servidor devolve texto/HTML → "Unexpected token 'R'".
+      const { generateObligationLocal } = await import("@/modules/obligations/generate-local");
+      const data = await generateObligationLocal({
+        obligationId: "efd-icms-ipi",
+        store,
+        establishment: form,
       });
-      const data = await res.json();
       setResult(data);
-      if (!res.ok) {
-        toast.error(data.error || "Geração bloqueada");
+      if (data.error && !data.content) {
+        toast.error(data.error);
         return;
       }
-      toast.success("TXT gerado (pré-validação interna)");
+      toast.success(
+        `TXT gerado no navegador (${data.recordCount ?? 0} registros · pré-validação interna)`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     } finally {
@@ -195,15 +199,18 @@ export default function ObligationsEfdPage() {
           notes: "Registro manual assistido",
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Falha ao registrar PVA");
+      const { readJsonOrTextError } = await import("@/modules/obligations/generate-local");
+      const { data, parseError } = await readJsonOrTextError(res);
+      if (!res.ok || !data) {
+        toast.error(
+          (data?.error as string) || parseError || "Falha ao registrar PVA",
+        );
         return;
       }
-      setPvaRecord(data.record);
+      setPvaRecord(data.record as Record<string, unknown>);
       try {
         const { saveLocalPvaRun } = await import("@/modules/obligations/efd-icms-ipi/pva/workflow");
-        saveLocalPvaRun(data.record);
+        saveLocalPvaRun(data.record as Parameters<typeof saveLocalPvaRun>[0]);
         await refreshPvaRuns();
       } catch {
         // ignore
@@ -230,7 +237,10 @@ export default function ObligationsEfdPage() {
       <Card>
         <CardHeader>
           <CardTitle>1. Lote de documentos</CardTitle>
-          <CardDescription>{docCount} documentos no lote selecionado (IndexedDB).</CardDescription>
+          <CardDescription>
+            {docCount} documentos no lote selecionado (IndexedDB). A geração do TXT roda neste
+            navegador — lotes grandes não passam pela API.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <select
@@ -305,7 +315,7 @@ export default function ObligationsEfdPage() {
 
       <div className="flex flex-wrap gap-3">
         <Button type="button" onClick={generate} disabled={loading || !store}>
-          {loading ? "Gerando…" : "Verificar prontidão e gerar TXT"}
+          {loading ? "Gerando no navegador…" : "Verificar prontidão e gerar TXT"}
         </Button>
         {result?.content && (
           <Button type="button" variant="secondary" onClick={downloadTxt}>
