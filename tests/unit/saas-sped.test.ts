@@ -144,19 +144,20 @@ describe("EFD ICMS/IPI plugin", () => {
     expect(readiness.items.some((i) => i.id === "profile" && i.status === "blocking")).toBe(true);
   });
 
-  it("builds C100/C170/C190 and serializes with hash", async () => {
+  it("builds C100/C190 (sem C170 para NF-e com chave) e serializa com hash", async () => {
     const ctx = baseCtx();
     const build = await efdIcmsIpiPlugin.build(ctx);
     const types = build.records.map((r) => r.type);
     expect(types).toContain("0000");
     expect(types).toContain("C100");
-    expect(types).toContain("C170");
+    expect(types).not.toContain("C170");
     expect(types).toContain("C190");
     expect(types).toContain("9999");
     const validation = await efdIcmsIpiPlugin.validate(build, ctx);
     expect(validation.level).toBe(1);
     const ser = await efdIcmsIpiPlugin.serialize(build, ctx);
     expect(ser.content).toContain("|C100|");
+    expect(ser.content).not.toContain("|C170|");
     expect(ser.contentHash).toHaveLength(64);
     expect(ser.content.endsWith("\r\n")).toBe(true);
     const manifest = await efdIcmsIpiPlugin.createManifest(build, ser, ctx, validation);
