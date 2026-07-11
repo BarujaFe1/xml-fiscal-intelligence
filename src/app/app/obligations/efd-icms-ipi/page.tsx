@@ -8,6 +8,12 @@ import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EfdDiagnosticBanner } from "@/components/feedback/honesty-banners";
 import { idbGetBatchStore, idbListBatches } from "@/lib/store/idb-store";
+import {
+  buildComplementaryCsv,
+  parseComplementaryCsv,
+  validateComplementaryPreview,
+  type ComplementaryKind,
+} from "@/modules/obligations/efd-icms-ipi/complementary";
 import type { Batch, BatchStore } from "@/types";
 
 export default function ObligationsEfdPage() {
@@ -29,6 +35,9 @@ export default function ObligationsEfdPage() {
   const [pvaReport, setPvaReport] = useState("");
   const [pvaBusy, setPvaBusy] = useState(false);
   const [pvaRecord, setPvaRecord] = useState<Record<string, unknown> | null>(null);
+  const [compKind, setCompKind] = useState<ComplementaryKind>("accountant");
+  const [compPreview, setCompPreview] = useState("");
+  const [compMsg, setCompMsg] = useState("");
 
   const [form, setForm] = useState({
     cnpj: "",
@@ -342,6 +351,72 @@ export default function ObligationsEfdPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados complementares (CSV)</CardTitle>
+          <CardDescription>
+            Templates para contabilista, saldo anterior, ajustes e inventário. Valores nunca são
+            inventados a partir do XML.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="space-y-1">
+              <Label>Tipo</Label>
+              <select
+                className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                value={compKind}
+                onChange={(e) => setCompKind(e.target.value as ComplementaryKind)}
+              >
+                <option value="accountant">Contabilista</option>
+                <option value="opening_balance">Saldo anterior</option>
+                <option value="adjustments">Ajustes</option>
+                <option value="inventory">Inventário</option>
+              </select>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                const csv = buildComplementaryCsv(compKind);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `efd-complementar-${compKind}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Baixar template
+            </Button>
+          </div>
+          <textarea
+            className="min-h-28 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs font-mono"
+            placeholder="Cole CSV com cabeçalho separado por ;"
+            value={compPreview}
+            onChange={(e) => setCompPreview(e.target.value)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const parsed = parseComplementaryCsv(compPreview);
+              const v = validateComplementaryPreview(compKind, parsed.headers);
+              setCompMsg(
+                v.ok
+                  ? `${v.messages[0]} · ${parsed.rows.length} linha(s)`
+                  : v.messages.join("; "),
+              );
+              toast[v.ok ? "success" : "error"](v.ok ? "Preview OK" : "CSV inválido");
+            }}
+          >
+            Validar preview
+          </Button>
+          {compMsg && <p className="text-xs text-slate-400">{compMsg}</p>}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
