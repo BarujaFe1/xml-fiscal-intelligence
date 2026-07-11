@@ -209,6 +209,7 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
       const code = participantCode(party.doc);
       if (!code || map.has(code)) continue;
       const docs = partyDocFields(party.doc);
+      // 0150: REG COD_PART NOME COD_PAIS CNPJ CPF IE COD_MUN SUFRAMA END NUM COMPL BAIRRO (13)
       map.set(code, {
         type: "0150",
         fields: [
@@ -220,11 +221,11 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
           docs.cpf,
           onlyDigits(party.ie),
           party.mun || "",
-          "",
-          "",
-          "",
-          "",
-          "",
+          "", // SUFRAMA
+          "", // END
+          "", // NUM
+          "", // COMPL
+          "", // BAIRRO
         ],
         lineage: [
           {
@@ -249,21 +250,23 @@ function build0200(ctx: ObligationContext): ObligationRecord[] {
     for (const item of d.items) {
       const code = item.code || `ITEM${item.itemNumber}`;
       if (map.has(code)) continue;
+      // 0200: … ALIQ_ICMS CEST (13 campos desde 2017)
       map.set(code, {
         type: "0200",
         fields: [
           "0200",
           code,
           item.description || "",
-          "",
+          "", // COD_BARRA
+          "", // COD_ANT_ITEM (não preencher — usar 0205)
           item.unit || "",
-          "00", // TIPO_ITEM placeholder — MUST be reviewed; 00=mercadoria for revenda is common but not presumed forever
+          "00", // TIPO_ITEM — revisar com contador
           item.ncm || "",
-          "",
-          "",
-          "",
-          "",
-          "",
+          "", // EX_IPI
+          "", // COD_GEN
+          "", // COD_LST
+          "", // ALIQ_ICMS
+          "", // CEST
         ],
         lineage: [
           {
@@ -281,6 +284,13 @@ function build0200(ctx: ObligationContext): ObligationRecord[] {
     }
   }
   return [...map.values()];
+}
+
+/** CST/CSOSN ICMS no C170/C190: N 003* */
+function cstIcms3(item: ObligationContext["documents"][0]["items"][0]): string {
+  const raw = onlyDigits(item.tax.icms.cst || item.tax.icms.csosn || "");
+  if (!raw) return "";
+  return raw.padStart(3, "0").slice(-3);
 }
 
 function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
@@ -306,11 +316,11 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
         dateEfd(d.issueDate),
         dateEfd(d.issueDate),
         moneyToEfd(d.totalValue || "0"),
-        "0", // IND_PGTO unknown — empty/0; do not invent
+        "0", // IND_PGTO
         moneyToEfd(d.discountValue || tot.vDesc || "0"),
-        "0",
+        "0", // VL_ABAT_NT
         moneyToEfd(d.productsValue || tot.vProd || "0"),
-        "9", // IND_FRT unknown default 9=sem frete when not provided — flagged in warnings
+        "9", // IND_FRT
         moneyToEfd(d.freightValue || tot.vFrete || "0"),
         moneyToEfd(tot.vSeg || "0"),
         moneyToEfd(tot.vOutro || "0"),
@@ -321,8 +331,8 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
         moneyToEfd(tot.vIPI || "0"),
         moneyToEfd(tot.vPIS || "0"),
         moneyToEfd(tot.vCOFINS || "0"),
-        "0",
-        "0",
+        "0", // VL_PIS_ST
+        "0", // VL_COFINS_ST
       ],
       lineage: [
         {
@@ -338,12 +348,16 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       children: [],
     };
 
-    const c190Map = new Map<string, { cst: string; cfop: string; aliq: string; vlOpr: string; vlBc: string; vlIcms: string; vlIpi: string }>();
+    const c190Map = new Map<
+      string,
+      { cst: string; cfop: string; aliq: string; vlOpr: string; vlBc: string; vlIcms: string; vlIpi: string }
+    >();
 
     for (const item of d.items) {
-      const cst = item.tax.icms.cst || item.tax.icms.csosn || "";
-      const cfop = item.cfop || "";
+      const cst = cstIcms3(item);
+      const cfop = onlyDigits(item.cfop || "").slice(0, 4);
       const aliq = moneyToFixed(item.tax.icms.pIcms);
+      // C170 — 38 campos (Guia Prático; campo 38 VL_ABAT_NT desde 2019)
       const c170: ObligationRecord = {
         type: "C170",
         fields: [
@@ -351,37 +365,40 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
           String(item.itemNumber),
           item.code || "",
           item.description || "",
-          moneyToEfd(item.quantity || "0", 4),
+          moneyToEfd(item.quantity || "0", 5),
           item.unit || "",
           moneyToEfd(item.totalValue || "0"),
           moneyToEfd(item.discountValue || "0"),
-          "0",
+          "0", // IND_MOV
           cst,
           cfop,
-          "",
+          "", // COD_NAT
           moneyToEfd(item.tax.icms.vBc),
           moneyToEfd(item.tax.icms.pIcms),
           moneyToEfd(item.tax.icms.vIcms),
           moneyToEfd(item.tax.icms.vBcSt),
-          "0",
+          "0", // ALIQ_ST
           moneyToEfd(item.tax.icms.vIcmsSt),
-          "0",
+          "0", // IND_APUR
           item.tax.ipi.cst || "",
-          "",
+          "", // COD_ENQ
           moneyToEfd(item.tax.ipi.vBc),
           moneyToEfd(item.tax.ipi.pIpi),
           moneyToEfd(item.tax.ipi.vIpi),
           item.tax.pis.cst || "",
           moneyToEfd(item.tax.pis.vBc),
-          moneyToEfd(item.tax.pis.pAliq),
-          "",
+          moneyToEfd(item.tax.pis.pAliq, 4),
+          "", // QUANT_BC_PIS
+          "", // ALIQ_PIS em R$
           moneyToEfd(item.tax.pis.vValor),
           item.tax.cofins.cst || "",
           moneyToEfd(item.tax.cofins.vBc),
-          moneyToEfd(item.tax.cofins.pAliq),
-          "",
+          moneyToEfd(item.tax.cofins.pAliq, 4),
+          "", // QUANT_BC_COFINS
+          "", // ALIQ_COFINS em R$
           moneyToEfd(item.tax.cofins.vValor),
-          "",
+          "", // COD_CTA
+          "0", // VL_ABAT_NT
         ],
         lineage: [
           {
@@ -415,6 +432,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
     }
 
     for (const agg of c190Map.values()) {
+      // C190: 11 campos
       c100.children!.push({
         type: "C190",
         fields: [
@@ -478,22 +496,24 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   const bloco0: ObligationRecord[] = [build0000(context), { type: "0001", fields: ["0001", "0"] }];
 
   if (context.accountantName && context.accountantCpf) {
+    // 0100: REG NOME CPF CRC CNPJ CEP END NUM COMPL BAIRRO FONE FAX EMAIL COD_MUN (14)
     bloco0.push({
       type: "0100",
       fields: [
         "0100",
         context.accountantName,
         onlyDigits(context.accountantCpf),
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
+        "", // CRC
+        "", // CNPJ escritório
+        "", // CEP
+        "", // END
+        "", // NUM
+        "", // COMPL
+        "", // BAIRRO
+        "", // FONE
+        "", // FAX
+        "", // EMAIL
+        "", // COD_MUN
       ],
     });
   }
