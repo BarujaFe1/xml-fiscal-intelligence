@@ -6,6 +6,7 @@ import { BatchTabs } from "@/components/batches/batch-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBatchStore } from "@/lib/store/use-batch-store";
+import { explainConfidence } from "@/modules/reconciliation";
 
 export default function BatchRelationshipsPage() {
   const params = useParams<{ id: string }>();
@@ -59,8 +60,13 @@ export default function BatchRelationshipsPage() {
                 </CardDescription>
               </CardHeader>
               {r.evidence && (
-                <CardContent className="text-xs text-slate-500 font-mono">
-                  {JSON.stringify(r.evidence)}
+                <CardContent className="text-xs text-slate-400 space-y-1">
+                  <p className="font-medium text-slate-300">Cálculo da confiança</p>
+                  <ul className="list-disc pl-4">
+                    {explainConfidence(r.evidence).map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
                 </CardContent>
               )}
             </Card>

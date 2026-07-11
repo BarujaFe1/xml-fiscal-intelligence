@@ -18,6 +18,8 @@ import {
 } from "@/lib/analytics";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useBatchStore } from "@/lib/store/use-batch-store";
+import { VirtualList } from "@/components/data-table/virtual-list";
+import type { DocumentSummary } from "@/types";
 
 export default function DocumentsPage() {
   const params = useParams<{ id: string }>();
@@ -210,69 +212,57 @@ export default function DocumentsPage() {
             </div>
           )}
 
-          <div className="overflow-x-auto max-h-[70vh] rounded-xl border border-white/5">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-slate-950/95 backdrop-blur">
-                <tr className="text-left text-slate-500 border-b border-white/10">
-                  <th className="py-2 px-2 sticky left-0 bg-slate-950/95">Tipo</th>
-                  <th className="py-2 px-2">Número</th>
-                  <th className="py-2 px-2">Emissão</th>
-                  <th className="py-2 px-2">Emitente</th>
-                  <th className="py-2 px-2">Destinatário</th>
-                  <th className="py-2 px-2 text-right">Valor</th>
-                  <th className="py-2 px-2">Parse</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.slice(0, 500).map((d) => (
-                  <tr
-                    key={d.id}
-                    className="border-b border-white/5 hover:bg-white/[0.03] transition-colors"
-                  >
-                    <td className="py-2 px-2 sticky left-0 bg-slate-950/80">
-                      <Badge tone={typeTone(d.documentType)}>{d.documentType}</Badge>
-                    </td>
-                    <td className="py-2 px-2">
-                      <Link
-                        className="text-sky-300 hover:underline font-medium"
-                        href={`/app/batches/${params.id}/documents/${d.id}`}
-                      >
-                        {d.number || d.fileName}
-                      </Link>
-                    </td>
-                    <td className="py-2 px-2 text-slate-400 whitespace-nowrap">
-                      {formatDate(d.issueDate)}
-                    </td>
-                    <td className="py-2 px-2 max-w-[200px] truncate">{d.emitterName || "—"}</td>
-                    <td className="py-2 px-2 max-w-[200px] truncate">{d.receiverName || "—"}</td>
-                    <td className="py-2 px-2 text-right tabular-nums">
-                      {formatCurrency(d.totalValue)}
-                    </td>
-                    <td className="py-2 px-2 text-slate-400">{d.parseStatus}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {rows.length > 500 && (
-              <div className="p-3 text-xs text-slate-500">
-                Mostrando 500 de {rows.length}. Refine os filtros.
-              </div>
-            )}
-            {rows.length === 0 && (
-              <div className="p-10 text-center text-slate-400">
-                Nenhum documento com esses filtros.
-                <div className="mt-2">
-                  <button
-                    className="text-sky-300 hover:underline"
-                    onClick={() => {
-                      router.replace(`/app/batches/${params.id}/documents`);
-                    }}
-                  >
-                    Limpar e ver todos
-                  </button>
+          <div className="rounded-xl border border-white/5">
+            <div className="sticky top-0 z-10 grid grid-cols-7 gap-2 border-b border-white/10 bg-slate-950/95 px-2 py-2 text-left text-xs text-slate-500 backdrop-blur">
+              <span>Tipo</span>
+              <span>Número</span>
+              <span>Emissão</span>
+              <span>Emitente</span>
+              <span>Destinatário</span>
+              <span className="text-right">Valor</span>
+              <span>Parse</span>
+            </div>
+            <VirtualList
+              items={rows}
+              estimateSize={48}
+              height={560}
+              empty={
+                <div className="p-10 text-center text-slate-400">
+                  Nenhum documento com esses filtros.
+                  <div className="mt-2">
+                    <button
+                      className="text-sky-300 hover:underline"
+                      onClick={() => {
+                        router.replace(`/app/batches/${params.id}/documents`);
+                      }}
+                    >
+                      Limpar e ver todos
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              }
+              renderRow={(d: DocumentSummary) => (
+                <div className="grid grid-cols-7 gap-2 border-b border-white/5 px-2 py-2 text-sm hover:bg-white/[0.03]">
+                  <span>
+                    <Badge tone={typeTone(d.documentType)}>{d.documentType}</Badge>
+                  </span>
+                  <Link
+                    className="truncate text-sky-300 hover:underline font-medium"
+                    href={`/app/batches/${params.id}/documents/${d.id}`}
+                  >
+                    {d.number || d.fileName}
+                  </Link>
+                  <span className="text-slate-400 whitespace-nowrap">{formatDate(d.issueDate)}</span>
+                  <span className="truncate">{d.emitterName || "—"}</span>
+                  <span className="truncate">{d.receiverName || "—"}</span>
+                  <span className="text-right tabular-nums">{formatCurrency(d.totalValue)}</span>
+                  <span className="text-slate-400">{d.parseStatus}</span>
+                </div>
+              )}
+            />
+            <div className="p-2 text-xs text-slate-500">
+              {rows.length.toLocaleString("pt-BR")} linha(s) · virtualização ativa
+            </div>
           </div>
         </CardContent>
       </Card>
