@@ -94,7 +94,14 @@ export default function BatchDashboardPage() {
                 ? evaluationStatusLabel(batch.quality?.evaluationStatus)
                 : `Índice de saúde ${formatHealthScore(batch.healthScore)}`}
             </Badge>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <Link
+                href={`/app/batches/${batch.id}/quality`}
+                className="inline-flex items-center gap-1 rounded-lg border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-xs text-sky-100 hover:bg-sky-500/20"
+              >
+                Analisar / reprocessar lote
+                <ArrowRight className="h-3 w-3" />
+              </Link>
               <Link
                 href={`/app/batches/${batch.id}/parties`}
                 className="text-xs text-slate-400 hover:text-sky-300"

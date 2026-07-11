@@ -7,17 +7,29 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BatchTabs } from "@/components/batches/batch-tabs";
 import { evaluationStatusLabel, formatHealthScore } from "@/lib/quality";
+import { reprocessAnalysis } from "@/lib/analysis/reprocess";
 import { alertHref } from "@/lib/analytics";
 import { useBatchStore } from "@/lib/store/use-batch-store";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function QualityPage() {
   const params = useParams<{ id: string }>();
-  const { store } = useBatchStore(params.id);
+  const { store, setStore } = useBatchStore(params.id);
 
   if (!store) return <div className="skeleton h-64 rounded-2xl" />;
   const q = store.batch.quality;
   const scoreLabel = formatHealthScore(store.batch.healthScore);
   const statusLabel = evaluationStatusLabel(q?.evaluationStatus);
+
+  async function onReprocess() {
+    if (!store) return;
+    const next = reprocessAnalysis(store, "Reprocessamento manual na tela de qualidade");
+    setStore(next);
+    const { idbSaveBatchStore } = await import("@/lib/store/idb-store");
+    await idbSaveBatchStore(next);
+    toast.success("Análise reprocessada (nova geração imutável)");
+  }
 
   return (
     <div className="space-y-6">
@@ -28,6 +40,16 @@ export default function QualityPage() {
         </h1>
       </div>
       <BatchTabs batchId={params.id} />
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="secondary" onClick={() => void onReprocess()}>
+          Reprocessar análise (nova geração)
+        </Button>
+        {(store.reusedDocuments?.length || 0) > 0 && (
+          <span className="text-xs text-slate-500 self-center">
+            {store.reusedDocuments!.length} documentos reutilizados por hash neste import
+          </span>
+        )}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="md:col-span-1 overflow-hidden">
@@ -169,6 +191,48 @@ export default function QualityPage() {
           </CardContent>
         </Card>
       </div>
+
+      {(store.reusedDocuments?.length || 0) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Documentos reutilizados (incremental)</CardTitle>
+            <CardDescription>
+              Linhagem local por hash — IDs canônicos só quando o lote anterior existe neste navegador
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="text-slate-500">
+                <tr>
+                  <th className="py-1 pr-3">Arquivo</th>
+                  <th className="py-1 pr-3">Motivo</th>
+                  <th className="py-1 pr-3">Doc canônico</th>
+                  <th className="py-1">Lote canônico</th>
+                </tr>
+              </thead>
+              <tbody>
+                {store.reusedDocuments!.slice(0, 100).map((r, i) => (
+                  <tr key={`${r.sourceFileHash}-${i}`} className="border-t border-white/5">
+                    <td className="py-1.5 pr-3 font-mono">{r.sourceFileName}</td>
+                    <td className="py-1.5 pr-3">{r.reason}</td>
+                    <td className="py-1.5 pr-3 font-mono text-slate-400">
+                      {r.canonicalDocumentId?.slice(0, 8) || "—"}
+                    </td>
+                    <td className="py-1.5 font-mono text-slate-400">
+                      {r.canonicalBatchId?.slice(0, 8) || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {(store.reusedDocuments!.length > 100) && (
+              <p className="mt-2 text-[10px] text-slate-600">
+                Mostrando 100 de {store.reusedDocuments!.length}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
