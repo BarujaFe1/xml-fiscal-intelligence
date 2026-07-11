@@ -9,11 +9,12 @@
 | DATA-002 | Incremental sem linhagem de reutilizados | Relato | skip só em importLogs; sem ReusedDocumentReference | `confirmed` | pending | — | — |
 | DATA-003 | Métricas 0/0 confundem | Relato | mesmo root cause DATA-001 | `verified` | coberto com DATA-001 | quality-score | TBD |
 | DATA-004 | Logs exportam IDs completos | Relato | revisar export de logs | `pending` | — | — | — |
-| EXPORT-001 | JSON vazio não autodescritivo | Relato | auditar exporters | `pending` | — | — | — |
-| EXPORT-002 | CSV só cabeçalho | Relato | auditar | `pending` | — | — | — |
-| EXPORT-003 | XLSX “Sem dados” | Relato | auditar | `pending` | — | — | — |
-| EXPORT-004 | Falta manifesto transversal | Relato | não existe GenerationManifest | `confirmed` | pending | — | — |
-| EXPORT-005 | HTML impressão | Relato | auditar | `pending` | — | — | — |
+| EXPORT-001 | JSON vazio não autodescritivo | Relato | bare store JSON | `implemented` | ExportEnvelope + emptyReason | export-manifest.test | TBD |
+| EXPORT-002 | CSV só cabeçalho | Relato | headers only | `implemented` | BOM + meta comments | export-manifest.test | TBD |
+| EXPORT-003 | XLSX “Sem dados” | Relato | addSheet Sem dados | `implemented` | empty meta row | — | TBD |
+| EXPORT-004 | Falta manifesto transversal | Relato | — | `implemented` | GenerationManifest | export-manifest.test | TBD |
+| EXPORT-005 | HTML impressão | Relato | — | `implemented` | viewport + @media print | — | TBD |
+| SEC-002 | Headers segurança | next.config | missing | `implemented` | CSP/HSTS/etc in next.config.ts | build | TBD |
 | FISCAL-001 | Sem protocolo / ruído | Código: collapse ≥60% | partial fix já em master | `partially_confirmed` | elegibilidade isProtocolRequired | TBD | — |
 | FISCAL-002 | EFD = diagnóstico | Código + UI banners | confirmado | `already_fixed` | banners honestos | e2e smoke | prior |
 | PARSER-001 | NFS-e matriz | Relato | capability registry ausente | `confirmed` | pending | — | — |

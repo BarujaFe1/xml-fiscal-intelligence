@@ -1,11 +1,36 @@
 import ExcelJS from "exceljs";
 import type { BatchStore } from "@/types";
 import { sanitizeSpreadsheetCell, sanitizeSpreadsheetRow } from "@/lib/export/sanitize";
+import {
+  buildGenerationManifest,
+  emptyReasonForStore,
+  wrapExportEnvelope,
+} from "@/lib/export/manifest";
 
-function addSheet(wb: ExcelJS.Workbook, name: string, rows: Record<string, unknown>[]) {
+function addSheet(
+  wb: ExcelJS.Workbook,
+  name: string,
+  rows: Record<string, unknown>[],
+  emptyMeta?: Record<string, unknown>,
+) {
   const sheet = wb.addWorksheet(name.slice(0, 31));
   if (!rows.length) {
-    sheet.addRow(["Sem dados"]);
+    const meta = {
+      titulo: name,
+      situacao: "sem_linhas",
+      motivo: emptyMeta?.emptyReason || "no_records_in_selection",
+      gerado_em: new Date().toISOString(),
+      disclaimer:
+        "Planilha sem linhas de dados. Isto não é apuração, SPED válido nem conformidade fiscal.",
+      ...emptyMeta,
+    };
+    sheet.columns = Object.keys(meta).map((key) => ({
+      header: key,
+      key,
+      width: Math.min(48, Math.max(14, key.length + 2)),
+    }));
+    sheet.addRow(sanitizeSpreadsheetRow(meta));
+    sheet.getRow(1).font = { bold: true };
     return sheet;
   }
   const safeRows = rows.map((r) => sanitizeSpreadsheetRow(r));
@@ -18,6 +43,7 @@ function addSheet(wb: ExcelJS.Workbook, name: string, rows: Record<string, unkno
   sheet.columns = columns.map((key) => ({ header: key, key, width: Math.min(40, Math.max(12, key.length + 2)) }));
   for (const row of safeRows) sheet.addRow(row);
   sheet.getRow(1).font = { bold: true };
+  sheet.views = [{ state: "frozen", ySplit: 1 }];
   return sheet;
 }
 
@@ -28,6 +54,35 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
 
   const { batch, documents, items, fields, errors } = store;
   const quality = batch.quality;
+  const emptyReason = emptyReasonForStore(store);
+  const manifest = buildGenerationManifest({
+    workspaceId: batch.workspaceId,
+    batchIds: [batch.id],
+    recordCounts: {
+      documents: documents.length,
+      items: items.length,
+      fields: fields.length,
+      errors: errors.length,
+    },
+    emptyReason,
+    fiscalPeriod:
+      batch.month && batch.year ? `${String(batch.month).padStart(2, "0")}/${batch.year}` : undefined,
+    companyId: batch.cnpjLabel,
+  });
+
+  addSheet(wb, "Manifesto", [
+    {
+      generation_id: manifest.generationId,
+      schema_version: manifest.schemaVersion,
+      gerado_em: manifest.generatedAt,
+      commit: manifest.buildCommit,
+      workspace_id: manifest.workspaceId,
+      empty_reason: manifest.emptyReason || "",
+      disclaimer: manifest.disclaimer,
+      evaluation_status: quality?.evaluationStatus || "",
+      formula_version: quality?.formulaVersion || "",
+    },
+  ]);
 
   addSheet(wb, "Resumo", [
     {
@@ -185,6 +240,7 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
 }
 
 export function buildDocumentsCsv(store: BatchStore): string {
+  const emptyReason = emptyReasonForStore(store);
   const headers = [
     "id",
     "tipo",
@@ -201,7 +257,17 @@ export function buildDocumentsCsv(store: BatchStore): string {
     "status",
     "protocolo",
   ];
-  const lines = [headers.join(",")];
+  const meta = [
+    `# generation_manifest`,
+    `# empty_reason=${emptyReason || ""}`,
+    `# documents=${store.documents.length}`,
+    `# disclaimer=Exportacao analitica interna — nao e apuracao oficial`,
+  ];
+  const lines = [...meta, headers.join(",")];
+  if (!store.documents.length) {
+    lines.push(`# empty=${emptyReason || "no_documents_in_batch"}`);
+    return `\uFEFF${lines.join("\n")}`;
+  }
   for (const d of store.documents) {
     const row = [
       d.id,
@@ -221,10 +287,11 @@ export function buildDocumentsCsv(store: BatchStore): string {
     ].map((v) => `"${sanitizeSpreadsheetCell(v).replace(/"/g, '""')}"`);
     lines.push(row.join(","));
   }
-  return lines.join("\n");
+  return `\uFEFF${lines.join("\n")}`;
 }
 
 export function buildItemsCsv(store: BatchStore): string {
+  const emptyReason = emptyReasonForStore(store);
   const headers = [
     "document_id",
     "tipo",
@@ -238,7 +305,15 @@ export function buildItemsCsv(store: BatchStore): string {
     "valor_unit",
     "valor_total",
   ];
-  const lines = [headers.join(",")];
+  const lines = [
+    `# empty_reason=${emptyReason || ""}`,
+    `# items=${store.items.length}`,
+    headers.join(","),
+  ];
+  if (!store.items.length) {
+    lines.push(`# empty=${emptyReason || "no_items_in_batch"}`);
+    return `\uFEFF${lines.join("\n")}`;
+  }
   for (const i of store.items) {
     const row = [
       i.documentId,
@@ -255,16 +330,50 @@ export function buildItemsCsv(store: BatchStore): string {
     ].map((v) => `"${sanitizeSpreadsheetCell(v).replace(/"/g, '""')}"`);
     lines.push(row.join(","));
   }
-  return lines.join("\n");
+  return `\uFEFF${lines.join("\n")}`;
+}
+
+export function buildBatchJsonEnvelope(store: BatchStore) {
+  const emptyReason = emptyReasonForStore(store);
+  const manifest = buildGenerationManifest({
+    workspaceId: store.batch.workspaceId,
+    batchIds: [store.batch.id],
+    recordCounts: {
+      documents: store.documents.length,
+      items: store.items.length,
+      errors: store.errors.length,
+    },
+    emptyReason,
+  });
+  return wrapExportEnvelope(
+    {
+      batch: store.batch,
+      documents: store.documents,
+      items: store.items,
+      errors: store.errors,
+      findings: store.findings,
+      relationships: store.relationships,
+    },
+    manifest,
+    emptyReason,
+  );
 }
 
 export function buildHtmlReport(store: BatchStore): string {
   const { batch, documents } = store;
   const q = batch.quality;
+  const emptyReason = emptyReasonForStore(store);
+  const manifest = buildGenerationManifest({
+    workspaceId: batch.workspaceId,
+    batchIds: [batch.id],
+    recordCounts: { documents: documents.length },
+    emptyReason,
+  });
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Relatório — ${batch.name}</title>
 <style>
 body{font-family:ui-sans-serif,system-ui,sans-serif;background:#0b1220;color:#e8eefc;padding:32px;line-height:1.5}
@@ -276,37 +385,62 @@ h1{font-size:28px;margin:0 0 8px}
 .metric b{display:block;font-size:22px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid #24314d;padding:8px;text-align:left}
+caption{text-align:left;font-weight:600;margin-bottom:8px}
+footer{margin-top:24px;font-size:12px;color:#93a4c3}
+@media print{
+  body{background:#fff;color:#111;padding:12mm}
+  .card,.metric{background:#fff;border-color:#ccc;color:#111}
+  .muted,footer{color:#444}
+  table{page-break-inside:auto}
+  tr{page-break-inside:avoid;page-break-after:auto}
+  thead{display:table-header-group}
+}
 </style>
 </head>
 <body>
+<header>
 <h1>XML Fiscal Intelligence</h1>
-<p class="muted">Relatório do lote ${batch.name} · Índice ${batch.healthScore ?? "não avaliado"}</p>
-<div class="grid">
+<p class="muted">Relatório do lote ${batch.name} · Índice ${batch.healthScore ?? "não avaliado"} · ${q?.evaluationStatus || ""}</p>
+</header>
+<section class="grid" aria-label="Métricas do lote">
 <div class="metric"><span class="muted">XMLs</span><b>${batch.totalXml}</b></div>
 <div class="metric"><span class="muted">Válidos</span><b>${batch.validXml}</b></div>
 <div class="metric"><span class="muted">NF-e</span><b>${batch.nfeCount}</b></div>
 <div class="metric"><span class="muted">CT-e</span><b>${batch.cteCount}</b></div>
 <div class="metric"><span class="muted">NFS-e</span><b>${batch.nfseCount}</b></div>
 <div class="metric"><span class="muted">Valor</span><b>${batch.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</b></div>
-</div>
-<div class="card">
+</section>
+<section class="card">
+<h2>Manifesto</h2>
+<p class="muted">generationId=${manifest.generationId} · ${manifest.generatedAt}</p>
+<p>${manifest.disclaimer}</p>
+${emptyReason ? `<p><strong>Motivo vazio:</strong> ${emptyReason}</p>` : ""}
+</section>
+<section class="card">
 <h2>Alertas</h2>
 <ul>${(q?.warnings || []).map((w) => `<li>${w.message}</li>`).join("") || "<li>Nenhum alerta</li>"}</ul>
-</div>
-<div class="card">
-<h2>Documentos</h2>
+</section>
+<section class="card">
 <table>
-<thead><tr><th>Tipo</th><th>Número</th><th>Emitente</th><th>Valor</th><th>Status</th></tr></thead>
+<caption>Documentos (até 200)</caption>
+<thead><tr><th scope="col">Tipo</th><th scope="col">Número</th><th scope="col">Emitente</th><th scope="col">Valor</th><th scope="col">Status</th></tr></thead>
 <tbody>
-${documents
-  .slice(0, 200)
-  .map(
-    (d) =>
-      `<tr><td>${d.documentType}</td><td>${d.number || "—"}</td><td>${d.emitterName || "—"}</td><td>${d.totalValue ?? "—"}</td><td>${d.parseStatus}</td></tr>`,
-  )
-  .join("")}
+${
+  documents.length
+    ? documents
+        .slice(0, 200)
+        .map(
+          (d) =>
+            `<tr><td>${d.documentType}</td><td>${d.number || "—"}</td><td>${d.emitterName || "—"}</td><td>${d.totalValue ?? "—"}</td><td>${d.parseStatus}</td></tr>`,
+        )
+        .join("")
+    : `<tr><td colspan="5">Sem documentos — ${emptyReason || "no_documents_in_batch"}</td></tr>`
+}
 </tbody>
 </table>
-</div>
+</section>
+<footer>
+Versão app ${manifest.appVersion} · commit ${manifest.buildCommit} · geração ${manifest.generationId}
+</footer>
 </body></html>`;
 }
