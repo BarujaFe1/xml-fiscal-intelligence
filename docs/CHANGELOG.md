@@ -16,6 +16,15 @@
 - Honesty banners (local persistence, EFD diagnostic).
 - Feature flags and billing/AI demonstration states.
 - Landing honesty messaging + dashboard onboarding checklist.
+- IndexedDB → cloud migrate wizard (`/app/migrate`) with safe 503.
+- PVA level-3 registration API + UI.
+- Usage counters + billing checkout/subscription routes.
+- LGPD / retention / incident / backup / PVA / billing docs.
+- Password recovery + `/auth/callback`.
+- Fiscal context selector (URL + preference).
+- Audit rule catalog + grouped triage workflow.
+- `/api/health` + `/api/ready` + observability facade.
+- CSV/XLSX formula injection sanitization.
 
 ### Security / honesty
 - Demo billing does not grant paid plans via redirect.
