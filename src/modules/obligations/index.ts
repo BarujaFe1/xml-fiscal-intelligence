@@ -16,3 +16,9 @@ export {
   type ObligationId,
 } from "@/modules/obligations/registry";
 export { runObligationPlugin } from "@/modules/obligations/core/pipe";
+export {
+  generateObligationLocal,
+  readJsonOrTextError,
+  type LocalEstablishmentInput,
+  type LocalGenerateResult,
+} from "@/modules/obligations/generate-local";
