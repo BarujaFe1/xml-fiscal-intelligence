@@ -1,25 +1,34 @@
-# Setup Supabase (manual unblock)
+# Setup Supabase
 
-A criação automática do projeto falhou:
+**Projeto live:** `xml-fiscal-intelligence`  
+**Ref:** `uaqydwvdmwrwlvznoztd`  
+**Org:** BarujaFe's 01 (`sjcktlyolwwbumgoktza`)  
+**Region:** `sa-east-1`  
+**URL:** https://uaqydwvdmwrwlvznoztd.supabase.co  
 
-> organization members have reached their maximum limits for the number of active free projects (2 project limit)
+## Applied migrations (MCP + repo)
 
-## O que você precisa fazer (2 minutos)
+`schema_core` → `schema_enterprise` → `saas_foundation` → `jobs_obligations` → `billing_entitlements_v2` → `official_sources_seed` → `regulatory_governance` → **`rls_remaining` (006)** → **`plan_seeds_and_profile_trigger` (007)** → **`security_advisor_fixes` (008)**
 
-1. Abra https://supabase.com/dashboard  
-2. Pause ou delete **1** projeto free antigo que não use  
-3. Avise no chat com “slot liberado” **ou** cole o Project Ref do projeto que quiser usar  
+## `.env.local` (gitignored)
 
-Depois disso eu aplico:
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / publishable
+- `SUPABASE_SERVICE_ROLE_KEY` / `DATABASE_URL`
+- `FEATURE_CLOUD_PROCESSING=true` + `NEXT_PUBLIC_FEATURE_CLOUD_PROCESSING=true`
+
+## Auth URL config (Dashboard)
+
+Authentication → URL Configuration:
+- Site URL: `http://localhost:3000`
+- Redirect URLs:  
+  `http://localhost:3000/auth/callback`  
+  `https://xml-fiscal-intelligence.vercel.app/auth/callback`
+
+Also enable **Leaked password protection** when ready:  
+https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+## Scripts
 
 ```bash
-npm run db:apply   # requer DATABASE_URL
+npm run db:apply   # reaplicar via DATABASE_URL (idempotent-ish)
 ```
-
-e preencho `.env.local` + env da Vercel com URL/anon key.
-
-## Já preparado no repo
-
-- `supabase/schema.sql` + `schema-enterprise.sql` + migrations `001`–`004` (inclui seed `official_sources`)
-- `npm run db:apply`
-- `npm run efd:sample` → TXT em `private-exports/` (gitignored)

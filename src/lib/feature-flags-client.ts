@@ -7,6 +7,6 @@ export function getFeatureFlags(): Record<string, boolean> {
     ai: process.env.NEXT_PUBLIC_ENABLE_AI === "true",
     billingReady: process.env.NEXT_PUBLIC_BILLING_READY === "true",
     localProcessing: true,
-    cloudProcessing: false,
+    cloudProcessing: process.env.NEXT_PUBLIC_FEATURE_CLOUD_PROCESSING === "true",
   };
 }

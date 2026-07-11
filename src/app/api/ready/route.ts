@@ -23,7 +23,7 @@ export async function GET() {
       requestId,
       checks,
       commercialReady: checks.supabaseConfigured && checks.billingLive,
-      note: "commercialReady=false is expected until Supabase + Stripe are configured.",
+      note: "commercialReady=false until Stripe is live (Supabase may already be configured).",
     },
     { headers: { "x-request-id": requestId } },
   );
