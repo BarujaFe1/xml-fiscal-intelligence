@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "perf:bench": "tsx --tsconfig tsconfig.json scripts/perf-benchmark.ts",
+    "vercel:sync-env": "node scripts/sync-vercel-env.mjs",
     "efd:sample": "tsx --tsconfig tsconfig.json scripts/generate-sample-efd.ts",
     "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts"
   },
@@ -42,6 +44,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/jszip": "^3.4.0",

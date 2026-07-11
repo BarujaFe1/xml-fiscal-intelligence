@@ -45,8 +45,9 @@ Do **not** treat these numbers as SEFAZ/PVA SLAs.
 
 | Date | Commit | Workload | Docs | T_total (s) | Notes |
 | ---- | ------ | -------- | ---- | ----------- | ----- |
-| — | — | W1 | — | — | pending |
-| — | — | W2 | — | — | pending |
+| 2026-07-11 | local | W-synth-100 | 100 | 0.157 | `npm run perf:bench -- 100` |
+| 2026-07-11 | local | W-synth-1000 | 1000 | 0.807 | `npm run perf:bench -- 1000` (~590KB zip) |
+| — | — | W2 real ZIP | — | — | pending real SIEG month |
 
 ## Guardrails already in code
 
