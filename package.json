@@ -14,6 +14,7 @@
     "perf:bench": "tsx --tsconfig tsconfig.json scripts/perf-benchmark.ts",
     "vercel:sync-env": "node scripts/sync-vercel-env.mjs",
     "efd:sample": "tsx --tsconfig tsconfig.json scripts/generate-sample-efd.ts",
+    "obligations:demo-samples": "tsx --tsconfig tsconfig.json scripts/generate-all-obligations-demo.ts",
     "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts"
   },
   "dependencies": {
