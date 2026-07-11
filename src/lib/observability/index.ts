@@ -3,6 +3,8 @@
  * Swap sink for Sentry/OTel later without changing call sites.
  */
 
+import { redactSensitiveText } from "@/lib/security/redaction";
+
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export type SafeLogEvent = {
@@ -43,11 +45,7 @@ export function createRequestId(): string {
 
 /** Redact common sensitive patterns from free-text messages. */
 export function sanitizeLogMessage(message: string): string {
-  return message
-    .replace(/\b\d{44}\b/g, "[CHAVE]")
-    .replace(/\b[0-9A-Z]{14}\b/gi, "[DOC]")
-    .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-    .slice(0, 500);
+  return redactSensitiveText(message);
 }
 
 export function logSafe(event: SafeLogEvent): void {

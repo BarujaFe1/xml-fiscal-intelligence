@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BatchTabs } from "@/components/batches/batch-tabs";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import {
+  buildBatchJsonEnvelope,
   buildBatchWorkbook,
   buildDocumentsCsv,
   buildHtmlReport,
@@ -212,7 +213,7 @@ async function exportPreset(store: BatchStore, preset: string) {
     return;
   }
   if (preset === "json") {
-    downloadBlob(new Blob([JSON.stringify(store, null, 2)], { type: "application/json" }), `lote-${id}.json`);
+    downloadBlob(new Blob([JSON.stringify(buildBatchJsonEnvelope(store), null, 2)], { type: "application/json" }), `lote-${id}.json`);
     return;
   }
   if (preset === "json-flat") {

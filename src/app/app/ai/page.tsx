@@ -12,6 +12,7 @@ import {
   type SafeAiResponse,
 } from "@/modules/ai/provider";
 import type { AiChatMessage } from "@/modules/ai";
+import { redactSensitiveText } from "@/lib/security/redaction";
 
 const AI_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AI === "true";
 
@@ -25,6 +26,8 @@ export default function AiPage() {
     "SELECT access_key, total_value FROM fiscal_documents WHERE protocol IS NULL LIMIT 50",
   );
   const demoMode = !AI_ENABLED;
+  const sqlPreview = redactSensitiveText(sqlDraft, { keepShortIds: true });
+  const sqlCheck = assertSafeSelectSql(sqlDraft);
 
   async function ask() {
     if (!question.trim()) return;
@@ -75,8 +78,6 @@ export default function AiPage() {
       setLoading(false);
     }
   }
-
-  const sqlCheck = assertSafeSelectSql(sqlDraft);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -164,7 +165,11 @@ export default function AiPage() {
             className="w-full min-h-24 rounded-xl border border-white/10 bg-slate-950 p-3 text-xs font-mono"
             value={sqlDraft}
             onChange={(e) => setSqlDraft(e.target.value)}
+            aria-label="Rascunho SQL"
           />
+          <p className="text-[10px] text-slate-500 font-mono break-all">
+            Prévia redigida (não altera o rascunho): {sqlPreview}
+          </p>
           <p className={`text-xs ${sqlCheck.ok ? "text-emerald-300" : "text-rose-300"}`}>
             {sqlCheck.ok ? "SELECT permitido" : sqlCheck.reason}
           </p>

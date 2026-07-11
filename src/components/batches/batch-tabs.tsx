@@ -10,7 +10,7 @@ const TABS = [
   { href: "/items", label: "Itens" },
   { href: "/parties", label: "Partes" },
   { href: "/fields", label: "Campos" },
-  { href: "/quality", label: "Quality" },
+  { href: "/quality", label: "Qualidade" },
   { href: "/audit", label: "Auditoria" },
   { href: "/relationships", label: "Relações" },
   { href: "/sped", label: "SPED" },

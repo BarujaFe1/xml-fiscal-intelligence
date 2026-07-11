@@ -14,6 +14,7 @@ export type ImportWorkerInbound =
       keepFields?: boolean;
       incremental?: boolean;
       knownHashes?: string[];
+      knownHashIndex?: Record<string, { documentId: string; batchId: string }>;
     }
   | { type: "cancel" };
 

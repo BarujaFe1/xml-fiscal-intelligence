@@ -38,13 +38,20 @@ export default function AppHomePage() {
 
   const totalDocs = batches.reduce((a, b) => a + b.validXml, 0);
   const totalValue = batches.reduce((a, b) => a + b.totalValue, 0);
-  const avgScore = batches.length
-    ? Math.round(batches.reduce((a, b) => a + b.healthScore, 0) / batches.length)
-    : 0;
+  const scored = batches.filter((b) => b.healthScore != null);
+  const avgScore = scored.length
+    ? Math.round(scored.reduce((a, b) => a + (b.healthScore as number), 0) / scored.length)
+    : null;
 
   const checklist: ChecklistItem[] = useMemo(() => {
     const hasBatch = batches.length > 0;
-    const hasAudit = batches.some((b) => (b.quality?.warnings?.length || 0) > 0 || b.healthScore < 100);
+    const hasAudit = batches.some(
+      (b) =>
+        (b.quality?.warnings?.length || 0) > 0 ||
+        (b.healthScore != null && b.healthScore < 100) ||
+        b.quality?.evaluationStatus === "duplicates_only" ||
+        b.quality?.evaluationStatus === "no_new_documents",
+    );
     return [
       {
         id: "demo",
@@ -104,7 +111,7 @@ export default function AppHomePage() {
           { label: "Lotes", value: batches.length, icon: FolderOpen },
           { label: "Documentos válidos", value: totalDocs, icon: FileStack },
           { label: "Valor consolidado", value: formatCurrency(totalValue), icon: Activity },
-          { label: "Score médio", value: avgScore || "—", icon: Activity },
+          { label: "Índice médio", value: avgScore == null ? "—" : avgScore, icon: Activity },
         ].map((m) => (
           <Card key={m.label}>
             <CardContent className="p-5">
@@ -145,7 +152,7 @@ export default function AppHomePage() {
                 <div>
                   <div className="font-medium text-slate-100">{b.name}</div>
                   <div className="text-xs text-slate-500">
-                    {formatDateTime(b.createdAt)} · {b.validXml} XMLs · score {b.healthScore}
+                    {formatDateTime(b.createdAt)} · {b.validXml} XMLs · índice {b.healthScore ?? "—"}
                   </div>
                 </div>
                 <Badge tone={b.status === "completed" ? "success" : b.status === "failed" ? "error" : "warning"}>

@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input, Label } from "@/components/ui/input";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import { runImportPipeline } from "@/lib/import/run-import-worker";
-import { idbCollectKnownHashes, idbSaveBatchStore } from "@/lib/store/idb-store";
+import { idbCollectKnownHashIndex, idbSaveBatchStore } from "@/lib/store/idb-store";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -70,10 +70,10 @@ export default function UploadPage() {
 
     try {
       const buffer = await file.arrayBuffer();
-      let knownHashes: Set<string> | undefined;
+      let knownHashIndex: Map<string, { documentId: string; batchId: string }> | undefined;
       if (incremental) {
         setProgressMessage("Carregando hashes de lotes anteriores…");
-        knownHashes = await idbCollectKnownHashes();
+        knownHashIndex = await idbCollectKnownHashIndex();
       }
 
       setProgressMessage("Processando (Web Worker quando disponível)…");
@@ -87,7 +87,7 @@ export default function UploadPage() {
         keepRawJson: false,
         keepFields: false,
         incremental,
-        knownHashes,
+        knownHashIndex,
         signal: ac.signal,
         onProgress: (pct, message) => {
           setProgress(Math.min(95, pct));
@@ -124,8 +124,8 @@ export default function UploadPage() {
       const skipped = store.batch.skippedDuplicateCount || 0;
       toast.success(
         skipped
-          ? `Lote: ${store.batch.newDocumentCount} novos · ${skipped} já conhecidos · score ${store.batch.healthScore}`
-          : `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · score ${store.batch.healthScore}`,
+          ? `Lote: ${store.batch.newDocumentCount} novos · ${skipped} já conhecidos · índice ${store.batch.healthScore ?? "não avaliado"}`
+          : `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · índice ${store.batch.healthScore ?? "não avaliado"}`,
       );
       router.push(`/app/batches/${store.batch.id}`);
     } catch (err) {

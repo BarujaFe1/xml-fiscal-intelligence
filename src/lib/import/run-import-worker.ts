@@ -2,12 +2,26 @@ import { processZipBatchInMemory, type ProcessZipMemoryInput } from "@/lib/store
 import type { BatchStore } from "@/types";
 import type { ImportWorkerInbound, ImportWorkerOutbound } from "@/lib/import/worker-messages";
 
-export interface RunImportOptions extends Omit<ProcessZipMemoryInput, "knownHashes" | "onProgress"> {
+export interface RunImportOptions extends Omit<
+  ProcessZipMemoryInput,
+  "knownHashes" | "knownHashIndex" | "onProgress"
+> {
   knownHashes?: Set<string> | string[];
+  knownHashIndex?:
+    | Map<string, { documentId: string; batchId: string }>
+    | Record<string, { documentId: string; batchId: string }>;
   onProgress?: (progress: number, message: string) => void;
   signal?: AbortSignal;
   /** Force main-thread processing (tests / unsupported browsers). */
   forceMainThread?: boolean;
+}
+
+function serializeHashIndex(
+  index: RunImportOptions["knownHashIndex"],
+): Record<string, { documentId: string; batchId: string }> | undefined {
+  if (!index) return undefined;
+  if (index instanceof Map) return Object.fromEntries(index);
+  return index;
 }
 
 /**
@@ -18,11 +32,13 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
   const knownHashes = Array.from(
     options.knownHashes instanceof Set ? options.knownHashes : options.knownHashes || [],
   );
+  const knownHashIndex = serializeHashIndex(options.knownHashIndex);
 
   if (options.forceMainThread || typeof Worker === "undefined" || typeof window === "undefined") {
     return processZipBatchInMemory({
       ...options,
       knownHashes,
+      knownHashIndex,
       onProgress: options.onProgress,
     });
   }
@@ -35,6 +51,7 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
       processZipBatchInMemory({
         ...options,
         knownHashes,
+        knownHashIndex,
         onProgress: options.onProgress,
       }).then(resolve, reject);
       return;
@@ -81,10 +98,10 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
 
     worker.onerror = (err) => {
       cleanup();
-      // Fallback to main thread if worker fails to load/bundle
       processZipBatchInMemory({
         ...options,
         knownHashes,
+        knownHashIndex,
         onProgress: options.onProgress,
       }).then(resolve, reject);
       void err;
@@ -111,6 +128,7 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
       keepFields: options.keepFields,
       incremental: options.incremental,
       knownHashes,
+      knownHashIndex,
     };
     worker.postMessage(start, [buffer]);
   });

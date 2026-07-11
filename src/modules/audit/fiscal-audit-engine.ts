@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { isValidCnpjOrCpfFormat } from "@/lib/security/hash";
 import { applyProtocolAnomalyPolicy } from "@/modules/audit/rule-anomaly";
+import { isProtocolRequired } from "@/modules/audit/protocol-eligibility";
 import type {
   AuditFinding,
   Batch,
@@ -107,18 +108,33 @@ export function runFiscalAudit(input: {
       );
     }
 
-    if ((d.documentType === "NFE" || d.documentType === "CTE") && !d.protocol) {
+    const protocolCheck = isProtocolRequired(d);
+    if (protocolCheck.required && !d.protocol) {
+      const severity =
+        protocolCheck.classification === "incomplete_origin"
+          ? "info"
+          : protocolCheck.classification === "error"
+            ? "error"
+            : "info";
       out.push(
         finding({
           workspaceId: ws,
           batchId,
           documentId: d.id,
-          severity: "info",
+          severity,
           category: "protocolo",
-          code: "NO_PROTOCOL",
-          title: "Sem protocolo de autorização",
-          description: `Documento ${d.number || d.fileName} sem nProt.`,
-          recommendation: "Confirme se o XML inclui protNFe/protCTe.",
+          code:
+            protocolCheck.classification === "incomplete_origin"
+              ? "NO_PROTOCOL_INCOMPLETE_ORIGIN"
+              : "NO_PROTOCOL",
+          title:
+            protocolCheck.classification === "incomplete_origin"
+              ? "Protocolo ausente — possível origem incompleta"
+              : "Sem protocolo de autorização",
+          description: `${protocolCheck.reason} Documento ${d.number || d.fileName} sem nProt.`,
+          recommendation: "Confirme se o XML inclui protNFe/protCTe ou se a origem exportou apenas o det sem envelope.",
+          ruleSource: { ruleSetVersion: "audit-core@0.2.0" },
+          evidence: { classification: protocolCheck.classification },
         }),
       );
     }

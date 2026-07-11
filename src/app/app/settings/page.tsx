@@ -6,6 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input, Label } from "@/components/ui/input";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import { FiscalContextSelector } from "@/components/layout/fiscal-context-selector";
+import { formatReleaseLabel, getReleaseInfo } from "@/lib/release";
+import { parserSupportSummary } from "@/lib/parser/capability-registry";
+import {
+  PARSER_RUNTIME_VERSION,
+  RULE_SET_RUNTIME_VERSION,
+  SCHEMA_RUNTIME_VERSION,
+} from "@/lib/analysis/generation";
+import { QUALITY_FORMULA_VERSION } from "@/lib/quality";
+import { EFD_ICMS_IPI_LAYOUT_2026 } from "@/modules/obligations/efd-icms-ipi/plugin";
 
 function readFlag(key: string, fallback = true) {
   if (typeof window === "undefined") return fallback;
@@ -56,6 +65,64 @@ export default function SettingsPage() {
             <span>Modo demo</span>
             <input type="checkbox" checked={demo} onChange={(e) => persistDemo(e.target.checked)} />
           </label>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Versão</CardTitle>
+          <CardDescription>Rastreabilidade de release</CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-300 space-y-2">
+          <p className="font-mono text-xs">{formatReleaseLabel(getReleaseInfo())}</p>
+          <p className="text-slate-500 text-xs">Canal: {getReleaseInfo().channel}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Governança regulatória (runtime)</CardTitle>
+          <CardDescription>
+            Constantes embutidas no build. Catálogo Postgres (`official_source_versions`) quando Supabase
+            estiver conectado.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs font-mono text-slate-400">
+          <div className="flex justify-between gap-3">
+            <span>parser</span>
+            <span className="text-slate-200">{PARSER_RUNTIME_VERSION}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span>rule_set</span>
+            <span className="text-slate-200">{RULE_SET_RUNTIME_VERSION}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span>schema</span>
+            <span className="text-slate-200">{SCHEMA_RUNTIME_VERSION}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span>quality_formula</span>
+            <span className="text-slate-200">{QUALITY_FORMULA_VERSION}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span>efd_icms_ipi_layout</span>
+            <span className="text-slate-200">{EFD_ICMS_IPI_LAYOUT_2026}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Suporte de parsers</CardTitle>
+          <CardDescription>Matriz declarada — não inventa cobertura</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {parserSupportSummary().map((p) => (
+            <div key={p.family} className="flex justify-between gap-3 border-b border-white/5 py-1">
+              <span>{p.family}</span>
+              <span className="text-slate-500 text-xs">{p.status}</span>
+            </div>
+          ))}
         </CardContent>
       </Card>
 

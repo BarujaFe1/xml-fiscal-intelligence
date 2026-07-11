@@ -11,7 +11,11 @@ import type {
   DocumentType,
   ImportLog,
   ParseError,
+  ReusedDocumentReference,
 } from "@/types";
+import { createAnalysisGeneration, PARSER_RUNTIME_VERSION } from "@/lib/analysis/generation";
+import { QUALITY_FORMULA_VERSION } from "@/lib/quality";
+import { redactMetadata, redactSensitiveText } from "@/lib/security/redaction";
 
 export interface ProcessZipMemoryInput {
   buffer: ArrayBuffer | Buffer;
@@ -29,6 +33,10 @@ export interface ProcessZipMemoryInput {
   incremental?: boolean;
   /** Known XML hashes from previous imports (workspace). */
   knownHashes?: Set<string> | string[];
+  /** Optional hash → canonical local doc/batch for reuse lineage. */
+  knownHashIndex?:
+    | Map<string, { documentId: string; batchId: string }>
+    | Record<string, { documentId: string; batchId: string }>;
   onProgress?: (progress: number, message: string) => Promise<void> | void;
 }
 
@@ -44,8 +52,8 @@ function log(
     batchId,
     level,
     step,
-    message,
-    metadata,
+    message: redactSensitiveText(message, { keepShortIds: true }),
+    metadata: redactMetadata(metadata),
     createdAt: new Date().toISOString(),
   };
 }
@@ -63,11 +71,18 @@ export async function processZipBatchInMemory(
   const keepRawJson = input.keepRawJson ?? false;
   const keepFields = input.keepFields ?? false;
   const incremental = input.incremental ?? false;
-  const knownHashes = new Set(
-    input.knownHashes instanceof Set
+  const hashIndex = new Map<string, { documentId: string; batchId: string }>();
+  if (input.knownHashIndex instanceof Map) {
+    for (const [h, e] of input.knownHashIndex) hashIndex.set(h, e);
+  } else if (input.knownHashIndex) {
+    for (const [h, e] of Object.entries(input.knownHashIndex)) hashIndex.set(h, e);
+  }
+  const knownHashes = new Set([
+    ...(input.knownHashes instanceof Set
       ? [...input.knownHashes]
-      : input.knownHashes || [],
-  );
+      : input.knownHashes || []),
+    ...hashIndex.keys(),
+  ]);
 
   const batch: Batch = {
     id: batchId,
@@ -90,7 +105,7 @@ export async function processZipBatchInMemory(
     skippedDuplicateCount: 0,
     newDocumentCount: 0,
     totalValue: 0,
-    healthScore: 0,
+    healthScore: null,
     progress: 5,
     progressMessage: "Extraindo ZIP com segurança...",
     createdAt: now,
@@ -115,6 +130,8 @@ export async function processZipBatchInMemory(
     findings: [],
     relationships: [],
     importLogs,
+    reusedDocuments: [],
+    analysisGenerations: [],
   };
 
   await input.onProgress?.(5, batch.progressMessage);
@@ -162,10 +179,24 @@ export async function processZipBatchInMemory(
 
     if (incremental && knownHashes.has(xmlHash)) {
       skippedIncremental += 1;
-      if (skippedIncremental <= 20 || skippedIncremental % 50 === 0) {
+      const canonical = hashIndex.get(xmlHash);
+      const reused: ReusedDocumentReference = {
+        sourceFileHash: xmlHash,
+        sourceFileName: file.fileName,
+        reason: "same_hash",
+        canonicalDocumentId: canonical?.documentId,
+        canonicalBatchId: canonical?.batchId,
+        importedAt: new Date().toISOString(),
+        parserVersion: PARSER_RUNTIME_VERSION,
+        workspaceId,
+      };
+      store.reusedDocuments = store.reusedDocuments || [];
+      store.reusedDocuments.push(reused);
+      if (skippedIncremental <= 50 || skippedIncremental % 100 === 0) {
         importLogs.push(
           log(batchId, "info", "incremental_skip", `Já importado (hash): ${file.fileName}`, {
-            xmlHash,
+            xmlHash: `${xmlHash.slice(0, 8)}…`,
+            reason: "same_hash",
           }),
         );
       }
@@ -286,9 +317,23 @@ export async function processZipBatchInMemory(
     log(batchId, "info", "relationships", `${relationships.length} vínculos inferidos`),
   );
 
-  const quality = calculateBatchQuality(batch, store.documents, store.items, store.fields, errors);
+  const quality = calculateBatchQuality(batch, store.documents, store.items, store.fields, errors, {
+    reusedDocumentCount: skippedIncremental,
+  });
   batch.healthScore = quality.score;
   batch.quality = quality;
+
+  const generation = createAnalysisGeneration({
+    batchId,
+    workspaceId,
+    documentCount: store.documents.length,
+    findingCount: findings.length,
+    qualityFormulaVersion: QUALITY_FORMULA_VERSION,
+    note: skippedIncremental
+      ? `Import incremental: ${skippedIncremental} reutilizados por hash`
+      : "Import completo",
+  });
+  store.analysisGenerations = [generation];
   batch.status =
     batch.invalidXml > 0 && batch.validXml > 0
       ? "partial"

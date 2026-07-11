@@ -101,7 +101,7 @@ export default function ComparePage() {
               <option value="">Escolha o lote anterior…</option>
               {batches.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name} · {b.validXml} XMLs · score {b.healthScore}
+                  {b.name} · {b.validXml} XMLs · índice {b.healthScore ?? "—"}
                 </option>
               ))}
             </select>
@@ -132,10 +132,16 @@ export default function ComparePage() {
             </Card>
             <Card>
               <CardContent className="p-5">
-                <div className="text-sm text-slate-400">Health Score</div>
-                <div className="mt-1 text-2xl font-semibold">{result.b.score}</div>
+                <div className="text-sm text-slate-400">Índice de saúde</div>
+                <div className="mt-1 text-2xl font-semibold">{result.b.score ?? "—"}</div>
                 <div className="mt-1 text-sm">
-                  vs {result.a.score} · <Delta value={result.deltaScore} />
+                  vs {result.a.score ?? "—"}
+                  {result.deltaScore != null ? (
+                    <>
+                      {" "}
+                      · <Delta value={result.deltaScore} />
+                    </>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>

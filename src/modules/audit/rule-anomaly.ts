@@ -33,7 +33,7 @@ export function detectRuleAnomalies(
       totalDocuments,
       percentage: Math.round(percentage),
       suggestion:
-        code === "NO_PROTOCOL"
+        code === "NO_PROTOCOL" || code === "NO_PROTOCOL_INCOMPLETE_ORIGIN"
           ? "Incidência excepcional de ausência de protocolo. Revise o parser (infProt/nProt) e a origem dos XMLs (nfeProc completo vs. apenas NFe) antes de tratar todos como problema fiscal."
           : `Regra ${code} afeta ${Math.round(percentage)}% do lote. Considere amostragem, revisão da regra ou da origem dos dados.`,
     });
@@ -70,7 +70,9 @@ export function applyProtocolAnomalyPolicy(
   totalDocuments: number,
 ): { findings: AuditFinding[]; anomalies: RuleAnomaly[] } {
   const anomalies = detectRuleAnomalies(findings, totalDocuments, 60);
-  const protocolAnomaly = anomalies.find((a) => a.code === "NO_PROTOCOL");
+  const protocolAnomaly = anomalies.find(
+    (a) => a.code === "NO_PROTOCOL" || a.code === "NO_PROTOCOL_INCOMPLETE_ORIGIN",
+  );
   if (!protocolAnomaly) return { findings, anomalies };
 
   const sample = findings.find((f) => f.code === "NO_PROTOCOL");

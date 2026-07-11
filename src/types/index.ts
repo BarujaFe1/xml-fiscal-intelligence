@@ -37,10 +37,33 @@ export type FindingStatus =
   | "assigned"
   | "resolved"
   | "accepted"
+  | "accepted_risk"
   | "reviewed"
   | "ignored"
+  | "ignored_with_reason"
   | "false_positive"
   | "reopened";
+
+export type FindingStatusEvent = {
+  at: string;
+  from: FindingStatus;
+  to: FindingStatus;
+  by?: string;
+  note?: string;
+};
+
+/** Cross-batch incremental reuse lineage (never expose other-tenant IDs). */
+export type ReusedDocumentReference = {
+  sourceFileHash: string;
+  sourceFileName: string;
+  reason: "same_hash" | "same_access_key" | "same_event" | "other";
+  /** Opaque local marker — may be empty if prior batch unknown in this browser. */
+  canonicalDocumentId?: string;
+  canonicalBatchId?: string;
+  importedAt: string;
+  parserVersion: string;
+  workspaceId: string;
+};
 
 export type RelationshipType =
   | "nfe_to_cte"
@@ -97,7 +120,8 @@ export interface Batch {
   skippedDuplicateCount?: number;
   newDocumentCount?: number;
   totalValue: number;
-  healthScore: number;
+  /** null when batch was not evaluated (e.g. zero new documents). */
+  healthScore: number | null;
   progress: number;
   progressMessage: string;
   createdAt: string;
@@ -234,7 +258,15 @@ export interface AuditFinding {
   evidence?: Record<string, unknown>;
   recommendation?: string;
   status: FindingStatus;
+  assignee?: string;
+  statusHistory?: FindingStatusEvent[];
+  ruleSource?: {
+    ruleSetVersion?: string;
+    officialSourceId?: string;
+    effectiveFrom?: string;
+  };
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface DocumentRelationship {
@@ -275,21 +307,56 @@ export interface QualityWarning {
   count: number;
 }
 
+export type MetricEvaluationStatus =
+  | "evaluated"
+  | "not_evaluated"
+  | "not_applicable"
+  | "insufficient_sample"
+  | "error";
+
+export type MetricEvaluation = {
+  status: MetricEvaluationStatus;
+  score: number | null;
+  numerator: number;
+  denominator: number;
+  coverage: number | null;
+  confidence: number | null;
+  reasons: string[];
+};
+
+export type BatchEvaluationStatus =
+  | "analyzed"
+  | "analyzed_with_warnings"
+  | "analyzed_with_errors"
+  | "no_new_documents"
+  | "duplicates_only"
+  | "processing_failed"
+  | "partial_processing"
+  | "insufficient_coverage"
+  | "not_evaluated";
+
 export interface QualityReport {
-  score: number;
+  /** null when evaluationStatus is not_evaluated / no_new_documents / duplicates_only without sample. */
+  score: number | null;
+  evaluationStatus: BatchEvaluationStatus;
+  formulaVersion: string;
+  weights: Record<string, number>;
+  dimensions: Record<string, MetricEvaluation>;
   breakdown: {
-    xmlValidity: number;
-    essentialFields: number;
-    duplicates: number;
-    dateConsistency: number;
-    valueConsistency: number;
-    itemCompleteness: number;
-    fiscalIdentification: number;
+    xmlValidity: number | null;
+    essentialFields: number | null;
+    duplicates: number | null;
+    dateConsistency: number | null;
+    valueConsistency: number | null;
+    itemCompleteness: number | null;
+    fiscalIdentification: number | null;
   };
   warnings: QualityWarning[];
   recommendations: string[];
   metrics: {
-    validXmlPct: number;
+    evaluatedDocumentCount: number;
+    reusedDocumentCount: number;
+    validXmlPct: number | null;
     typeDistribution: Record<string, number>;
     missingEssential: Record<string, number>;
     topMissingFields: Array<{ path: string; missingPct: number }>;
@@ -321,6 +388,8 @@ export interface BatchStore {
   findings?: AuditFinding[];
   relationships?: DocumentRelationship[];
   importLogs?: ImportLog[];
+  reusedDocuments?: ReusedDocumentReference[];
+  analysisGenerations?: import("@/lib/analysis/generation").AnalysisGeneration[];
 }
 
 export interface SearchResult {

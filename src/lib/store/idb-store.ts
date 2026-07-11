@@ -77,8 +77,12 @@ export async function mergeBatchLists(apiBatches: Batch[]): Promise<Batch[]> {
   );
 }
 
-/** Collect XML hashes from all local batches for incremental import. */
-export async function idbCollectKnownHashes(workspaceId?: string): Promise<Set<string>> {
+export type KnownHashEntry = { documentId: string; batchId: string };
+
+/** Map xmlHash → first local canonical document for incremental lineage. */
+export async function idbCollectKnownHashIndex(
+  workspaceId?: string,
+): Promise<Map<string, KnownHashEntry>> {
   const db = await openDb();
   const stores = await new Promise<BatchStore[]>((resolve, reject) => {
     const tx = db.transaction(STORE, "readonly");
@@ -87,12 +91,18 @@ export async function idbCollectKnownHashes(workspaceId?: string): Promise<Set<s
     req.onerror = () => reject(req.error);
   });
   db.close();
-  const hashes = new Set<string>();
+  const index = new Map<string, KnownHashEntry>();
   for (const s of stores) {
     if (workspaceId && s.batch.workspaceId !== workspaceId) continue;
     for (const d of s.documents) {
-      if (d.xmlHash) hashes.add(d.xmlHash);
+      if (!d.xmlHash || index.has(d.xmlHash)) continue;
+      index.set(d.xmlHash, { documentId: d.id, batchId: s.batch.id });
     }
   }
-  return hashes;
+  return index;
+}
+
+/** Collect XML hashes from all local batches for incremental import. */
+export async function idbCollectKnownHashes(workspaceId?: string): Promise<Set<string>> {
+  return new Set((await idbCollectKnownHashIndex(workspaceId)).keys());
 }

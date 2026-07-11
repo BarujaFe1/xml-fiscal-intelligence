@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BatchTabs } from "@/components/batches/batch-tabs";
 import { alertHref } from "@/lib/analytics";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { evaluationStatusLabel, formatHealthScore } from "@/lib/quality";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 
 export default function BatchDashboardPage() {
@@ -78,10 +79,29 @@ export default function BatchDashboardPage() {
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <Badge tone={batch.healthScore >= 80 ? "success" : batch.healthScore >= 60 ? "warning" : "error"}>
-              Health Score {batch.healthScore}
+            <Badge
+              tone={
+                batch.healthScore == null
+                  ? "info"
+                  : batch.healthScore >= 80
+                    ? "success"
+                    : batch.healthScore >= 60
+                      ? "warning"
+                      : "error"
+              }
+            >
+              {batch.healthScore == null
+                ? evaluationStatusLabel(batch.quality?.evaluationStatus)
+                : `Índice de saúde ${formatHealthScore(batch.healthScore)}`}
             </Badge>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <Link
+                href={`/app/batches/${batch.id}/quality`}
+                className="inline-flex items-center gap-1 rounded-lg border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-xs text-sky-100 hover:bg-sky-500/20"
+              >
+                Analisar / reprocessar lote
+                <ArrowRight className="h-3 w-3" />
+              </Link>
               <Link
                 href={`/app/batches/${batch.id}/parties`}
                 className="text-xs text-slate-400 hover:text-sky-300"
