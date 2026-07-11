@@ -32,6 +32,7 @@ self.onmessage = async (event: MessageEvent<ImportWorkerInbound>) => {
       keepFields: data.keepFields,
       incremental: data.incremental,
       knownHashes: data.knownHashes,
+      knownHashIndex: data.knownHashIndex,
       onProgress: (percent, message) => {
         if (canceled) throw new Error("IMPORT_CANCELED");
         post({

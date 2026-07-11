@@ -65,7 +65,7 @@ export function buildGenerationManifest(input: {
     generationId: createGenerationId(),
     generatedAt: new Date().toISOString(),
     timezone,
-    appVersion: "0.1.0",
+    appVersion: process.env.NEXT_PUBLIC_APP_VERSION || "0.1.0",
     buildCommit:
       (typeof process !== "undefined" &&
         (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||

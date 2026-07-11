@@ -6,6 +6,19 @@ import {
   emptyReasonForStore,
   wrapExportEnvelope,
 } from "@/lib/export/manifest";
+import { formatCnpj } from "@/lib/fiscal/cnpj";
+import { maskAccessKey } from "@/lib/security/redaction";
+
+/** Export policy: mask access keys; format CNPJ safely (alphanumeric-aware). */
+function exportDoc(raw?: string | null): string {
+  if (!raw) return "";
+  const asCnpj = formatCnpj(raw);
+  return asCnpj !== "—" ? asCnpj : raw;
+}
+
+function exportKey(key?: string | null): string {
+  return maskAccessKey(key);
+}
 
 function addSheet(
   wb: ExcelJS.Workbook,
@@ -114,16 +127,16 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
       id: d.id,
       tipo: d.documentType,
       arquivo: d.fileName,
-      chave: d.accessKey || "",
+      chave: exportKey(d.accessKey),
       numero: d.number || "",
       serie: d.series || "",
       modelo: d.model || "",
       emissao: d.issueDate || "",
       autorizacao: d.authorizationDate || "",
-      emitente_doc: d.emitterDoc || "",
+      emitente_doc: exportDoc(d.emitterDoc),
       emitente_nome: d.emitterName || "",
       emitente_uf: d.emitterUf || "",
-      destinatario_doc: d.receiverDoc || "",
+      destinatario_doc: exportDoc(d.receiverDoc),
       destinatario_nome: d.receiverName || "",
       destinatario_uf: d.receiverUf || "",
       valor_total: d.totalValue ?? "",
@@ -147,7 +160,7 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
       return {
         document_id: i.documentId,
         tipo: i.documentType,
-        chave: doc?.accessKey || "",
+        chave: exportKey(doc?.accessKey),
         numero_nota: doc?.number || "",
         emitente: doc?.emitterName || "",
         item: i.itemNumber,
@@ -198,7 +211,7 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
         id: d.id,
         tipo: d.documentType,
         arquivo: d.fileName,
-        chave: d.accessKey || "",
+        chave: exportKey(d.accessKey),
       };
       for (const p of topPaths) {
         const v = d.flattenedJson[p];
@@ -218,6 +231,21 @@ export async function buildBatchWorkbook(store: BatchStore): Promise<Buffer> {
       snippet: e.rawSnippet || "",
       criado_em: e.createdAt,
     })),
+  );
+
+  addSheet(
+    wb,
+    "Reutilizados",
+    (store.reusedDocuments || []).map((r) => ({
+      arquivo: r.sourceFileName,
+      motivo: r.reason,
+      hash_prefix: r.sourceFileHash.slice(0, 12),
+      doc_canonico: r.canonicalDocumentId || "",
+      lote_canonico: r.canonicalBatchId || "",
+      importado_em: r.importedAt,
+      parser: r.parserVersion,
+    })),
+    { emptyReason: "no_reused_documents" },
   );
 
   addSheet(wb, "Insights", [
@@ -273,13 +301,13 @@ export function buildDocumentsCsv(store: BatchStore): string {
       d.id,
       d.documentType,
       d.fileName,
-      d.accessKey || "",
+      exportKey(d.accessKey),
       d.number || "",
       d.series || "",
       d.issueDate || "",
-      d.emitterDoc || "",
+      exportDoc(d.emitterDoc),
       d.emitterName || "",
-      d.receiverDoc || "",
+      exportDoc(d.receiverDoc),
       d.receiverName || "",
       d.totalValue ?? "",
       d.status || "",

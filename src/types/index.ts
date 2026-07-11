@@ -37,10 +37,33 @@ export type FindingStatus =
   | "assigned"
   | "resolved"
   | "accepted"
+  | "accepted_risk"
   | "reviewed"
   | "ignored"
+  | "ignored_with_reason"
   | "false_positive"
   | "reopened";
+
+export type FindingStatusEvent = {
+  at: string;
+  from: FindingStatus;
+  to: FindingStatus;
+  by?: string;
+  note?: string;
+};
+
+/** Cross-batch incremental reuse lineage (never expose other-tenant IDs). */
+export type ReusedDocumentReference = {
+  sourceFileHash: string;
+  sourceFileName: string;
+  reason: "same_hash" | "same_access_key" | "same_event" | "other";
+  /** Opaque local marker — may be empty if prior batch unknown in this browser. */
+  canonicalDocumentId?: string;
+  canonicalBatchId?: string;
+  importedAt: string;
+  parserVersion: string;
+  workspaceId: string;
+};
 
 export type RelationshipType =
   | "nfe_to_cte"
@@ -235,7 +258,15 @@ export interface AuditFinding {
   evidence?: Record<string, unknown>;
   recommendation?: string;
   status: FindingStatus;
+  assignee?: string;
+  statusHistory?: FindingStatusEvent[];
+  ruleSource?: {
+    ruleSetVersion?: string;
+    officialSourceId?: string;
+    effectiveFrom?: string;
+  };
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface DocumentRelationship {
@@ -357,6 +388,8 @@ export interface BatchStore {
   findings?: AuditFinding[];
   relationships?: DocumentRelationship[];
   importLogs?: ImportLog[];
+  reusedDocuments?: ReusedDocumentReference[];
+  analysisGenerations?: import("@/lib/analysis/generation").AnalysisGeneration[];
 }
 
 export interface SearchResult {
