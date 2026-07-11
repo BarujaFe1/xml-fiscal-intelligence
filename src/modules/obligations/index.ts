@@ -1,5 +1,5 @@
 export type { FiscalObligationPlugin, ObligationContext } from "@/modules/obligations/core/types";
-export { efdIcmsIpiPlugin, EFD_ICMS_IPI_LAYOUT_2026 } from "@/modules/obligations/efd-icms-ipi/plugin";
+export { efdIcmsIpiPlugin, EFD_ICMS_IPI_LAYOUT_2026, efdIcmsIpiCodVer } from "@/modules/obligations/efd-icms-ipi/plugin";
 export { efdContribuicoesPlugin, EFD_CONTRIB_LAYOUT_2026 } from "@/modules/obligations/efd-contribuicoes/plugin";
 export { ecdPlugin, ECD_LAYOUT_2026 } from "@/modules/obligations/ecd/plugin";
 export { ecfPlugin, ECF_LAYOUT_2026 } from "@/modules/obligations/ecf/plugin";

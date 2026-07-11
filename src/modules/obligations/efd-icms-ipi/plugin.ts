@@ -30,6 +30,19 @@ function pipe(fields: Array<string | undefined | null>): string {
   return `|${fields.map((f) => (f === undefined || f === null ? "" : String(f))).join("|")}|`;
 }
 
+/**
+ * COD_VER conforme tabela do Ato COTEPE / NT (validado pelo PVA contra DT_FIN).
+ * 018=2024 · 019=2025 · 020=2026 (NT 2025.001).
+ */
+export function efdIcmsIpiCodVer(periodEndIso?: string): string {
+  const y = Number((periodEndIso || "").slice(0, 4));
+  if (!Number.isFinite(y) || y <= 0) return "020";
+  if (y >= 2026) return "020";
+  if (y >= 2025) return "019";
+  if (y >= 2024) return "018";
+  return "017";
+}
+
 function dateEfd(iso?: string): string {
   if (!iso) return "";
   const d = iso.slice(0, 10);
@@ -135,9 +148,11 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
 }
 
 function build0000(ctx: ObligationContext): ObligationRecord {
+  // Ordem oficial: REG COD_VER COD_FIN DT_INI DT_FIN NOME CNPJ CPF UF IE COD_MUN IM SUFRAMA IND_PERFIL IND_ATIV
   const fields = [
     "0000",
-    "019", // COD_VER placeholder — must be replaced by registered official code when source registry is filled
+    efdIcmsIpiCodVer(ctx.periodEnd),
+    ctx.purpose === "1" ? "1" : "0", // COD_FIN
     dateEfd(ctx.periodStart),
     dateEfd(ctx.periodEnd),
     ctx.companyName,
@@ -146,8 +161,8 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     ctx.uf,
     onlyDigits(ctx.ie),
     "", // COD_MUN — pending cadastro
+    "", // IM
     "", // SUFRAMA
-    ctx.purpose || "0",
     ctx.profile || "",
     ctx.activityCode || "",
   ];
@@ -159,6 +174,14 @@ function build0000(ctx: ObligationContext): ObligationRecord {
       sourceType: "cadastro",
       sourceRef: ctx.establishmentId,
       ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_0000_CNPJ`,
+    },
+    {
+      record: "0000",
+      field: "COD_VER",
+      value: efdIcmsIpiCodVer(ctx.periodEnd),
+      sourceType: "derived",
+      transformation: "from DT_FIN year (NT/Ato COTEPE)",
+      ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_0000_COD_VER`,
     },
   ];
   return { type: "0000", fields, lineage };
@@ -444,7 +467,8 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   }
 
   const warnings: string[] = [
-    "COD_VER=019 é placeholder até registro oficial em official_sources.",
+    `COD_VER=${efdIcmsIpiCodVer(context.periodEnd)} derivado do ano de DT_FIN (conferir tabela do Ato COTEPE no PVA).`,
+    "COD_MUN/IM vazios no 0000 — completar cadastro do estabelecimento antes de transmitir.",
     "TIPO_ITEM=00 em 0200 exige confirmação do contador para uso em produção.",
     "IND_FRT=9 quando frete não informado — revise.",
     "E110 não gerado automaticamente neste MVP — apuração exige módulo dedicado.",
