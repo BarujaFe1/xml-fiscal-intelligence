@@ -26,7 +26,6 @@
 | SAAS-001 | IndexedDB SoT | código | local primary; cloud metadata | `confirmed` | migrate+gate | — | — |
 | SAAS-002 | Supabase readiness | prod health supabase:false sem env | gate | `confirmed` | CLOUD_READINESS | — | — |
 | SEC-001 | RLS não provada em CI | policies exist | matrix doc only | `partially_confirmed` | RLS tests | — | — |
-| SEC-002 | Headers segurança | next.config | auditar | `pending` | — | — | — |
 | SEC-003 | Storage/URLs assinadas | local storage | blocked/partial | `blocked_external` | — | — | — |
 | SEC-004 | Logs/SQL preview | AI mock | pending redaction | `pending` | — | — | — |
 | LGPD-001 | Controles operacionais | docs parciais | expandir | `partially_confirmed` | docs+UI | — | — |
