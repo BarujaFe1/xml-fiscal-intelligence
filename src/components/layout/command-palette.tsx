@@ -18,14 +18,16 @@ import type { Batch } from "@/types";
 
 const NAV = [
   { href: "/app", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/app/upload", label: "Upload de ZIP", icon: Upload },
+  { href: "/app/upload", label: "Importações", icon: Upload },
   { href: "/app/batches", label: "Histórico de lotes", icon: FolderOpen },
   { href: "/app/search", label: "Busca global", icon: Search },
   { href: "/app/audit", label: "Auditoria fiscal", icon: FileSearch },
   { href: "/app/relationships", label: "Relacionamentos", icon: GitCompare },
-  { href: "/app/sped", label: "SPED preview", icon: FileSearch },
-  { href: "/app/ai", label: "IA fiscal", icon: Search },
-  { href: "/app/settings", label: "Settings", icon: Settings },
+  { href: "/app/obligations", label: "Obrigações / EFD", icon: FileSearch },
+  { href: "/app/sped", label: "Diagnóstico EFD", icon: FileSearch },
+  { href: "/app/ai", label: "IA (demonstração)", icon: Search },
+  { href: "/app/billing", label: "Planos", icon: Settings },
+  { href: "/app/settings", label: "Configurações", icon: Settings },
 ];
 
 export function CommandPalette() {

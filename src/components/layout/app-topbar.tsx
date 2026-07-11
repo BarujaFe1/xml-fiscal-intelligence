@@ -8,10 +8,12 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/app", label: "Visão geral" },
-  { href: "/app/upload", label: "Upload" },
+  { href: "/app/upload", label: "Importações" },
   { href: "/app/batches", label: "Lotes" },
   { href: "/app/search", label: "Busca" },
-  { href: "/app/settings", label: "Settings" },
+  { href: "/app/obligations", label: "Obrigações" },
+  { href: "/app/billing", label: "Planos" },
+  { href: "/app/settings", label: "Configurações" },
 ];
 
 export function AppTopbar() {
@@ -21,16 +23,25 @@ export function AppTopbar() {
     <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
       <div className="flex h-14 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-3">
-          <button className="lg:hidden text-slate-300" onClick={() => setOpen((v) => !v)}>
+          <button
+            type="button"
+            className="lg:hidden text-slate-300"
+            aria-label="Abrir menu"
+            onClick={() => setOpen((v) => !v)}
+          >
             <Menu className="h-5 w-5" />
           </button>
           <div className="text-sm text-slate-400">
-            Workspace <span className="text-slate-200">Local Demo</span>
+            Ambiente <span className="text-slate-200">local de demonstração</span>
+            <span className="hidden sm:inline text-slate-600"> · IndexedDB</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))}
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))
+            }
             className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200"
           >
             Busca rápida
@@ -40,7 +51,7 @@ export function AppTopbar() {
             href="/app/upload"
             className="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-sky-400"
           >
-            Analisar lote
+            Importar lote
           </Link>
         </div>
       </div>

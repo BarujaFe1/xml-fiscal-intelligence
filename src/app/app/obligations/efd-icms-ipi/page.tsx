@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { EfdDiagnosticBanner } from "@/components/feedback/honesty-banners";
 import { idbGetBatchStore, idbListBatches } from "@/lib/store/idb-store";
 import type { Batch, BatchStore } from "@/types";
 
@@ -103,11 +104,12 @@ export default function ObligationsEfdPage() {
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          EFD ICMS/IPI — geração assistida
+          EFD ICMS/IPI — prontidão e geração assistida
         </h1>
-        <p className="text-amber-200/80 text-sm mt-2 border border-amber-500/20 rounded-xl px-3 py-2 bg-amber-500/5">
-          Arquivo para <strong>pré-validação interna</strong> e importação no <strong>PVA oficial</strong>. Não
-          substitui PVA, assinatura, transmissão nem consultoria fiscal. E110/H/K/G fora do MVP.
+        <EfdDiagnosticBanner className="mt-3" />
+        <p className="text-slate-400 text-sm mt-2">
+          Níveis: (1) estrutural interno · (2) relacional/fiscal interno · (3) PVA oficial — só após
+          registro de resultado real. E110/H/K/G fora do escopo atual.
         </p>
       </div>
 

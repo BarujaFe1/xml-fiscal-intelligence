@@ -9,6 +9,7 @@ import ExcelJS from "exceljs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BatchTabs } from "@/components/batches/batch-tabs";
+import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import {
   buildBatchWorkbook,
   buildDocumentsCsv,
@@ -53,12 +54,26 @@ async function workbookFromRows(name: string, rows: Record<string, unknown>[]) {
 
 async function exportPreset(store: BatchStore, preset: string) {
   const id = store.batch.id;
-  if (preset === "icms") {
+  const meta = {
+    empresa: store.batch.cnpjLabel || "",
+    competencia:
+      store.batch.month && store.batch.year
+        ? `${String(store.batch.month).padStart(2, "0")}/${store.batch.year}`
+        : "",
+    lote: id,
+    gerado_em: new Date().toISOString(),
+    versao_sistema: "0.1.0",
+    aviso:
+      "Este arquivo lista itens por CFOP/NCM. NÃO é apuração de ICMS nem memória de cálculo tributário.",
+  };
+
+  if (preset === "icms" || preset === "itens-cfop-ncm") {
     const rows = store.items
-      .filter((i) => i.documentType === "NFE")
+      .filter((i) => i.documentType === "NFE" || i.documentType === "NFCE")
       .map((i) => {
         const d = store.documents.find((x) => x.id === i.documentId);
         return {
+          ...meta,
           chave: d?.accessKey || "",
           numero: d?.number || "",
           emissao: d?.issueDate || "",
@@ -73,12 +88,12 @@ async function exportPreset(store: BatchStore, preset: string) {
           uf_dest: d?.receiverUf || "",
         };
       });
-    const buf = await workbookFromRows("ICMS", rows);
+    const buf = await workbookFromRows("Itens CFOP NCM", rows);
     downloadBlob(
       new Blob([new Uint8Array(buf)], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       }),
-      `apuracao-icms-${id}.xlsx`,
+      `itens-cfop-ncm-sem-calculo-${id}.xlsx`,
     );
     return;
   }
@@ -211,7 +226,11 @@ async function exportPreset(store: BatchStore, preset: string) {
 }
 
 const presets = [
-  { type: "icms", label: "Apuração ICMS (itens)", desc: "CFOP, NCM, UF e valores por item NF-e" },
+  {
+    type: "icms",
+    label: "Itens por CFOP e NCM — sem cálculo tributário",
+    desc: "Lista operacional de itens NF-e/NFC-e. Não é apuração de ICMS.",
+  },
   { type: "entradas-saidas", label: "Entradas x Saídas", desc: "Movimento documental consolidado" },
   { type: "itens-ncm-cfop", label: "Itens com NCM/CFOP", desc: "Planilha operacional de itens" },
   { type: "divergencias", label: "Só divergências", desc: "Sem chave, sem protocolo e alertas" },
@@ -262,6 +281,7 @@ export default function ExportsPage() {
         </p>
       </div>
       <BatchTabs batchId={params.id} />
+      <LocalPersistenceBanner compact />
       <div className="grid gap-4 md:grid-cols-2">
         {presets.map((item) => (
           <Card key={item.type} className="hover:border-sky-400/20 transition-colors">

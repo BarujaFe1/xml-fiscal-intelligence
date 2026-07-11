@@ -19,19 +19,38 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const links = [
-  { href: "/app", label: "Visão geral", icon: LayoutDashboard },
-  { href: "/app/upload", label: "Upload", icon: Upload },
-  { href: "/app/batches", label: "Lotes", icon: FolderOpen },
-  { href: "/app/search", label: "Busca", icon: Search },
-  { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
-  { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
-  { href: "/app/obligations", label: "Obrigações", icon: Landmark },
-  { href: "/app/sped", label: "SPED preview", icon: Scale },
-  { href: "/app/ai", label: "IA fiscal", icon: Bot },
-  { href: "/app/billing", label: "Assinatura", icon: CreditCard },
-  { href: "/app/settings", label: "Settings", icon: Settings },
-];
+const navGroups = [
+  {
+    title: "Operação",
+    links: [
+      { href: "/app", label: "Visão geral", icon: LayoutDashboard },
+      { href: "/app/upload", label: "Importações", icon: Upload },
+      { href: "/app/batches", label: "Lotes", icon: FolderOpen },
+    ],
+  },
+  {
+    title: "Inteligência fiscal",
+    links: [
+      { href: "/app/search", label: "Busca", icon: Search },
+      { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
+      { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
+      { href: "/app/obligations", label: "Obrigações", icon: Landmark },
+      {
+        href: "/app/sped",
+        label: "Diagnóstico EFD",
+        icon: Scale,
+      },
+    ],
+  },
+  {
+    title: "Administração",
+    links: [
+      { href: "/app/ai", label: "IA (demonstração)", icon: Bot },
+      { href: "/app/billing", label: "Planos", icon: CreditCard },
+      { href: "/app/settings", label: "Configurações", icon: Settings },
+    ],
+  },
+] as const;
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -48,31 +67,42 @@ export function AppSidebar() {
           </div>
         </Link>
       </div>
-      <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
-        {links.map((link) => {
-          const active = pathname === link.href || (link.href !== "/app" && pathname.startsWith(link.href));
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                active
-                  ? "bg-sky-500/15 text-sky-200 border border-sky-400/20"
-                  : "text-slate-400 hover:text-slate-100 hover:bg-white/5",
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {link.label}
-            </Link>
-          );
-        })}
+      <nav className="p-3 space-y-4 flex-1 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.title}>
+            <p className="px-3 mb-1 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+              {group.title}
+            </p>
+            <div className="space-y-1">
+              {group.links.map((link) => {
+                const active =
+                  pathname === link.href || (link.href !== "/app" && pathname.startsWith(link.href));
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                      active
+                        ? "bg-sky-500/15 text-sky-200 border border-sky-400/20"
+                        : "text-slate-400 hover:text-slate-100 hover:bg-white/5",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       <div className="p-4 border-t border-white/10 space-y-2 text-xs text-slate-500">
         <div className="flex items-center gap-2">
           <FileSearch className="h-3.5 w-3.5" />
-          Dados no IndexedDB · mascarados
+          Persistência local (navegador)
         </div>
         <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-slate-400">
           Atalho <kbd className="text-slate-200">Ctrl</kbd>+<kbd className="text-slate-200">K</kbd>

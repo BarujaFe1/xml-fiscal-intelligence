@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EfdDiagnosticBanner } from "@/components/feedback/honesty-banners";
 import { buildSpedPreviewTree, type SpedNode } from "@/modules/sped/preview";
 import { idbGetBatchStore, idbListBatches } from "@/lib/store/idb-store";
 import type { Batch } from "@/types";
@@ -74,11 +75,14 @@ export default function SpedPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          SPED Fiscal — preview
+          Diagnóstico de Prontidão — EFD ICMS/IPI
         </h1>
-        <p className="text-amber-200/80 text-sm mt-2 border border-amber-500/20 rounded-xl px-3 py-2 bg-amber-500/5 max-w-3xl">
-          Simulação e diagnóstico de lineage XML → registros. <strong>Não substitui</strong> o PVA/SPED
-          oficial nem gera escrituração completa.
+        <div className="mt-3 max-w-3xl">
+          <EfdDiagnosticBanner />
+        </div>
+        <p className="text-slate-400 text-sm mt-2 max-w-3xl">
+          Árvore de pré-validação interna. <strong>Não</strong> declara “SPED válido”, “pronto para
+          transmitir” nem substitui o PVA.
         </p>
       </div>
 

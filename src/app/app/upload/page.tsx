@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
-import { FileArchive, Loader2, UploadCloud } from "lucide-react";
+import { FileArchive, Loader2, UploadCloud, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
+import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
+import { runImportPipeline } from "@/lib/import/run-import-worker";
 import { idbCollectKnownHashes, idbSaveBatchStore } from "@/lib/store/idb-store";
-import { processZipBatchInMemory } from "@/lib/store/process-memory";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
   const onDrop = useCallback(
     (accepted: File[]) => {
@@ -46,7 +48,13 @@ export default function UploadPage() {
     onDrop,
     multiple: false,
     accept: { "application/zip": [".zip"], "application/x-zip-compressed": [".zip"] },
+    disabled: loading,
   });
+
+  function cancelImport() {
+    abortRef.current?.abort();
+    setProgressMessage("Cancelando…");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,6 +62,8 @@ export default function UploadPage() {
       toast.error("Selecione um ZIP");
       return;
     }
+    const ac = new AbortController();
+    abortRef.current = ac;
     setLoading(true);
     setProgress(2);
     setProgressMessage("Lendo ZIP no navegador…");
@@ -66,7 +76,8 @@ export default function UploadPage() {
         knownHashes = await idbCollectKnownHashes();
       }
 
-      const store = await processZipBatchInMemory({
+      setProgressMessage("Processando (Web Worker quando disponível)…");
+      const store = await runImportPipeline({
         buffer,
         fileName: file.name,
         name: name || undefined,
@@ -77,6 +88,7 @@ export default function UploadPage() {
         keepFields: false,
         incremental,
         knownHashes,
+        signal: ac.signal,
         onProgress: (pct, message) => {
           setProgress(Math.min(95, pct));
           setProgressMessage(message);
@@ -105,7 +117,7 @@ export default function UploadPage() {
           }),
         });
       } catch {
-        // ignore
+        // cloud registry optional
       }
 
       setProgress(100);
@@ -117,10 +129,16 @@ export default function UploadPage() {
       );
       router.push(`/app/batches/${store.batch.id}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro no upload");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        toast.message("Importação cancelada");
+      } else {
+        toast.error(err instanceof Error ? err.message : "Erro na importação");
+      }
       setLoading(false);
       setProgress(0);
       setProgressMessage("");
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -128,19 +146,22 @@ export default function UploadPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Upload de lote
+          Importações
         </h1>
         <p className="text-slate-400 mt-1">
-          O ZIP é processado no seu navegador (sem limite de 4,5 MB da Vercel) e salvo localmente no
-          IndexedDB.
+          O ZIP é processado no navegador (Web Worker quando disponível) e salvo no IndexedDB deste
+          dispositivo.
         </p>
       </div>
+
+      <LocalPersistenceBanner />
 
       <Card>
         <CardHeader>
           <CardTitle>Arquivo ZIP</CardTitle>
           <CardDescription>
-            Extração segura, detecção NF-e/CT-e/NFS-e, flatten, auditoria e relacionamentos.
+            Extração segura, detecção NF-e/CT-e/NFS-e, flatten, auditoria e relacionamentos. Modo
+            local privado — XML não é enviado automaticamente à nuvem.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -158,10 +179,13 @@ export default function UploadPage() {
               <p className="mt-3 text-slate-200">
                 {file
                   ? `${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`
-                  : "Arraste o ZIP ou clique para selecionar"}
+                  : isDragActive
+                    ? "Solte o ZIP aqui"
+                    : "Arraste o ZIP ou clique para selecionar"}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Apenas .xml internos são lidos. Executáveis e path traversal são bloqueados.
+                Apenas .xml internos são lidos. Executáveis, Zip Slip e limites de compressão são
+                bloqueados.
               </p>
             </div>
 
@@ -181,7 +205,7 @@ export default function UploadPage() {
                   id="cnpj"
                   value={cnpjLabel}
                   onChange={(e) => setCnpjLabel(e.target.value)}
-                  placeholder="12.345.678/0001-90"
+                  placeholder="12.ABC.345/01DE-35 ou numérico"
                 />
               </div>
               <div className="space-y-2">
@@ -227,8 +251,13 @@ export default function UploadPage() {
 
             {loading && (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <Loader2 className="h-4 w-4 animate-spin" /> {progressMessage || "Processando lote…"}
+                <div className="flex items-center justify-between gap-2 text-sm text-slate-300">
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> {progressMessage || "Processando lote…"}
+                  </span>
+                  <Button type="button" variant="ghost" size="sm" onClick={cancelImport}>
+                    <XCircle className="h-4 w-4" /> Cancelar
+                  </Button>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-white/10">
                   <div className="h-full bg-sky-400 transition-all" style={{ width: `${progress}%` }} />
@@ -254,9 +283,8 @@ export default function UploadPage() {
       <Card>
         <CardContent className="p-5 text-sm text-slate-400 space-y-2">
           <p>
-            Seu <code className="text-sky-300">202606 NFe.zip</code> (~5,3 MB / ~1.1k NF-e) estourava o
-            limite de upload da Vercel. Agora o parse roda no navegador. Dados ficam neste dispositivo
-            (IndexedDB) — não vão para o GitHub.
+            Processamento local privado: dados ficam neste dispositivo até migração SaaS/cloud
+            configurada. Limpar o navegador ou trocar de perfil pode tornar os lotes indisponíveis.
           </p>
           <p className="text-xs text-amber-200/80 border border-amber-500/20 rounded-lg px-3 py-2 bg-amber-500/5">
             Este sistema auxilia análise, organização, auditoria e diagnóstico fiscal, mas não

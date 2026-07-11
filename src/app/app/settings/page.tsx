@@ -26,9 +26,11 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Settings
+          Configurações
         </h1>
-        <p className="text-slate-400 mt-1">Preferências locais do MVP (sem Supabase Auth ainda).</p>
+        <p className="text-slate-400 mt-1">
+          Preferências locais. Conta SaaS e sincronização em nuvem dependem de Supabase configurado.
+        </p>
       </div>
 
       <Card>
@@ -59,9 +61,8 @@ export default function SettingsPage() {
             <Input readOnly value={process.env.NEXT_PUBLIC_MAX_UPLOAD_MB || "50"} />
           </div>
           <p>
-            Persistência atual: filesystem local em <code className="text-sky-300">data/batches</code> (ou{" "}
-            <code className="text-sky-300">/tmp</code> na Vercel). Schema Supabase pronto em{" "}
-            <code className="text-sky-300">supabase/schema.sql</code> para evolução.
+            Persistência atual: IndexedDB neste navegador (aviso no topo do app). Schema Supabase em{" "}
+            <code className="text-sky-300">supabase/migrations/</code> para evolução multiempresa.
           </p>
         </CardContent>
       </Card>
