@@ -10,7 +10,7 @@ import type {
   LineageEntry,
   ReadinessStatus,
 } from "@/modules/obligations/core/types";
-import { moneyAdd, moneyToEfd, moneyToFixed } from "@/lib/money/decimal";
+import { money, moneyAdd, moneyToEfd, moneyToFixed, Money } from "@/lib/money/decimal";
 import { sha256Hex } from "@/lib/security/hash";
 import { isCnpjShape, normalizeCnpj, normalizeCpf } from "@/lib/fiscal/cnpj";
 
@@ -26,8 +26,22 @@ function efdCnpj(v?: string) {
   return normalizeCnpj(v);
 }
 
+/**
+ * Text fields in pipe-delimited SPED cannot contain `|` or line breaks —
+ * otherwise PVA reports "número de campos difere do layout".
+ */
+export function efdSanitize(v: string | undefined | null, maxLen?: number): string {
+  let s = String(v ?? "")
+    .replace(/\|/g, "/")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (maxLen != null && maxLen > 0 && s.length > maxLen) s = s.slice(0, maxLen);
+  return s;
+}
+
 function pipe(fields: Array<string | undefined | null>): string {
-  return `|${fields.map((f) => (f === undefined || f === null ? "" : String(f))).join("|")}|`;
+  return `|${fields.map((f) => efdSanitize(f === undefined || f === null ? "" : String(f))).join("|")}|`;
 }
 
 /**
@@ -41,6 +55,16 @@ export function efdIcmsIpiCodVer(periodEndIso?: string): string {
   if (y >= 2025) return "019";
   if (y >= 2024) return "018";
   return "017";
+}
+
+function efdUnid(v?: string): string {
+  const u = efdSanitize(v || "UN", 6);
+  return u || "UN";
+}
+
+function efdNcm(v?: string): string {
+  const d = onlyDigits(v);
+  return d.length === 8 ? d : "";
 }
 
 function dateEfd(iso?: string): string {
@@ -155,16 +179,16 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     ctx.purpose === "1" ? "1" : "0", // COD_FIN
     dateEfd(ctx.periodStart),
     dateEfd(ctx.periodEnd),
-    ctx.companyName,
+    efdSanitize(ctx.companyName, 100),
     efdCnpj(ctx.cnpj),
     "", // CPF
-    ctx.uf,
+    efdSanitize(ctx.uf, 2),
     onlyDigits(ctx.ie),
     "", // COD_MUN — pending cadastro
     "", // IM
     "", // SUFRAMA
-    ctx.profile || "",
-    ctx.activityCode || "",
+    efdSanitize(ctx.profile || "", 1),
+    efdSanitize(ctx.activityCode || "", 1),
   ];
   const lineage: LineageEntry[] = [
     {
@@ -215,7 +239,7 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
         fields: [
           "0150",
           code,
-          party.name || "",
+          efdSanitize(party.name || "", 100),
           "1058",
           docs.cnpj,
           docs.cpf,
@@ -255,13 +279,13 @@ function build0200(ctx: ObligationContext): ObligationRecord[] {
         type: "0200",
         fields: [
           "0200",
-          code,
-          item.description || "",
+          efdSanitize(code, 60),
+          efdSanitize(item.description || "", 255),
           "", // COD_BARRA
           "", // COD_ANT_ITEM (não preencher — usar 0205)
-          item.unit || "",
+          efdUnid(item.unit),
           "00", // TIPO_ITEM — revisar com contador
-          item.ncm || "",
+          efdNcm(item.ncm),
           "", // EX_IPI
           "", // COD_GEN
           "", // COD_LST
@@ -357,62 +381,71 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       const cst = cstIcms3(item);
       const cfop = onlyDigits(item.cfop || "").slice(0, 4);
       const aliq = moneyToFixed(item.tax.icms.pIcms);
-      // C170 — 38 campos (Guia Prático; campo 38 VL_ABAT_NT desde 2019)
-      const c170: ObligationRecord = {
-        type: "C170",
-        fields: [
-          "C170",
-          String(item.itemNumber),
-          item.code || "",
-          item.description || "",
-          moneyToEfd(item.quantity || "0", 5),
-          item.unit || "",
-          moneyToEfd(item.totalValue || "0"),
-          moneyToEfd(item.discountValue || "0"),
-          "0", // IND_MOV
-          cst,
-          cfop,
-          "", // COD_NAT
-          moneyToEfd(item.tax.icms.vBc),
-          moneyToEfd(item.tax.icms.pIcms),
-          moneyToEfd(item.tax.icms.vIcms),
-          moneyToEfd(item.tax.icms.vBcSt),
-          "0", // ALIQ_ST
-          moneyToEfd(item.tax.icms.vIcmsSt),
-          "0", // IND_APUR
-          item.tax.ipi.cst || "",
-          "", // COD_ENQ
-          moneyToEfd(item.tax.ipi.vBc),
-          moneyToEfd(item.tax.ipi.pIpi),
-          moneyToEfd(item.tax.ipi.vIpi),
-          item.tax.pis.cst || "",
-          moneyToEfd(item.tax.pis.vBc),
-          moneyToEfd(item.tax.pis.pAliq, 4),
-          "", // QUANT_BC_PIS
-          "", // ALIQ_PIS em R$
-          moneyToEfd(item.tax.pis.vValor),
-          item.tax.cofins.cst || "",
-          moneyToEfd(item.tax.cofins.vBc),
-          moneyToEfd(item.tax.cofins.pAliq, 4),
-          "", // QUANT_BC_COFINS
-          "", // ALIQ_COFINS em R$
-          moneyToEfd(item.tax.cofins.vValor),
-          "", // COD_CTA
-          "0", // VL_ABAT_NT
-        ],
-        lineage: [
-          {
-            record: "C170",
-            field: "VL_ICMS",
-            value: item.tax.icms.vIcms,
-            sourceType: "xml",
-            sourceRef: d.id,
-            xmlPath: "det/imposto/ICMS/*/vICMS",
-            ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C170_VL_ICMS`,
-          },
-        ],
-      };
-      c100.children!.push(c170);
+      // C170 é facultativo para NF-e/NFC-e com chave — omitir evita centenas de erros de item no PVA
+      // quando o XML eletrônico já detalha o documento (Guia Prático).
+      const isElectronic =
+        d.model === "55" ||
+        d.model === "65" ||
+        d.documentType === "NFE" ||
+        d.documentType === "NFCE" ||
+        Boolean(d.accessKey);
+      if (!isElectronic) {
+        const c170: ObligationRecord = {
+          type: "C170",
+          fields: [
+            "C170",
+            String(item.itemNumber),
+            efdSanitize(item.code || "", 60),
+            efdSanitize(item.description || "", 255),
+            moneyToEfd(item.quantity || "0", 5),
+            efdUnid(item.unit),
+            moneyToEfd(item.totalValue || "0"),
+            moneyToEfd(item.discountValue || "0"),
+            "0", // IND_MOV
+            cst,
+            cfop,
+            "", // COD_NAT
+            moneyToEfd(item.tax.icms.vBc),
+            moneyToEfd(item.tax.icms.pIcms),
+            moneyToEfd(item.tax.icms.vIcms),
+            moneyToEfd(item.tax.icms.vBcSt),
+            "0", // ALIQ_ST
+            moneyToEfd(item.tax.icms.vIcmsSt),
+            "0", // IND_APUR
+            item.tax.ipi.cst || "",
+            "", // COD_ENQ
+            moneyToEfd(item.tax.ipi.vBc),
+            moneyToEfd(item.tax.ipi.pIpi),
+            moneyToEfd(item.tax.ipi.vIpi),
+            item.tax.pis.cst || "",
+            moneyToEfd(item.tax.pis.vBc),
+            moneyToEfd(item.tax.pis.pAliq, 4),
+            "", // QUANT_BC_PIS
+            "", // ALIQ_PIS em R$
+            moneyToEfd(item.tax.pis.vValor),
+            item.tax.cofins.cst || "",
+            moneyToEfd(item.tax.cofins.vBc),
+            moneyToEfd(item.tax.cofins.pAliq, 4),
+            "", // QUANT_BC_COFINS
+            "", // ALIQ_COFINS em R$
+            moneyToEfd(item.tax.cofins.vValor),
+            "", // COD_CTA
+            "0", // VL_ABAT_NT
+          ],
+          lineage: [
+            {
+              record: "C170",
+              field: "VL_ICMS",
+              value: item.tax.icms.vIcms,
+              sourceType: "xml",
+              sourceRef: d.id,
+              xmlPath: "det/imposto/ICMS/*/vICMS",
+              ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C170_VL_ICMS`,
+            },
+          ],
+        };
+        c100.children!.push(c170);
+      }
 
       const key = `${cst}|${cfop}|${aliq}`;
       const agg = c190Map.get(key) || {
@@ -489,7 +522,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     "COD_MUN/IM vazios no 0000 — completar cadastro do estabelecimento antes de transmitir.",
     "TIPO_ITEM=00 em 0200 exige confirmação do contador para uso em produção.",
     "IND_FRT=9 quando frete não informado — revise.",
-    "E110 não gerado automaticamente neste MVP — apuração exige módulo dedicado.",
+    "C170 omitido para NF-e/NFC-e (facultativo no Guia quando há chave de acesso) — detalhe do item no XML.",
     "Arquivo destinado à pré-validação interna e importação no PVA oficial.",
   ];
 
@@ -523,7 +556,8 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     context.documents.flatMap((d) => d.items.map((i) => i.unit || "UN")).filter(Boolean),
   );
   for (const u of units) {
-    bloco0.push({ type: "0190", fields: ["0190", u!, u!] });
+    const unid = efdUnid(u);
+    bloco0.push({ type: "0190", fields: ["0190", unid, unid] });
   }
   bloco0.push(...build0200(context));
   bloco0.push({ type: "0990", fields: ["0990", String(bloco0.length + 1)] });
@@ -536,7 +570,58 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   ];
   blocoC.push({ type: "C990", fields: ["C990", String(blocoC.length + 1)] });
 
-  const body = [...bloco0, ...blocoC];
+  // Bloco D — sem CT-e/comunicação neste MVP (IND_MOV=1)
+  const blocoD: ObligationRecord[] = [
+    { type: "D001", fields: ["D001", "1"] },
+    { type: "D990", fields: ["D990", "2"] },
+  ];
+
+  // Bloco E — obrigatório; E110 com totais derivados dos C190 (não é parecer fiscal)
+  const e110 = buildE110FromC190(cFlat);
+  const blocoE: ObligationRecord[] = [
+    { type: "E001", fields: ["E001", "0"] },
+    {
+      type: "E100",
+      fields: ["E100", dateEfd(context.periodStart), dateEfd(context.periodEnd)],
+    },
+    e110,
+    { type: "E990", fields: ["E990", "4"] },
+  ];
+  warnings.push(
+    "E110 gerado com totais derivados dos C190 (débitos/créditos ICMS). Saldo anterior/ajustes zerados — conferir e completar no PVA.",
+  );
+  if (context.activityCode === "0") {
+    warnings.push(
+      "IND_ATIV=0 (industrial) exige E500/IPI no PVA — este rascunho não gera E500. Use IND_ATIV=1 se não for industrial.",
+    );
+  }
+
+  // Bloco 1 — 1010 obrigatório (todas as respostas N neste rascunho)
+  const bloco1: ObligationRecord[] = [
+    { type: "1001", fields: ["1001", "0"] },
+    {
+      type: "1010",
+      fields: [
+        "1010",
+        "N", // IND_EXP
+        "N", // IND_CCRF
+        "N", // IND_COMB
+        "N", // IND_USINA
+        "N", // IND_VA
+        "N", // IND_EE
+        "N", // IND_CART
+        "N", // IND_FORM
+        "N", // IND_AER
+        "N", // IND_GIAF1
+        "N", // IND_GIAF3
+        "N", // IND_GIAF4
+        "N", // IND_REST_RESSARC_COMPL_ICMS
+      ],
+    },
+    { type: "1990", fields: ["1990", "3"] },
+  ];
+
+  const body = [...bloco0, ...blocoC, ...blocoD, ...blocoE, ...bloco1];
   const counts = new Map<string, number>();
   for (const r of body) counts.set(r.type, (counts.get(r.type) || 0) + 1);
 
@@ -566,6 +651,53 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     records,
     lineage,
     warnings,
+  };
+}
+
+/**
+ * E110 (15 campos). Débitos/créditos = soma VL_ICMS dos C190 por IND_OPER do C100 pai.
+ * Ajustes e saldo anterior = 0 (exigem input manual / período anterior).
+ */
+function buildE110FromC190(cFlat: ObligationRecord[]): ObligationRecord {
+  let debits = money("0");
+  let credits = money("0");
+  let currentIndOper = "0";
+  for (const r of cFlat) {
+    if (r.type === "C100") {
+      currentIndOper = r.fields[1] || "0"; // IND_OPER
+      continue;
+    }
+    if (r.type !== "C190") continue;
+    // C190: REG CST CFOP ALIQ VL_OPR VL_BC VL_ICMS ...
+    const vlIcms = r.fields[6] || "0";
+    if (currentIndOper === "1") debits = debits.plus(money(vlIcms));
+    else credits = credits.plus(money(vlIcms));
+  }
+  const z = "0,00";
+  const vlDeb = moneyToEfd(debits);
+  const vlCred = moneyToEfd(credits);
+  const diff = debits.scaled - credits.scaled; // VL_SLD_CREDOR_ANT = 0
+  const sldApurado = diff > 0n ? moneyToEfd(new Money(diff)) : z;
+  const sldTransp = diff < 0n ? moneyToEfd(new Money(-diff)) : z;
+  return {
+    type: "E110",
+    fields: [
+      "E110",
+      vlDeb, // 02 VL_TOT_DEBITOS
+      z, // 03 VL_AJ_DEBITOS
+      z, // 04 VL_TOT_AJ_DEBITOS
+      z, // 05 VL_ESTORNOS_CRED
+      vlCred, // 06 VL_TOT_CREDITOS
+      z, // 07 VL_AJ_CREDITOS
+      z, // 08 VL_TOT_AJ_CREDITOS
+      z, // 09 VL_ESTORNOS_DEB
+      z, // 10 VL_SLD_CREDOR_ANT
+      sldApurado, // 11 VL_SLD_APURADO
+      z, // 12 VL_TOT_DED
+      sldApurado, // 13 VL_ICMS_RECOLHER (deduções 0)
+      sldTransp, // 14 VL_SLD_CREDOR_TRANSPORTAR
+      z, // 15 DEB_ESP
+    ],
   };
 }
 

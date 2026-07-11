@@ -24,7 +24,7 @@ const emptyForm = {
   uf: "SP",
   companyName: "",
   profile: "A" as "A" | "B" | "C",
-  activityCode: "0",
+  activityCode: "1",
   purpose: "0" as "0" | "1",
   periodStart: "2026-03-01",
   periodEnd: "2026-03-31",

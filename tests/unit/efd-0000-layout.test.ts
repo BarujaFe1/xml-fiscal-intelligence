@@ -111,4 +111,17 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     expect(c100).toMatch(/,\d{2}/);
     expect(c100).not.toMatch(/\d\.\d{2}\|/);
   });
+
+  it("sanitiza pipe em descrições para não quebrar o leiaute", async () => {
+    const { efdSanitize } = await import("@/modules/obligations/efd-icms-ipi/plugin");
+    expect(efdSanitize("ACTIVE 1:100 | 50 LITROS")).toBe("ACTIVE 1:100 / 50 LITROS");
+    expect(efdSanitize("a|b|c", 5)).toBe("a/b/c");
+  });
+
+  it("omite C170 para NF-e com chave (facultativo)", async () => {
+    const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
+    const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
+    expect(lines.some((l) => l.startsWith("|C170|"))).toBe(false);
+    expect(lines.some((l) => l.startsWith("|C190|"))).toBe(true);
+  });
 });

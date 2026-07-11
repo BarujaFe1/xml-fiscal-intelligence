@@ -8,7 +8,7 @@ export const DEMO_ESTABLISHMENT: LocalEstablishmentInput = {
   uf: "SP",
   companyName: "EMPRESA DEMO EMITENTE LTDA",
   profile: "A",
-  activityCode: "0",
+  activityCode: "1",
   purpose: "0",
   periodStart: "2026-03-01",
   periodEnd: "2026-03-31",
