@@ -90,7 +90,7 @@ export async function processZipBatchInMemory(
     skippedDuplicateCount: 0,
     newDocumentCount: 0,
     totalValue: 0,
-    healthScore: 0,
+    healthScore: null,
     progress: 5,
     progressMessage: "Extraindo ZIP com segurança...",
     createdAt: now,
@@ -286,7 +286,9 @@ export async function processZipBatchInMemory(
     log(batchId, "info", "relationships", `${relationships.length} vínculos inferidos`),
   );
 
-  const quality = calculateBatchQuality(batch, store.documents, store.items, store.fields, errors);
+  const quality = calculateBatchQuality(batch, store.documents, store.items, store.fields, errors, {
+    reusedDocumentCount: skippedIncremental,
+  });
   batch.healthScore = quality.score;
   batch.quality = quality;
   batch.status =

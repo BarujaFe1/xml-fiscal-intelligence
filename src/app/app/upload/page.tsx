@@ -124,8 +124,8 @@ export default function UploadPage() {
       const skipped = store.batch.skippedDuplicateCount || 0;
       toast.success(
         skipped
-          ? `Lote: ${store.batch.newDocumentCount} novos · ${skipped} já conhecidos · score ${store.batch.healthScore}`
-          : `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · score ${store.batch.healthScore}`,
+          ? `Lote: ${store.batch.newDocumentCount} novos · ${skipped} já conhecidos · índice ${store.batch.healthScore ?? "não avaliado"}`
+          : `Lote processado: ${store.batch.validXml} XMLs · ${store.items.length} itens · índice ${store.batch.healthScore ?? "não avaliado"}`,
       );
       router.push(`/app/batches/${store.batch.id}`);
     } catch (err) {

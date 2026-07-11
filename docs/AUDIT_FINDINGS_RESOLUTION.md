@@ -5,9 +5,9 @@
 
 | ID | Achado | Evidência recebida | Reprodução | Estado | Correção | Teste de regressão | Commit |
 | -- | ------ | ------------------ | ---------- | ------ | -------- | ------------------ | ------ |
-| DATA-001 | Score premia lote sem docs avaliados | Auditoria: 1147 XMLs todos conhecidos → score 80 “saudável” | `documents.length\|\|1` + dims em 100 com amostra 0 | `confirmed` | MetricEvaluation; score null se não avaliado | `tests/unit/quality-score.test.ts` | TBD |
+| DATA-001 | Score premia lote sem docs avaliados | Auditoria: 1147 XMLs todos conhecidos → score 80 “saudável” | `documents.length\|\|1` + dims em 100 com amostra 0 | `verified` | MetricEvaluation; score null se não avaliado; UI PT-BR | `tests/unit/quality-score.test.ts` | TBD |
 | DATA-002 | Incremental sem linhagem de reutilizados | Relato | skip só em importLogs; sem ReusedDocumentReference | `confirmed` | pending | — | — |
-| DATA-003 | Métricas 0/0 confundem | Relato | mesmo root cause DATA-001 | `confirmed` | coberto com DATA-001 | quality-score | TBD |
+| DATA-003 | Métricas 0/0 confundem | Relato | mesmo root cause DATA-001 | `verified` | coberto com DATA-001 | quality-score | TBD |
 | DATA-004 | Logs exportam IDs completos | Relato | revisar export de logs | `pending` | — | — | — |
 | EXPORT-001 | JSON vazio não autodescritivo | Relato | auditar exporters | `pending` | — | — | — |
 | EXPORT-002 | CSV só cabeçalho | Relato | auditar | `pending` | — | — | — |

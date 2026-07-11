@@ -280,7 +280,7 @@ th,td{border-bottom:1px solid #24314d;padding:8px;text-align:left}
 </head>
 <body>
 <h1>XML Fiscal Intelligence</h1>
-<p class="muted">Relatório do lote ${batch.name} · Score ${batch.healthScore}</p>
+<p class="muted">Relatório do lote ${batch.name} · Índice ${batch.healthScore ?? "não avaliado"}</p>
 <div class="grid">
 <div class="metric"><span class="muted">XMLs</span><b>${batch.totalXml}</b></div>
 <div class="metric"><span class="muted">Válidos</span><b>${batch.validXml}</b></div>

@@ -226,11 +226,11 @@ export function buildParties(store: BatchStore): PartyRow[] {
 }
 
 export type BatchCompareResult = {
-  a: { id: string; name: string; docs: number; value: number; score: number };
-  b: { id: string; name: string; docs: number; value: number; score: number };
+  a: { id: string; name: string; docs: number; value: number; score: number | null };
+  b: { id: string; name: string; docs: number; value: number; score: number | null };
   deltaDocs: number;
   deltaValue: number;
-  deltaScore: number;
+  deltaScore: number | null;
   newEmitters: PartyRow[];
   goneEmitters: PartyRow[];
   recurringEmitters: Array<PartyRow & { prevTotal: number; delta: number }>;
@@ -291,7 +291,10 @@ export function compareBatches(a: BatchStore, b: BatchStore): BatchCompareResult
     },
     deltaDocs: b.batch.validXml - a.batch.validXml,
     deltaValue: b.batch.totalValue - a.batch.totalValue,
-    deltaScore: b.batch.healthScore - a.batch.healthScore,
+    deltaScore:
+      a.batch.healthScore == null || b.batch.healthScore == null
+        ? null
+        : b.batch.healthScore - a.batch.healthScore,
     newEmitters,
     goneEmitters,
     recurringEmitters,

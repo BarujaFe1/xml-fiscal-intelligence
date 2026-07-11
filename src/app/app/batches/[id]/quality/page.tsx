@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BatchTabs } from "@/components/batches/batch-tabs";
+import { evaluationStatusLabel, formatHealthScore } from "@/lib/quality";
 import { alertHref } from "@/lib/analytics";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 
@@ -15,13 +16,15 @@ export default function QualityPage() {
 
   if (!store) return <div className="skeleton h-64 rounded-2xl" />;
   const q = store.batch.quality;
+  const scoreLabel = formatHealthScore(store.batch.healthScore);
+  const statusLabel = evaluationStatusLabel(q?.evaluationStatus);
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Data Quality</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Qualidade dos dados</p>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Fiscal Insights
+          Indicadores fiscais do lote
         </h1>
       </div>
       <BatchTabs batchId={params.id} />
@@ -31,26 +34,40 @@ export default function QualityPage() {
           <CardContent className="p-6 text-center relative">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.15),transparent_60%)]" />
             <div className="relative">
-              <div className="text-sm text-slate-400">Health Score</div>
-              <div className="mt-2 text-5xl font-bold text-sky-300">{store.batch.healthScore}</div>
-              <div className="mt-2 text-xs text-slate-500">0–100 · ver README</div>
+              <div className="text-sm text-slate-400">Índice de saúde</div>
+              <div className="mt-2 text-5xl font-bold text-sky-300">{scoreLabel}</div>
+              <div className="mt-2 text-xs text-slate-500">{statusLabel}</div>
+              {q?.formulaVersion && (
+                <div className="mt-1 text-[10px] text-slate-600">fórmula {q.formulaVersion}</div>
+              )}
             </div>
           </CardContent>
         </Card>
         <Card className="md:col-span-3">
           <CardHeader>
-            <CardTitle>Breakdown</CardTitle>
-            <CardDescription>Componentes ponderados do score</CardDescription>
+            <CardTitle>Componentes</CardTitle>
+            <CardDescription>
+              Pesos e status por dimensão — sem amostra = não avaliado (não é 100)
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {q &&
-              Object.entries(q.breakdown).map(([k, v]) => (
+              Object.entries(q.dimensions).map(([k, dim]) => (
                 <div key={k} className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
                   <div className="text-xs text-slate-500">{k}</div>
-                  <div className="text-xl font-semibold">{v}</div>
-                  <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-sky-400" style={{ width: `${v}%` }} />
+                  <div className="text-xl font-semibold">
+                    {dim.score == null ? "—" : dim.score}
                   </div>
+                  <div className="text-[10px] text-slate-500 mt-1">
+                    {dim.status}
+                    {dim.denominator > 0 ? ` · ${dim.numerator}/${dim.denominator}` : ""}
+                    {q.weights[k] != null ? ` · peso ${Math.round(q.weights[k] * 100)}%` : ""}
+                  </div>
+                  {dim.score != null && (
+                    <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full bg-sky-400" style={{ width: `${dim.score}%` }} />
+                    </div>
+                  )}
                 </div>
               ))}
           </CardContent>

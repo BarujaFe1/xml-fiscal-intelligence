@@ -100,7 +100,7 @@ export default function BatchesPage() {
                     <td className="py-3 pr-3">
                       {b.validXml}/{b.totalXml}
                     </td>
-                    <td className="py-3 pr-3">{b.healthScore}</td>
+                    <td className="py-3 pr-3">{b.healthScore == null ? "—" : b.healthScore}</td>
                     <td className="py-3 pr-3">{formatCurrency(b.totalValue)}</td>
                     <td className="py-3 pr-3">
                       <Badge tone={b.status === "completed" ? "success" : b.status === "failed" ? "error" : "warning"}>

@@ -97,7 +97,8 @@ export interface Batch {
   skippedDuplicateCount?: number;
   newDocumentCount?: number;
   totalValue: number;
-  healthScore: number;
+  /** null when batch was not evaluated (e.g. zero new documents). */
+  healthScore: number | null;
   progress: number;
   progressMessage: string;
   createdAt: string;
@@ -275,21 +276,56 @@ export interface QualityWarning {
   count: number;
 }
 
+export type MetricEvaluationStatus =
+  | "evaluated"
+  | "not_evaluated"
+  | "not_applicable"
+  | "insufficient_sample"
+  | "error";
+
+export type MetricEvaluation = {
+  status: MetricEvaluationStatus;
+  score: number | null;
+  numerator: number;
+  denominator: number;
+  coverage: number | null;
+  confidence: number | null;
+  reasons: string[];
+};
+
+export type BatchEvaluationStatus =
+  | "analyzed"
+  | "analyzed_with_warnings"
+  | "analyzed_with_errors"
+  | "no_new_documents"
+  | "duplicates_only"
+  | "processing_failed"
+  | "partial_processing"
+  | "insufficient_coverage"
+  | "not_evaluated";
+
 export interface QualityReport {
-  score: number;
+  /** null when evaluationStatus is not_evaluated / no_new_documents / duplicates_only without sample. */
+  score: number | null;
+  evaluationStatus: BatchEvaluationStatus;
+  formulaVersion: string;
+  weights: Record<string, number>;
+  dimensions: Record<string, MetricEvaluation>;
   breakdown: {
-    xmlValidity: number;
-    essentialFields: number;
-    duplicates: number;
-    dateConsistency: number;
-    valueConsistency: number;
-    itemCompleteness: number;
-    fiscalIdentification: number;
+    xmlValidity: number | null;
+    essentialFields: number | null;
+    duplicates: number | null;
+    dateConsistency: number | null;
+    valueConsistency: number | null;
+    itemCompleteness: number | null;
+    fiscalIdentification: number | null;
   };
   warnings: QualityWarning[];
   recommendations: string[];
   metrics: {
-    validXmlPct: number;
+    evaluatedDocumentCount: number;
+    reusedDocumentCount: number;
+    validXmlPct: number | null;
     typeDistribution: Record<string, number>;
     missingEssential: Record<string, number>;
     topMissingFields: Array<{ path: string; missingPct: number }>;
