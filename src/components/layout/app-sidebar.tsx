@@ -17,6 +17,9 @@ import {
   CreditCard,
   CloudUpload,
   HardDrive,
+  Building2,
+  Shield,
+  ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,7 @@ const navGroups = [
       { href: "/app", label: "Visão geral", icon: LayoutDashboard },
       { href: "/app/upload", label: "Importações", icon: Upload },
       { href: "/app/batches", label: "Lotes", icon: FolderOpen },
+      { href: "/app/companies", label: "Empresas", icon: Building2 },
     ],
   },
   {
@@ -35,6 +39,7 @@ const navGroups = [
       { href: "/app/search", label: "Busca", icon: Search },
       { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
       { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
+      { href: "/app/reconciliation", label: "Conciliação", icon: ArrowLeftRight },
       { href: "/app/obligations", label: "Obrigações", icon: Landmark },
       {
         href: "/app/sped",
@@ -47,6 +52,7 @@ const navGroups = [
     title: "Administração",
     links: [
       { href: "/app/migrate", label: "Migrar lotes", icon: CloudUpload },
+      { href: "/app/admin", label: "Admin / suporte", icon: Shield },
       { href: "/app/ai", label: "IA (demonstração)", icon: Bot },
       { href: "/app/billing", label: "Planos", icon: CreditCard },
       { href: "/app/settings", label: "Configurações", icon: Settings },
