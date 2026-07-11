@@ -9,10 +9,24 @@ import {
   Upload,
   BarChart3,
 } from "lucide-react";
+import { PARSER_CAPABILITIES } from "@/lib/parser/capability-registry";
+
+const STATUS_LABEL: Record<string, string> = {
+  supported: "Suportado",
+  partial: "Parcial",
+  best_effort: "Best-effort",
+  unknown: "Desconhecido",
+};
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-sky-500 focus:px-3 focus:py-2 focus:text-slate-950"
+      >
+        Ir para o conteúdo
+      </a>
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-500/15">
@@ -41,7 +55,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main>
+      <main id="conteudo-principal">
         <section className="relative overflow-hidden grid-bg">
           <div className="mx-auto max-w-6xl px-6 pb-20 pt-10 md:pt-16">
             <div className="max-w-3xl">
@@ -134,14 +148,17 @@ export default function LandingPage() {
             Tipos suportados
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {[
-              { t: "NF-e / NFC-e", d: "nfeProc, itens, impostos, protocolo — CNPJ numérico e alfanumérico." },
-              { t: "CT-e", d: "Prestação, carga, tomador, documentos vinculados." },
-              { t: "NFS-e", d: "Best-effort municipal; status explícito quando o schema for desconhecido." },
-            ].map((x) => (
-              <div key={x.t} className="rounded-2xl border border-emerald-400/15 bg-emerald-500/5 p-5">
-                <div className="font-semibold text-emerald-200">{x.t}</div>
-                <p className="mt-2 text-sm text-slate-400">{x.d}</p>
+            {PARSER_CAPABILITIES.map((cap) => (
+              <div key={cap.family} className="rounded-2xl border border-emerald-400/15 bg-emerald-500/5 p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-emerald-200">{cap.family}</div>
+                  <span className="text-[10px] uppercase tracking-wide text-emerald-400/80">
+                    {STATUS_LABEL[cap.status] || cap.status}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-slate-400">
+                  {cap.knownLimitations[0] || cap.standard}
+                </p>
               </div>
             ))}
           </div>

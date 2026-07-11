@@ -10,6 +10,7 @@ import type {
   QualityWarning,
 } from "@/types";
 import { isValidCnpjOrCpf } from "@/lib/fiscal/cnpj";
+import { isProtocolRequired } from "@/modules/audit/protocol-eligibility";
 
 export const QUALITY_FORMULA_VERSION = "2.0.0";
 
@@ -281,9 +282,7 @@ export function calculateBatchQuality(
     (d) => !isValidCnpjOrCpf(d.emitterDoc) || !isValidCnpjOrCpf(d.receiverDoc),
   ).length;
   const withoutKey = missingEssential.accessKey;
-  const protocolEligible = documents.filter(
-    (d) => d.documentType === "NFE" || d.documentType === "NFCE" || d.documentType === "CTE",
-  );
+  const protocolEligible = documents.filter((d) => isProtocolRequired(d).required);
   const withoutProtocol = protocolEligible.filter((d) => !d.protocol).length;
   const fiscalDenom = total + withoutKey + protocolEligible.length;
   const fiscalNumerator =
