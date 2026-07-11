@@ -3,7 +3,6 @@ import {
   ArrowRight,
   FileCode2,
   Lock,
-  Search,
   ShieldCheck,
   Sparkles,
   Table2,
@@ -176,18 +175,15 @@ export default function LandingPage() {
                 Conta SaaS exige Supabase configurado. Demonstração local usa IndexedDB neste navegador.
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-slate-950"
-              >
-                Criar conta
+            <div className="flex flex-wrap gap-4 text-sm">
+              <Link href="/termos" className="text-slate-400 hover:text-slate-200">
+                Termos
               </Link>
-              <Link
-                href="/app"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm text-slate-200"
-              >
-                <Search className="h-4 w-4" /> Ver demonstração
+              <Link href="/privacidade" className="text-slate-400 hover:text-slate-200">
+                Privacidade
+              </Link>
+              <Link href="/login" className="text-slate-400 hover:text-slate-200">
+                Entrar
               </Link>
             </div>
           </div>

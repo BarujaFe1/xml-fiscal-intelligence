@@ -24,7 +24,7 @@ const display = Syne({
 export const metadata: Metadata = {
   title: "XML Fiscal Intelligence",
   description:
-    "Transforme lotes de XML fiscal (NF-e, CT-e, NFS-e) em planilhas, busca avançada e análises premium.",
+    "Organize, audite e prepare documentos fiscais com rastreabilidade. Diagnóstico EFD assistido — não substitui PVA nem o contador.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

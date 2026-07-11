@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "efd:sample": "tsx --tsconfig tsconfig.json scripts/generate-sample-efd.ts",
     "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts"
   },
