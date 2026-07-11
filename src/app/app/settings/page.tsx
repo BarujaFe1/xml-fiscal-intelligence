@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { Suspense, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
+import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
+import { FiscalContextSelector } from "@/components/layout/fiscal-context-selector";
 
 function readFlag(key: string, fallback = true) {
   if (typeof window === "undefined") return fallback;
@@ -32,6 +35,12 @@ export default function SettingsPage() {
           Preferências locais. Conta SaaS e sincronização em nuvem dependem de Supabase configurado.
         </p>
       </div>
+
+      <LocalPersistenceBanner />
+
+      <Suspense fallback={<div className="skeleton h-40 rounded-xl" />}>
+        <FiscalContextSelector />
+      </Suspense>
 
       <Card>
         <CardHeader>
@@ -63,6 +72,12 @@ export default function SettingsPage() {
           <p>
             Persistência atual: IndexedDB neste navegador (aviso no topo do app). Schema Supabase em{" "}
             <code className="text-sky-300">supabase/migrations/</code> para evolução multiempresa.
+          </p>
+          <p>
+            <Link href="/app/migrate" className="text-sky-300 hover:underline">
+              Assistente de migração IndexedDB → nuvem
+            </Link>{" "}
+            — falha de forma segura sem Supabase.
           </p>
         </CardContent>
       </Card>

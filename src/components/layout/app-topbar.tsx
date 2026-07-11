@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { cn } from "@/lib/utils";
+import { FiscalContextSelector } from "@/components/layout/fiscal-context-selector";
 
 const links = [
   { href: "/app", label: "Visão geral" },
   { href: "/app/upload", label: "Importações" },
   { href: "/app/batches", label: "Lotes" },
   { href: "/app/search", label: "Busca" },
+  { href: "/app/migrate", label: "Migrar" },
   { href: "/app/obligations", label: "Obrigações" },
   { href: "/app/billing", label: "Planos" },
   { href: "/app/settings", label: "Configurações" },
@@ -21,8 +23,8 @@ export function AppTopbar() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
-      <div className="flex h-14 items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center gap-3">
+      <div className="flex h-14 items-center justify-between gap-3 px-4 lg:px-6">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
             className="lg:hidden text-slate-300"
@@ -31,12 +33,15 @@ export function AppTopbar() {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="text-sm text-slate-400">
+          <div className="text-sm text-slate-400 shrink-0">
             Ambiente <span className="text-slate-200">local de demonstração</span>
             <span className="hidden sm:inline text-slate-600"> · IndexedDB</span>
           </div>
+          <Suspense fallback={null}>
+            <FiscalContextSelector compact />
+          </Suspense>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() =>
