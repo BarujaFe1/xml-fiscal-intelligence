@@ -14,6 +14,8 @@ import {
   ShieldAlert,
   Upload,
   FileCode2,
+  Landmark,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,8 +26,10 @@ const links = [
   { href: "/app/search", label: "Busca", icon: Search },
   { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
   { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
+  { href: "/app/obligations", label: "Obrigações", icon: Landmark },
   { href: "/app/sped", label: "SPED preview", icon: Scale },
   { href: "/app/ai", label: "IA fiscal", icon: Bot },
+  { href: "/app/billing", label: "Assinatura", icon: CreditCard },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
