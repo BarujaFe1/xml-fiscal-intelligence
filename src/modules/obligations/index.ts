@@ -22,3 +22,9 @@ export {
   type LocalEstablishmentInput,
   type LocalGenerateResult,
 } from "@/modules/obligations/generate-local";
+export {
+  DEMO_ESTABLISHMENT,
+  DEMO_BATCH_ID,
+  fetchObligationDemo,
+  type ObligationDemoPayload,
+} from "@/modules/obligations/demo-fixtures";
