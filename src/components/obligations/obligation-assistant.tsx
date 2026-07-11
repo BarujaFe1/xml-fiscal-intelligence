@@ -15,6 +15,7 @@ import {
   OBLIGATION_LABELS,
   type ObligationId,
 } from "@/modules/obligations";
+import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 import type { Batch, BatchStore } from "@/types";
 
 const emptyForm = {
@@ -67,11 +68,11 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
       setDemoStore(null);
       if (s?.batch.cnpjLabel) setForm((f) => ({ ...f, cnpj: s.batch.cnpjLabel || f.cnpj }));
       if (s?.batch.year && s?.batch.month) {
-        const m = String(s.batch.month).padStart(2, "0");
+        const bounds = periodBoundsFromYearMonth(s.batch.year, s.batch.month);
         setForm((f) => ({
           ...f,
-          periodStart: `${s.batch.year}-${m}-01`,
-          periodEnd: `${s.batch.year}-${m}-28`,
+          periodStart: bounds.periodStart,
+          periodEnd: bounds.periodEnd,
         }));
       }
     });
