@@ -32,11 +32,17 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAuthRoute = path.startsWith("/login") || path.startsWith("/signup") || path.startsWith("/auth");
+  const isAuthRoute =
+    path.startsWith("/login") ||
+    path.startsWith("/signup") ||
+    path.startsWith("/auth") ||
+    path.startsWith("/forgot-password") ||
+    path.startsWith("/reset-password");
   const isProtected =
     path.startsWith("/app/saas") ||
     path.startsWith("/app/billing") ||
     path.startsWith("/app/companies") ||
+    path.startsWith("/app/admin") ||
     path.startsWith("/app/obligations");
 
   if (isProtected && !user) {
