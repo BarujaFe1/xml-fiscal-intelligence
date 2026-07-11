@@ -5,6 +5,7 @@
 
 export type EntitlementKey =
   | "canGenerateEfdIcmsIpi"
+  | "canGenerateObligations"
   | "canUsePrivacyMode"
   | "hasApiAccess"
   | "hasAdvancedAudit"
@@ -25,6 +26,7 @@ export const PLAN_SEEDS = {
     label: "Teste",
     entitlements: {
       canGenerateEfdIcmsIpi: true,
+      canGenerateObligations: true,
       canUsePrivacyMode: true,
       hasApiAccess: false,
       hasAdvancedAudit: true,
@@ -43,6 +45,7 @@ export const PLAN_SEEDS = {
     label: "Essencial",
     entitlements: {
       canGenerateEfdIcmsIpi: true,
+      canGenerateObligations: true,
       canUsePrivacyMode: true,
       hasApiAccess: false,
       hasAdvancedAudit: true,
@@ -61,6 +64,7 @@ export const PLAN_SEEDS = {
     label: "Profissional",
     entitlements: {
       canGenerateEfdIcmsIpi: true,
+      canGenerateObligations: true,
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
@@ -79,6 +83,7 @@ export const PLAN_SEEDS = {
     label: "Escritório Contábil",
     entitlements: {
       canGenerateEfdIcmsIpi: true,
+      canGenerateObligations: true,
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
@@ -97,6 +102,7 @@ export const PLAN_SEEDS = {
     label: "Enterprise",
     entitlements: {
       canGenerateEfdIcmsIpi: true,
+      canGenerateObligations: true,
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
