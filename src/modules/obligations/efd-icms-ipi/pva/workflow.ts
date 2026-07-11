@@ -94,3 +94,34 @@ export function saveLocalPvaRun(record: PvaValidationRecord): void {
   all.unshift(record);
   localStorage.setItem(LS_KEY, JSON.stringify(all.slice(0, 50)));
 }
+
+export type PvaCompareResult = {
+  leftId: string;
+  rightId: string;
+  added: PvaValidationImport["issues"];
+  removed: PvaValidationImport["issues"];
+  unchangedCount: number;
+};
+
+function issueKey(issue: PvaValidationImport["issues"][number]): string {
+  return `${issue.code || ""}|${issue.severity || ""}|${issue.message}`;
+}
+
+/** Diff two registered PVA runs by issue identity (code+severity+message). */
+export function comparePvaRuns(
+  left: PvaValidationRecord,
+  right: PvaValidationRecord,
+): PvaCompareResult {
+  const leftKeys = new Set(left.issues.map(issueKey));
+  const rightKeys = new Set(right.issues.map(issueKey));
+  const added = right.issues.filter((i) => !leftKeys.has(issueKey(i)));
+  const removed = left.issues.filter((i) => !rightKeys.has(issueKey(i)));
+  const unchangedCount = left.issues.filter((i) => rightKeys.has(issueKey(i))).length;
+  return {
+    leftId: left.id,
+    rightId: right.id,
+    added,
+    removed,
+    unchangedCount,
+  };
+}

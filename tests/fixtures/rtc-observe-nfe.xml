@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic RTC observation fixture — anonymized; not an official SEFAZ sample.
+     Observe-only: tags preserved in flatten; amounts must NOT be invented by parsers. -->
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35260112345678000190550010000000011123456789" versao="4.00">
+      <ide>
+        <cUF>35</cUF>
+        <mod>55</mod>
+        <serie>1</serie>
+        <nNF>1</nNF>
+        <dhEmi>2026-07-01T10:00:00-03:00</dhEmi>
+        <tpNF>1</tpNF>
+        <tpAmb>2</tpAmb>
+      </ide>
+      <emit>
+        <CNPJ>11222333000181</CNPJ>
+        <xNome>EMITENTE TESTE RTC</xNome>
+        <enderEmit><UF>SP</UF></enderEmit>
+      </emit>
+      <dest>
+        <CNPJ>12ABC34501DE35</CNPJ>
+        <xNome>DEST ALFANUM</xNome>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>1</cProd>
+          <xProd>Item RTC observe</xProd>
+          <NCM>84713012</NCM>
+          <CFOP>5102</CFOP>
+          <qCom>1.0000</qCom>
+          <vUnCom>100.00</vUnCom>
+          <vProd>100.00</vProd>
+        </prod>
+        <imposto>
+          <ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>100.00</vBC><pICMS>18.00</pICMS><vICMS>18.00</vICMS></ICMS00></ICMS>
+          <!-- Transitional RTC-like container names for observeRtcTags -->
+          <IBSCBS>
+            <gIBS><vIBS>0.00</vIBS></gIBS>
+            <gCBS><vCBS>0.00</vCBS></gCBS>
+          </IBSCBS>
+        </imposto>
+      </det>
+      <total>
+        <ICMSTot>
+          <vProd>100.00</vProd>
+          <vNF>100.00</vNF>
+          <vICMS>18.00</vICMS>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+</nfeProc>

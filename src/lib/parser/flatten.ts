@@ -40,7 +40,21 @@ function normalizeValue(value: unknown): FlatValue {
   if (typeof value === "object" && value !== null && "#text" in (value as object)) {
     return normalizeValue((value as Record<string, unknown>)["#text"]);
   }
-  return String(value);
+  // Never stringify objects/arrays into UI garbage like "[object Object]" / "text[["
+  return null;
+}
+
+/** Namespace-stripped path that keeps array indices (det[0].prod.xProd). */
+export function indexedNormalizedPath(pathOriginal: string): string {
+  return pathOriginal
+    .split(".")
+    .map((part) => {
+      const m = part.match(/^(.+)\[(\d+)\]$/);
+      if (m) return `${stripNamespace(m[1]!)}[${m[2]!}]`;
+      return stripNamespace(part);
+    })
+    .filter(Boolean)
+    .join(".");
 }
 
 /**
@@ -148,7 +162,9 @@ export function flattenXmlObject(
 export function flatFieldsToRecord(fields: FlatField[]): Record<string, FlatValue> {
   const record: Record<string, FlatValue> = {};
   for (const field of fields) {
-    record[field.pathNormalized || field.pathOriginal] = field.value;
+    const key = indexedNormalizedPath(field.pathOriginal) || field.pathNormalized || field.pathOriginal;
+    // Keep first occurrence if duplicate keys (should not happen with indices)
+    if (!(key in record)) record[key] = field.value;
   }
   return record;
 }

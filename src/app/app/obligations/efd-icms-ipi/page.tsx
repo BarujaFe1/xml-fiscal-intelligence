@@ -35,6 +35,16 @@ export default function ObligationsEfdPage() {
   const [pvaReport, setPvaReport] = useState("");
   const [pvaBusy, setPvaBusy] = useState(false);
   const [pvaRecord, setPvaRecord] = useState<Record<string, unknown> | null>(null);
+  const [pvaRuns, setPvaRuns] = useState<
+    Array<{ id: string; importedAt: string; pvaVersion: string; resultStatus: string }>
+  >([]);
+  const [compareLeft, setCompareLeft] = useState("");
+  const [compareRight, setCompareRight] = useState("");
+  const [compareResult, setCompareResult] = useState<{
+    added: number;
+    removed: number;
+    unchangedCount: number;
+  } | null>(null);
   const [compKind, setCompKind] = useState<ComplementaryKind>("accountant");
   const [compPreview, setCompPreview] = useState("");
   const [compMsg, setCompMsg] = useState("");
@@ -58,7 +68,54 @@ export default function ObligationsEfdPage() {
       setBatches(list);
       if (list[0]) setBatchId(list[0].id);
     });
+    void import("@/modules/obligations/efd-icms-ipi/pva/workflow").then(({ loadLocalPvaRuns }) => {
+      const runs = loadLocalPvaRuns();
+      setPvaRuns(
+        runs.map((r) => ({
+          id: r.id,
+          importedAt: r.importedAt,
+          pvaVersion: r.pvaVersion,
+          resultStatus: r.resultStatus,
+        })),
+      );
+    });
   }, []);
+
+  async function refreshPvaRuns() {
+    const { loadLocalPvaRuns } = await import("@/modules/obligations/efd-icms-ipi/pva/workflow");
+    const runs = loadLocalPvaRuns();
+    setPvaRuns(
+      runs.map((r) => ({
+        id: r.id,
+        importedAt: r.importedAt,
+        pvaVersion: r.pvaVersion,
+        resultStatus: r.resultStatus,
+      })),
+    );
+  }
+
+  async function runPvaCompare() {
+    if (!compareLeft || !compareRight || compareLeft === compareRight) {
+      toast.error("Selecione duas execuções PVA distintas");
+      return;
+    }
+    const { loadLocalPvaRuns, comparePvaRuns } = await import(
+      "@/modules/obligations/efd-icms-ipi/pva/workflow"
+    );
+    const runs = loadLocalPvaRuns();
+    const left = runs.find((r) => r.id === compareLeft);
+    const right = runs.find((r) => r.id === compareRight);
+    if (!left || !right) {
+      toast.error("Execuções não encontradas");
+      return;
+    }
+    const diff = comparePvaRuns(left, right);
+    setCompareResult({
+      added: diff.added.length,
+      removed: diff.removed.length,
+      unchangedCount: diff.unchangedCount,
+    });
+  }
 
   useEffect(() => {
     if (!batchId) return;
@@ -147,6 +204,7 @@ export default function ObligationsEfdPage() {
       try {
         const { saveLocalPvaRun } = await import("@/modules/obligations/efd-icms-ipi/pva/workflow");
         saveLocalPvaRun(data.record);
+        await refreshPvaRuns();
       } catch {
         // ignore
       }
@@ -450,6 +508,48 @@ export default function ObligationsEfdPage() {
             <pre className="text-xs overflow-auto max-h-48 rounded-xl bg-black/40 p-3">
               {JSON.stringify(pvaRecord, null, 2)}
             </pre>
+          )}
+          {pvaRuns.length >= 2 && (
+            <div className="space-y-2 rounded-xl border border-white/10 p-3">
+              <p className="text-sm text-slate-300">Comparar duas execuções PVA (local)</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <select
+                  className="rounded-lg border border-white/10 bg-slate-950 px-2 py-1.5 text-xs"
+                  value={compareLeft}
+                  onChange={(e) => setCompareLeft(e.target.value)}
+                  aria-label="PVA esquerda"
+                >
+                  <option value="">Execução A</option>
+                  {pvaRuns.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.pvaVersion} · {r.resultStatus} · {r.importedAt.slice(0, 19)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-lg border border-white/10 bg-slate-950 px-2 py-1.5 text-xs"
+                  value={compareRight}
+                  onChange={(e) => setCompareRight(e.target.value)}
+                  aria-label="PVA direita"
+                >
+                  <option value="">Execução B</option>
+                  {pvaRuns.map((r) => (
+                    <option key={`b-${r.id}`} value={r.id}>
+                      {r.pvaVersion} · {r.resultStatus} · {r.importedAt.slice(0, 19)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button type="button" variant="secondary" onClick={() => void runPvaCompare()}>
+                Diff de issues
+              </Button>
+              {compareResult && (
+                <p className="text-xs text-slate-400">
+                  +{compareResult.added} adicionados · −{compareResult.removed} removidos ·{" "}
+                  {compareResult.unchangedCount} inalterados
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
