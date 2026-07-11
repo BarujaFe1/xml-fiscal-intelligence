@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { formatCnpj, isCnpjShape, normalizeCnpj, normalizeCpf } from "@/lib/fiscal/cnpj";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,17 +33,11 @@ export function formatDateTime(value?: string | null) {
 
 export function formatCnpjCpf(value?: string | null, mask = true) {
   if (!value) return "—";
-  const digits = value.replace(/\D/g, "");
-  if (digits.length === 14) {
-    const formatted = digits.replace(
-      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-      "$1.$2.$3/$4-$5",
-    );
-    if (!mask) return formatted;
-    return formatted.replace(/(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})-(\d{2})/, "$1.$2.$3/$4-XX");
-  }
-  if (digits.length === 11) {
-    const formatted = digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+  const n = normalizeCnpj(value);
+  if (isCnpjShape(n)) return formatCnpj(n, mask);
+  const cpf = normalizeCpf(value);
+  if (cpf.length === 11) {
+    const formatted = cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
     if (!mask) return formatted;
     return formatted.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, "$1.$2.***-**");
   }
@@ -59,8 +54,25 @@ export function parseNumber(value: unknown): number | undefined {
 export function asString(value: unknown): string | undefined {
   if (value === null || value === undefined) return undefined;
   if (typeof value === "object") return undefined;
+  if (typeof value === "boolean") return String(value);
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return undefined;
+    // 44-digit access keys lose precision when parsed as number — reject large magnitudes
+    if (Math.abs(value) >= 1e15) return undefined;
+    return String(value);
+  }
   const s = String(value).trim();
   return s.length ? s : undefined;
+}
+
+function getOwnOrNamespaced(record: Record<string, unknown>, part: string): unknown {
+  if (part in record) return record[part];
+  const needle = part.toLowerCase();
+  for (const [key, value] of Object.entries(record)) {
+    const clean = (key.includes(":") ? key.split(":").pop()! : key).toLowerCase();
+    if (clean === needle) return value;
+  }
+  return undefined;
 }
 
 export function deepGet(obj: unknown, paths: string[]): unknown {
@@ -69,8 +81,13 @@ export function deepGet(obj: unknown, paths: string[]): unknown {
     let cur: unknown = obj;
     let ok = true;
     for (const part of parts) {
-      if (cur && typeof cur === "object" && part in (cur as Record<string, unknown>)) {
-        cur = (cur as Record<string, unknown>)[part];
+      if (cur && typeof cur === "object" && !Array.isArray(cur)) {
+        const next = getOwnOrNamespaced(cur as Record<string, unknown>, part);
+        if (next === undefined) {
+          ok = false;
+          break;
+        }
+        cur = next;
       } else {
         ok = false;
         break;

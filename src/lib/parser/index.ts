@@ -10,6 +10,7 @@ import {
   extractNFeSummary,
 } from "@/lib/parser/extract";
 import { flatFieldsToRecord, flattenXmlObject } from "@/lib/parser/flatten";
+import { observeRtcTags } from "@/lib/parser/rtc-observe";
 import { classifyOperation } from "@/lib/fiscal/cfop";
 import type {
   DocumentField,
@@ -128,6 +129,10 @@ export function parseXmlDocument(params: {
   const documentType = detectDocumentType(parsed, xml);
   const flat = flattenXmlObject(parsed);
   const flattenedJson = flatFieldsToRecord(flat);
+  const rtcObservation = observeRtcTags({
+    flattenedKeys: Object.keys(flattenedJson),
+    rawXml: xml,
+  });
   const summary = buildSummary(documentType, parsed);
   const extractedItems = buildItems(documentType, parsed);
 
@@ -195,6 +200,7 @@ export function parseXmlDocument(params: {
     flattenedJson,
     parseStatus,
     parseErrors,
+    rtcObservation: rtcObservation.hasRtcHints ? rtcObservation : undefined,
     createdAt,
   };
 

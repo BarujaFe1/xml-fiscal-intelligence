@@ -7,6 +7,7 @@ import type {
   QualityReport,
   QualityWarning,
 } from "@/types";
+import { isValidCnpjOrCpf } from "@/lib/fiscal/cnpj";
 
 function rankCounts(values: Array<string | undefined>, limit = 10) {
   const map = new Map<string, number>();
@@ -21,9 +22,7 @@ function rankCounts(values: Array<string | undefined>, limit = 10) {
 }
 
 function isValidCnpjCpfFormat(doc?: string) {
-  if (!doc) return true;
-  const d = doc.replace(/\D/g, "");
-  return d.length === 11 || d.length === 14;
+  return isValidCnpjOrCpf(doc);
 }
 
 function clamp(n: number, min = 0, max = 100) {
@@ -223,13 +222,19 @@ export function calculateBatchQuality(
       message: `${withoutKey} documento(s) sem chave de acesso.`,
       count: withoutKey,
     });
-  if (withoutProtocol)
+  if (withoutProtocol) {
+    const pct = (withoutProtocol / total) * 100;
+    const severity = pct >= 60 ? "info" : "warning";
     warnings.push({
       code: "NO_PROTOCOL",
-      severity: "warning",
-      message: `${withoutProtocol} nota(s) sem protocolo de autorização.`,
+      severity,
+      message:
+        pct >= 60
+          ? `${withoutProtocol} nota(s) sem protocolo (${Math.round(pct)}% do lote). Incidência excepcional — revise parser/origem antes de tratar como problema fiscal em massa.`
+          : `${withoutProtocol} nota(s) sem protocolo de autorização (revisão recomendada; XMLs sem nfeProc podem ser legítimos conforme a origem).`,
       count: withoutProtocol,
     });
+  }
   if (itemsWithoutNcm)
     warnings.push({
       code: "NO_NCM",

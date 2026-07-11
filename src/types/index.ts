@@ -130,6 +130,8 @@ export interface DocumentSummary {
   flattenedJson: Record<string, string | number | boolean | null>;
   parseStatus: ParseStatus;
   parseErrors: string[];
+  /** Observation-only RTC tag hints — never invents tax amounts. */
+  rtcObservation?: { hasRtcHints: boolean; matchedKeys: string[]; note: string };
   createdAt: string;
 }
 

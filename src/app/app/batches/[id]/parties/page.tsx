@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BatchTabs } from "@/components/batches/batch-tabs";
 import { buildParties } from "@/lib/analytics";
+import { cnpjIncludes } from "@/lib/fiscal/cnpj";
 import { formatCurrency, formatCnpjCpf, formatDate } from "@/lib/utils";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 
@@ -29,7 +30,7 @@ export default function PartiesPage() {
       return (
         p.doc.toLowerCase().includes(needle) ||
         p.name.toLowerCase().includes(needle) ||
-        p.doc.replace(/\D/g, "").includes(needle.replace(/\D/g, ""))
+        cnpjIncludes(p.doc, q)
       );
     });
   }, [parties, q, role]);

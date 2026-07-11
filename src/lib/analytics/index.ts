@@ -1,4 +1,5 @@
 import type { BatchStore, DocumentItem, DocumentSummary } from "@/types";
+import { cnpjIncludes } from "@/lib/fiscal/cnpj";
 
 export type DocFilterState = {
   q: string;
@@ -99,7 +100,7 @@ export function filterDocuments(store: BatchStore, f: DocFilterState): DocumentS
     if (f.emitter) {
       const needle = f.emitter.toLowerCase();
       const hit =
-        d.emitterDoc?.includes(f.emitter.replace(/\D/g, "")) ||
+        cnpjIncludes(d.emitterDoc, f.emitter) ||
         d.emitterDoc?.toLowerCase().includes(needle) ||
         d.emitterName?.toLowerCase().includes(needle);
       if (!hit) return false;
@@ -107,7 +108,7 @@ export function filterDocuments(store: BatchStore, f: DocFilterState): DocumentS
     if (f.receiver) {
       const needle = f.receiver.toLowerCase();
       const hit =
-        d.receiverDoc?.includes(f.receiver.replace(/\D/g, "")) ||
+        cnpjIncludes(d.receiverDoc, f.receiver) ||
         d.receiverDoc?.toLowerCase().includes(needle) ||
         d.receiverName?.toLowerCase().includes(needle);
       if (!hit) return false;

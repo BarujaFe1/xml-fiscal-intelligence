@@ -12,12 +12,18 @@ import type {
 } from "@/modules/obligations/core/types";
 import { moneyAdd, moneyToEfd, moneyToFixed } from "@/lib/money/decimal";
 import { sha256Hex } from "@/lib/security/hash";
+import { isCnpjShape, normalizeCnpj, normalizeCpf } from "@/lib/fiscal/cnpj";
 
 export const EFD_ICMS_IPI_LAYOUT_2026 = "EFD_ICMS_IPI_2026_DRAFT";
 export const EFD_SOURCE_ID = "official:sped:efd-icms-ipi:pending-registry";
 
 function onlyDigits(v?: string) {
   return (v || "").replace(/\D/g, "");
+}
+
+/** CNPJ for EFD: preserve alphanumeric; strip only mask punctuation. */
+function efdCnpj(v?: string) {
+  return normalizeCnpj(v);
 }
 
 function pipe(fields: Array<string | undefined | null>): string {
@@ -32,8 +38,18 @@ function dateEfd(iso?: string): string {
   return `${day}${m}${y}`;
 }
 
+/** Split party document into EFD CNPJ vs CPF fields without destroying letters. */
+function partyDocFields(doc?: string): { cnpj: string; cpf: string } {
+  const cnpj = efdCnpj(doc);
+  if (isCnpjShape(cnpj)) return { cnpj, cpf: "" };
+  const cpf = normalizeCpf(doc);
+  if (cpf.length === 11) return { cnpj: "", cpf };
+  return { cnpj: "", cpf: "" };
+}
+
 function participantCode(doc?: string) {
-  const d = onlyDigits(doc);
+  const { cnpj, cpf } = partyDocFields(doc);
+  const d = cnpj || cpf;
   return d ? `P${d}` : "";
 }
 
@@ -125,7 +141,7 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     dateEfd(ctx.periodStart),
     dateEfd(ctx.periodEnd),
     ctx.companyName,
-    onlyDigits(ctx.cnpj),
+    efdCnpj(ctx.cnpj),
     "", // CPF
     ctx.uf,
     onlyDigits(ctx.ie),
@@ -139,7 +155,7 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     {
       record: "0000",
       field: "CNPJ",
-      value: onlyDigits(ctx.cnpj),
+      value: efdCnpj(ctx.cnpj),
       sourceType: "cadastro",
       sourceRef: ctx.establishmentId,
       ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_0000_CNPJ`,
@@ -169,6 +185,7 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
     ]) {
       const code = participantCode(party.doc);
       if (!code || map.has(code)) continue;
+      const docs = partyDocFields(party.doc);
       map.set(code, {
         type: "0150",
         fields: [
@@ -176,8 +193,8 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
           code,
           party.name || "",
           "1058",
-          onlyDigits(party.doc).length === 11 ? "" : onlyDigits(party.doc),
-          onlyDigits(party.doc).length === 11 ? onlyDigits(party.doc) : "",
+          docs.cnpj,
+          docs.cpf,
           onlyDigits(party.ie),
           party.mun || "",
           "",

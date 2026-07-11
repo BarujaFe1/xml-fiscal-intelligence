@@ -42,6 +42,34 @@ function getName(node: unknown) {
   );
 }
 
+/**
+ * Authorization protocol lives under infProt (inside protNFe/protCTe).
+ * Never treat the wrapper protNFe as the leaf — nProt is nested.
+ */
+export interface AuthorizationProtocol {
+  protocol?: string;
+  authorizationDate?: string;
+  cStat?: string;
+  xMotivo?: string;
+  accessKeyFromProt?: string;
+}
+
+export function extractAuthorizationProtocol(
+  parsed: unknown,
+  options?: { accessKeyFields?: string[] },
+): AuthorizationProtocol {
+  const infProt = findNode(parsed, ["infProt"]) as Record<string, unknown> | undefined;
+  if (!infProt) return {};
+  const accessKeyFields = options?.accessKeyFields || ["chNFe", "chCTe"];
+  return {
+    protocol: asString(deepGet(infProt, ["nProt"])),
+    authorizationDate: asString(deepGet(infProt, ["dhRecbto"])),
+    cStat: asString(deepGet(infProt, ["cStat"])),
+    xMotivo: asString(deepGet(infProt, ["xMotivo"])),
+    accessKeyFromProt: asString(deepGet(infProt, accessKeyFields)),
+  };
+}
+
 export interface FriendlySummary {
   accessKey?: string;
   number?: string;
@@ -79,7 +107,7 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
   const icmsTot =
     (findNode(parsed, ["ICMSTot"]) as Record<string, unknown> | undefined) ||
     (total && (findNode(total, ["ICMSTot"]) as Record<string, unknown> | undefined));
-  const prot = findNode(parsed, ["infProt", "protNFe"]) as Record<string, unknown> | undefined;
+  const auth = extractAuthorizationProtocol(parsed, { accessKeyFields: ["chNFe"] });
   const enderEmit = findNode(emit, ["enderEmit"]) as Record<string, unknown> | undefined;
   const enderDest = findNode(dest, ["enderDest"]) as Record<string, unknown> | undefined;
 
@@ -87,8 +115,7 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
     asString(deepGet(infNFe, ["@_Id", "Id"])) ||
     asString(deepGet(findNode(parsed, ["infNFe"]), ["@_Id"]));
   const accessKey =
-    asString(deepGet(prot, ["chNFe"])) ||
-    (idAttr ? idAttr.replace(/^NFe/i, "") : undefined);
+    auth.accessKeyFromProt || (idAttr ? idAttr.replace(/^NFe/i, "") : undefined);
 
   return {
     accessKey,
@@ -96,7 +123,7 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
     series: asString(deepGet(ide, ["serie"])),
     model: asString(deepGet(ide, ["mod"])),
     issueDate: asString(deepGet(ide, ["dhEmi", "dEmi"])),
-    authorizationDate: asString(deepGet(prot, ["dhRecbto"])),
+    authorizationDate: auth.authorizationDate,
     emitterDoc: getDoc(emit),
     emitterName: getName(emit),
     emitterCity: asString(deepGet(enderEmit, ["xMun"])),
@@ -114,8 +141,8 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
       (parseNumber(deepGet(icmsTot, ["vIPI"])) || 0) +
       (parseNumber(deepGet(icmsTot, ["vPIS"])) || 0) +
       (parseNumber(deepGet(icmsTot, ["vCOFINS"])) || 0) || undefined,
-    status: asString(deepGet(prot, ["cStat", "xMotivo"])),
-    protocol: asString(deepGet(prot, ["nProt"])),
+    status: auth.cStat || auth.xMotivo,
+    protocol: auth.protocol,
     nature: asString(deepGet(ide, ["natOp"])),
   };
 }
@@ -128,13 +155,12 @@ export function extractCTeSummary(parsed: unknown): FriendlySummary {
   const dest = findNode(parsed, ["dest"]) as Record<string, unknown> | undefined;
   const vPrest = findNode(parsed, ["vPrest"]) as Record<string, unknown> | undefined;
   const infCarga = findNode(parsed, ["infCarga"]) as Record<string, unknown> | undefined;
-  const prot = findNode(parsed, ["infProt", "protCTe"]) as Record<string, unknown> | undefined;
+  const auth = extractAuthorizationProtocol(parsed, { accessKeyFields: ["chCTe"] });
   const enderEmit = findNode(emit, ["enderEmit"]) as Record<string, unknown> | undefined;
 
   const idAttr = asString(deepGet(infCte, ["@_Id", "Id"]));
   const accessKey =
-    asString(deepGet(prot, ["chCTe"])) ||
-    (idAttr ? idAttr.replace(/^CTe/i, "") : undefined);
+    auth.accessKeyFromProt || (idAttr ? idAttr.replace(/^CTe/i, "") : undefined);
 
   const toma = findNode(parsed, ["toma3", "toma4", "toma"]) as Record<string, unknown> | undefined;
   const tomadorDoc = getDoc(toma) || getDoc(dest) || getDoc(rem);
@@ -145,7 +171,7 @@ export function extractCTeSummary(parsed: unknown): FriendlySummary {
     series: asString(deepGet(ide, ["serie"])),
     model: asString(deepGet(ide, ["mod"])) || "57",
     issueDate: asString(deepGet(ide, ["dhEmi", "dEmi"])),
-    authorizationDate: asString(deepGet(prot, ["dhRecbto"])),
+    authorizationDate: auth.authorizationDate,
     emitterDoc: getDoc(emit),
     emitterName: getName(emit),
     emitterCity: asString(deepGet(enderEmit, ["xMun"])) || asString(deepGet(ide, ["xMunIni"])),
@@ -157,8 +183,8 @@ export function extractCTeSummary(parsed: unknown): FriendlySummary {
     totalValue: parseNumber(deepGet(vPrest, ["vTPrest"])),
     productsValue: parseNumber(deepGet(infCarga, ["vCarga"])),
     freightValue: parseNumber(deepGet(vPrest, ["vRec"])),
-    status: asString(deepGet(prot, ["cStat", "xMotivo"])),
-    protocol: asString(deepGet(prot, ["nProt"])),
+    status: auth.cStat || auth.xMotivo,
+    protocol: auth.protocol,
     nature: asString(deepGet(ide, ["natOp"])),
     cfop: asString(deepGet(ide, ["CFOP"])),
   };

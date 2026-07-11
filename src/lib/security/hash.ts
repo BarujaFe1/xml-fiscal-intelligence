@@ -13,20 +13,8 @@ export async function sha256Hex(content: string): Promise<string> {
   return createHash("sha256").update(content, "utf8").digest("hex");
 }
 
-export function isValidCnpjFormat(doc?: string): boolean {
-  if (!doc) return true;
-  const d = doc.replace(/\D/g, "");
-  return d.length === 14;
-}
-
-export function isValidCpfFormat(doc?: string): boolean {
-  if (!doc) return true;
-  const d = doc.replace(/\D/g, "");
-  return d.length === 11;
-}
-
-export function isValidCnpjOrCpfFormat(doc?: string): boolean {
-  if (!doc) return true;
-  const d = doc.replace(/\D/g, "");
-  return d.length === 11 || d.length === 14;
-}
+export {
+  isValidCnpj as isValidCnpjFormat,
+  isValidCpfFormat,
+  isValidCnpjOrCpf as isValidCnpjOrCpfFormat,
+} from "@/lib/fiscal/cnpj";

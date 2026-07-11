@@ -23,6 +23,8 @@ const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
   processEntities: false,
+  parseTagValue: false,
+  parseAttributeValue: false,
 });
 
 function load(name: string) {
@@ -68,6 +70,7 @@ describe("extractors", () => {
     expect(summary.number).toBe("1234");
     expect(summary.accessKey).toContain("352603");
     expect(summary.totalValue).toBe(5400);
+    expect(summary.protocol).toBe("135260000000001");
     expect(items.length).toBe(2);
     expect(items[0].ncm).toBe("84713012");
     expect(items[1].cfop).toBe("5102");

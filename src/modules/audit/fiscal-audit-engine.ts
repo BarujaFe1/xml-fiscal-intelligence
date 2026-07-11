@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { isValidCnpjOrCpfFormat } from "@/lib/security/hash";
+import { applyProtocolAnomalyPolicy } from "@/modules/audit/rule-anomaly";
 import type {
   AuditFinding,
   Batch,
@@ -331,7 +332,7 @@ export function runFiscalAudit(input: {
     }
   }
 
-  return out;
+  return applyProtocolAnomalyPolicy(out, documents.length).findings;
 }
 
 export function severityRank(s: FindingSeverity): number {
