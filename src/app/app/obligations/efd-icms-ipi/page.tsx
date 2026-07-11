@@ -17,11 +17,18 @@ export default function ObligationsEfdPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     content?: string;
+    contentHash?: string;
     manifest?: Record<string, unknown>;
     readiness?: { items: Array<{ id: string; label: string; status: string; message?: string }>; canGenerate: boolean };
     validation?: { ok: boolean; issues: Array<{ severity: string; message: string }> };
+    lineageSample?: Array<Record<string, unknown>>;
     disclaimer?: string;
   } | null>(null);
+
+  const [pvaVersion, setPvaVersion] = useState("");
+  const [pvaReport, setPvaReport] = useState("");
+  const [pvaBusy, setPvaBusy] = useState(false);
+  const [pvaRecord, setPvaRecord] = useState<Record<string, unknown> | null>(null);
 
   const [form, setForm] = useState({
     cnpj: "",
@@ -98,6 +105,46 @@ export default function ObligationsEfdPage() {
     a.download = `efd-icms-ipi-${(result.manifest as { contentHash?: string })?.contentHash?.slice(0, 12) || "draft"}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function registerPva() {
+    const generationId =
+      (result?.manifest as { contentHash?: string } | undefined)?.contentHash ||
+      result?.contentHash ||
+      `local-${batchId || "draft"}`;
+    if (!pvaVersion.trim()) {
+      toast.error("Informe a versão do PVA");
+      return;
+    }
+    setPvaBusy(true);
+    try {
+      const res = await fetch("/api/obligations/efd-icms-ipi/pva", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          generationId,
+          contentHash: result?.contentHash,
+          pvaVersion: pvaVersion.trim(),
+          reportText: pvaReport,
+          notes: "Registro manual assistido",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Falha ao registrar PVA");
+        return;
+      }
+      setPvaRecord(data.record);
+      try {
+        const { saveLocalPvaRun } = await import("@/modules/obligations/efd-icms-ipi/pva/workflow");
+        saveLocalPvaRun(data.record);
+      } catch {
+        // ignore
+      }
+      toast.success("Resultado do PVA registrado (nível 3 — informado pelo usuário)");
+    } finally {
+      setPvaBusy(false);
+    }
   }
 
   return (
@@ -259,6 +306,78 @@ export default function ObligationsEfdPage() {
           </CardContent>
         </Card>
       )}
+
+      {result?.lineageSample && result.lineageSample.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Origem dos campos (amostra)</CardTitle>
+            <CardDescription>
+              Linhagem determinística — primeiros {result.lineageSample.length} campos gerados.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-auto max-h-72">
+            <table className="w-full text-xs text-left">
+              <thead className="text-slate-500">
+                <tr>
+                  <th className="py-1 pr-2">Registro</th>
+                  <th className="py-1 pr-2">Campo</th>
+                  <th className="py-1 pr-2">Valor</th>
+                  <th className="py-1 pr-2">Origem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.lineageSample.map((row, idx) => (
+                  <tr key={idx} className="border-t border-white/5 text-slate-300">
+                    <td className="py-1 pr-2 font-mono">{String(row.record ?? "")}</td>
+                    <td className="py-1 pr-2 font-mono">{String(row.field ?? "")}</td>
+                    <td className="py-1 pr-2 max-w-[12rem] truncate">{String(row.value ?? "")}</td>
+                    <td className="py-1 pr-2">
+                      {String(row.sourceType ?? "")}
+                      {row.transformation ? ` · ${String(row.transformation)}` : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Resultado do PVA (nível 3)</CardTitle>
+          <CardDescription>
+            Registre manualmente o relatório do PVA oficial. O sistema não executa nem automatiza o PVA.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1">
+            <Label>Versão do PVA</Label>
+            <Input
+              value={pvaVersion}
+              onChange={(e) => setPvaVersion(e.target.value)}
+              placeholder="ex.: PVA EFD ICMS/IPI 5.0.0"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Trecho do relatório (opcional)</Label>
+            <textarea
+              className="min-h-28 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+              value={pvaReport}
+              onChange={(e) => setPvaReport(e.target.value)}
+              placeholder={"ERRO: ...\nAVISO: ..."}
+            />
+          </div>
+          <Button type="button" variant="secondary" disabled={pvaBusy} onClick={registerPva}>
+            {pvaBusy ? "Registrando…" : "Registrar resultado do PVA"}
+          </Button>
+          {pvaRecord && (
+            <pre className="text-xs overflow-auto max-h-48 rounded-xl bg-black/40 p-3">
+              {JSON.stringify(pvaRecord, null, 2)}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
