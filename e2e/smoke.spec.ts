@@ -4,9 +4,11 @@ test.describe("smoke SaaS honesty", () => {
   test("landing is honest and links to demo/signup", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /XML Fiscal Intelligence/i })).toBeVisible();
-    await expect(page.getByText(/rastreabilidade/i)).toBeVisible();
+    await expect(page.getByText(/rastreabilidade/i).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Criar conta/i }).first()).toBeVisible();
-    await expect(page.getByText(/SPED com um clique/i)).toHaveCount(0);
+    // Honesty: no CTA/heading that sells one-click official SPED
+    await expect(page.getByRole("heading", { name: /SPED com um clique/i })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /SPED com um clique/i })).toHaveCount(0);
   });
 
   test("app overview shows local persistence posture", async ({ page }) => {
