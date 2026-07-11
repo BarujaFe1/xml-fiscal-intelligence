@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import type { BatchStore } from "@/types";
+import { sanitizeSpreadsheetCell, sanitizeSpreadsheetRow } from "@/lib/export/sanitize";
 
 function addSheet(wb: ExcelJS.Workbook, name: string, rows: Record<string, unknown>[]) {
   const sheet = wb.addWorksheet(name.slice(0, 31));
@@ -7,14 +8,15 @@ function addSheet(wb: ExcelJS.Workbook, name: string, rows: Record<string, unkno
     sheet.addRow(["Sem dados"]);
     return sheet;
   }
+  const safeRows = rows.map((r) => sanitizeSpreadsheetRow(r));
   const columns = Array.from(
-    rows.reduce((set, row) => {
+    safeRows.reduce((set, row) => {
       Object.keys(row).forEach((k) => set.add(k));
       return set;
     }, new Set<string>()),
   );
   sheet.columns = columns.map((key) => ({ header: key, key, width: Math.min(40, Math.max(12, key.length + 2)) }));
-  for (const row of rows) sheet.addRow(row);
+  for (const row of safeRows) sheet.addRow(row);
   sheet.getRow(1).font = { bold: true };
   return sheet;
 }
@@ -216,7 +218,7 @@ export function buildDocumentsCsv(store: BatchStore): string {
       d.totalValue ?? "",
       d.status || "",
       d.protocol || "",
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+    ].map((v) => `"${sanitizeSpreadsheetCell(v).replace(/"/g, '""')}"`);
     lines.push(row.join(","));
   }
   return lines.join("\n");
@@ -250,7 +252,7 @@ export function buildItemsCsv(store: BatchStore): string {
       i.unit || "",
       i.unitValue ?? "",
       i.totalValue ?? "",
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+    ].map((v) => `"${sanitizeSpreadsheetCell(v).replace(/"/g, '""')}"`);
     lines.push(row.join(","));
   }
   return lines.join("\n");

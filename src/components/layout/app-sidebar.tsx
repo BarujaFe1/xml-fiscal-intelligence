@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bot,
-  FileSearch,
   FolderOpen,
   GitBranch,
   LayoutDashboard,
@@ -16,6 +15,8 @@ import {
   FileCode2,
   Landmark,
   CreditCard,
+  CloudUpload,
+  HardDrive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ const navGroups = [
   {
     title: "Administração",
     links: [
+      { href: "/app/migrate", label: "Migrar lotes", icon: CloudUpload },
       { href: "/app/ai", label: "IA (demonstração)", icon: Bot },
       { href: "/app/billing", label: "Planos", icon: CreditCard },
       { href: "/app/settings", label: "Configurações", icon: Settings },
@@ -101,7 +103,7 @@ export function AppSidebar() {
       </nav>
       <div className="p-4 border-t border-white/10 space-y-2 text-xs text-slate-500">
         <div className="flex items-center gap-2">
-          <FileSearch className="h-3.5 w-3.5" />
+          <HardDrive className="h-3.5 w-3.5" />
           Persistência local (navegador)
         </div>
         <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-slate-400">
