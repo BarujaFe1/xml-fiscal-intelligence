@@ -19,9 +19,28 @@ export type BatchStatus =
   | "failed"
   | "partial";
 
+/** Cloud sync lifecycle — independent of import `status`. */
+export type SyncStatus =
+  | "local"
+  | "pending"
+  | "syncing"
+  | "synced"
+  | "conflict"
+  | "error"
+  | "removed";
+
 export type FindingSeverity = "info" | "warning" | "error" | "critical";
 
-export type FindingStatus = "open" | "reviewed" | "ignored" | "false_positive";
+export type FindingStatus =
+  | "open"
+  | "in_review"
+  | "assigned"
+  | "resolved"
+  | "accepted"
+  | "reviewed"
+  | "ignored"
+  | "false_positive"
+  | "reopened";
 
 export type RelationshipType =
   | "nfe_to_cte"
@@ -85,6 +104,11 @@ export interface Batch {
   updatedAt: string;
   quality?: QualityReport;
   incremental?: boolean;
+  /** Persistence sync with SaaS cloud (IndexedDB alone = local). */
+  syncStatus?: SyncStatus;
+  syncError?: string;
+  syncedAt?: string;
+  cloudBatchId?: string;
 }
 
 export interface DocumentSummary {
