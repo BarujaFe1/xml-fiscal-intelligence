@@ -14,12 +14,19 @@ import {
   validateComplementaryPreview,
   type ComplementaryKind,
 } from "@/modules/obligations/efd-icms-ipi/complementary";
+import {
+  DEMO_BATCH_ID,
+  DEMO_ESTABLISHMENT,
+  fetchObligationDemo,
+} from "@/modules/obligations/demo-fixtures";
 import type { Batch, BatchStore } from "@/types";
 
 export default function ObligationsEfdPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [batchId, setBatchId] = useState("");
   const [store, setStore] = useState<BatchStore | null>(null);
+  const [demoStore, setDemoStore] = useState<BatchStore | null>(null);
+  const [demoBusy, setDemoBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     content?: string;
@@ -118,9 +125,10 @@ export default function ObligationsEfdPage() {
   }
 
   useEffect(() => {
-    if (!batchId) return;
+    if (!batchId || batchId === DEMO_BATCH_ID) return;
     idbGetBatchStore(batchId).then((s) => {
       setStore(s);
+      setDemoStore(null);
       if (s?.batch.cnpjLabel) setForm((f) => ({ ...f, cnpj: s.batch.cnpjLabel || f.cnpj }));
       if (s?.batch.year && s?.batch.month) {
         const m = String(s.batch.month).padStart(2, "0");
@@ -133,11 +141,36 @@ export default function ObligationsEfdPage() {
     });
   }, [batchId]);
 
-  const docCount = useMemo(() => store?.documents.length || 0, [store]);
+  const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
+  const effectiveStore = usingDemo ? demoStore : store;
+  const docCount = useMemo(() => effectiveStore?.documents.length || 0, [effectiveStore]);
+
+  async function fillDemo() {
+    setDemoBusy(true);
+    setResult(null);
+    try {
+      const data = await fetchObligationDemo();
+      setForm({
+        ...DEMO_ESTABLISHMENT,
+        ie: DEMO_ESTABLISHMENT.ie || "",
+        accountantName: DEMO_ESTABLISHMENT.accountantName || "",
+        accountantCpf: DEMO_ESTABLISHMENT.accountantCpf || "",
+      });
+      setDemoStore(data.store);
+      setBatchId(DEMO_BATCH_ID);
+      toast.success(
+        `Demo preenchida (${data.sample.fileName} · ${data.sample.itemCount} item(ns)) — clique em Gerar`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha no demo");
+    } finally {
+      setDemoBusy(false);
+    }
+  }
 
   async function generate() {
-    if (!store) {
-      toast.error("Selecione um lote");
+    if (!effectiveStore) {
+      toast.error("Selecione um lote ou clique em Preencher demo");
       return;
     }
     setLoading(true);
@@ -148,7 +181,7 @@ export default function ObligationsEfdPage() {
       const { generateObligationLocal } = await import("@/modules/obligations/generate-local");
       const data = await generateObligationLocal({
         obligationId: "efd-icms-ipi",
-        store,
+        store: effectiveStore,
         establishment: form,
       });
       setResult(data);
@@ -223,45 +256,69 @@ export default function ObligationsEfdPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          EFD ICMS/IPI — prontidão e geração assistida
-        </h1>
-        <EfdDiagnosticBanner className="mt-3" />
-        <p className="text-slate-400 text-sm mt-2">
-          Níveis: (1) estrutural interno · (2) relacional/fiscal interno · (3) PVA oficial — só após
-          registro de resultado real. E110/H/K/G fora do escopo atual.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
+            EFD ICMS/IPI — prontidão e geração assistida
+          </h1>
+          <EfdDiagnosticBanner className="mt-3" />
+          <p className="text-slate-400 text-sm mt-2">
+            Níveis: (1) estrutural interno · (2) relacional/fiscal interno · (3) PVA oficial — só após
+            registro de resultado real. E110/H/K/G fora do escopo atual.
+          </p>
+        </div>
+        <Button type="button" variant="secondary" disabled={demoBusy} onClick={() => void fillDemo()}>
+          {demoBusy ? "Carregando demo…" : "Preencher demo"}
+        </Button>
       </div>
+      {usingDemo && (
+        <p className="text-xs text-amber-200/90 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+          Modo demonstração: formulário + NF-e de exemplo anonimizada. Não use o TXT gerado como
+          obrigação oficial.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>1. Lote de documentos</CardTitle>
           <CardDescription>
-            {docCount} documentos no lote selecionado (IndexedDB). A geração do TXT roda neste
-            navegador — lotes grandes não passam pela API.
+            {docCount} documentos no lote selecionado
+            {usingDemo ? " (demo)" : " (IndexedDB)"}. A geração do TXT roda neste navegador — lotes
+            grandes não passam pela API.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <select
             className="w-full max-w-md rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
             value={batchId}
-            onChange={(e) => setBatchId(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setBatchId(v);
+              if (v !== DEMO_BATCH_ID) setDemoStore(null);
+            }}
           >
-            {!batches.length && <option value="">Nenhum lote — importe um ZIP</option>}
+            {!batches.length && !usingDemo && (
+              <option value="">Nenhum lote — importe um ZIP ou use Preencher demo</option>
+            )}
+            {usingDemo && <option value={DEMO_BATCH_ID}>Demo · NF-e exemplo</option>}
             {batches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
             ))}
           </select>
+          <Button type="button" variant="secondary" disabled={demoBusy} onClick={() => void fillDemo()}>
+            {demoBusy ? "Carregando…" : "Preencher demo"}
+          </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>2. Estabelecimento e período</CardTitle>
-          <CardDescription>Campos obrigatórios — nada é presumido (perfil/atividade/finalidade).</CardDescription>
+          <CardDescription>
+            Campos obrigatórios — use Preencher demo para um exemplo, ou edite manualmente.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {(
@@ -314,11 +371,14 @@ export default function ObligationsEfdPage() {
       </Card>
 
       <div className="flex flex-wrap gap-3">
-        <Button type="button" onClick={generate} disabled={loading || !store}>
+        <Button type="button" variant="secondary" disabled={demoBusy} onClick={() => void fillDemo()}>
+          {demoBusy ? "Carregando demo…" : "Preencher demo"}
+        </Button>
+        <Button type="button" onClick={generate} disabled={loading || !effectiveStore}>
           {loading ? "Gerando no navegador…" : "Verificar prontidão e gerar TXT"}
         </Button>
         {result?.content && (
-          <Button type="button" variant="secondary" onClick={downloadTxt}>
+          <Button type="button" variant="outline" onClick={downloadTxt}>
             Baixar TXT
           </Button>
         )}

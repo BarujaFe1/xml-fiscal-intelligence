@@ -8,13 +8,35 @@ import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EfdDiagnosticBanner } from "@/components/feedback/honesty-banners";
 import { idbGetBatchStore, idbListBatches } from "@/lib/store/idb-store";
-import { OBLIGATION_LABELS, type ObligationId } from "@/modules/obligations";
+import {
+  DEMO_BATCH_ID,
+  DEMO_ESTABLISHMENT,
+  fetchObligationDemo,
+  OBLIGATION_LABELS,
+  type ObligationId,
+} from "@/modules/obligations";
 import type { Batch, BatchStore } from "@/types";
+
+const emptyForm = {
+  cnpj: "",
+  ie: "",
+  uf: "SP",
+  companyName: "",
+  profile: "A" as "A" | "B" | "C",
+  activityCode: "0",
+  purpose: "0" as "0" | "1",
+  periodStart: "2026-03-01",
+  periodEnd: "2026-03-31",
+  accountantName: "",
+  accountantCpf: "",
+};
 
 export function ObligationAssistant({ obligationId }: { obligationId: ObligationId }) {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [batchId, setBatchId] = useState("");
   const [store, setStore] = useState<BatchStore | null>(null);
+  const [demoStore, setDemoStore] = useState<BatchStore | null>(null);
+  const [demoBusy, setDemoBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     content?: string;
@@ -27,19 +49,7 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
     recordCount?: number;
   } | null>(null);
 
-  const [form, setForm] = useState({
-    cnpj: "11222333000181",
-    ie: "123456789012",
-    uf: "SP",
-    companyName: "EMPRESA DEMO LTDA",
-    profile: "A" as "A" | "B" | "C",
-    activityCode: "0",
-    purpose: "0" as "0" | "1",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    accountantName: "Contador Demo",
-    accountantCpf: "39053344705",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     idbListBatches().then((list) => {
@@ -49,11 +59,12 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
   }, []);
 
   useEffect(() => {
-    if (!batchId) return;
+    if (!batchId || batchId === DEMO_BATCH_ID) return;
     let cancelled = false;
     idbGetBatchStore(batchId).then((s) => {
       if (cancelled) return;
       setStore(s);
+      setDemoStore(null);
       if (s?.batch.cnpjLabel) setForm((f) => ({ ...f, cnpj: s.batch.cnpjLabel || f.cnpj }));
       if (s?.batch.year && s?.batch.month) {
         const m = String(s.batch.month).padStart(2, "0");
@@ -69,22 +80,45 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
     };
   }, [batchId]);
 
-  const effectiveStore = batchId ? store : null;
+  const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
+  const effectiveStore = usingDemo ? demoStore : batchId ? store : null;
   const docCount = useMemo(() => effectiveStore?.documents.length || 0, [effectiveStore]);
   const needsDocs =
     obligationId === "efd-icms-ipi" ||
     obligationId === "efd-contribuicoes" ||
     obligationId === "reinf";
 
+  async function fillDemo() {
+    setDemoBusy(true);
+    setResult(null);
+    try {
+      const data = await fetchObligationDemo();
+      setForm({
+        ...DEMO_ESTABLISHMENT,
+        ie: DEMO_ESTABLISHMENT.ie || "",
+        accountantName: DEMO_ESTABLISHMENT.accountantName || "",
+        accountantCpf: DEMO_ESTABLISHMENT.accountantCpf || "",
+      });
+      setDemoStore(data.store);
+      setBatchId(DEMO_BATCH_ID);
+      toast.success(
+        `Demo preenchida (${data.sample.fileName} · ${data.sample.itemCount} item(ns)) — clique em Gerar`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha no demo");
+    } finally {
+      setDemoBusy(false);
+    }
+  }
+
   async function generate() {
     if (needsDocs && !effectiveStore?.documents.length) {
-      toast.error("Selecione um lote com documentos (ou use a Demonstração)");
+      toast.error("Selecione um lote ou clique em Preencher demo");
       return;
     }
     setLoading(true);
     setResult(null);
     try {
-      // Gera no navegador (mesmo motivo do upload ZIP): evita body limit / Unexpected token.
       const { generateObligationLocal } = await import("@/modules/obligations/generate-local");
       const data = await generateObligationLocal({
         obligationId,
@@ -119,16 +153,29 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Obrigações</p>
-        <h1 className="text-2xl font-bold">{OBLIGATION_LABELS[obligationId]}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Obrigações</p>
+          <h1 className="text-2xl font-bold">{OBLIGATION_LABELS[obligationId]}</h1>
+        </div>
+        <Button type="button" variant="secondary" disabled={demoBusy} onClick={() => void fillDemo()}>
+          {demoBusy ? "Carregando demo…" : "Preencher demo"}
+        </Button>
       </div>
       <EfdDiagnosticBanner />
+      {usingDemo && (
+        <p className="text-xs text-amber-200/90 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+          Modo demonstração: formulário + NF-e de exemplo anonimizada. Não use o arquivo gerado como
+          obrigação oficial.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>Estabelecimento e período</CardTitle>
-          <CardDescription>Campos obrigatórios para o assistente — não inventamos regime/atividade.</CardDescription>
+          <CardDescription>
+            Preencha manualmente ou use <strong>Preencher demo</strong> com dados de exemplo.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
           {(
@@ -159,7 +206,7 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
           <CardTitle>Lote IndexedDB</CardTitle>
           <CardDescription>
             {needsDocs
-              ? `Documentos no lote: ${docCount}`
+              ? `Documentos no lote: ${docCount}${usingDemo ? " (demo)" : ""}`
               : "ECD/ECF podem gerar esqueleto mesmo sem XML (plano DEMO)."}
           </CardDescription>
         </CardHeader>
@@ -167,10 +214,17 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
           <select
             className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
             value={batchId}
-            onChange={(e) => setBatchId(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setBatchId(v);
+              if (v !== DEMO_BATCH_ID) setDemoStore(null);
+            }}
             aria-label="Selecionar lote"
           >
             <option value="">— sem lote —</option>
+            {usingDemo && (
+              <option value={DEMO_BATCH_ID}>Demo · NF-e exemplo</option>
+            )}
             {batches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name} ({b.totalXml} XMLs)
@@ -178,11 +232,14 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
             ))}
           </select>
           <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" disabled={demoBusy} onClick={() => void fillDemo()}>
+              {demoBusy ? "Carregando…" : "Preencher demo"}
+            </Button>
             <Button type="button" disabled={loading} onClick={() => void generate()}>
               {loading ? "Gerando no navegador…" : "Gerar rascunho assistido"}
             </Button>
             {result?.content && (
-              <Button type="button" variant="secondary" onClick={download}>
+              <Button type="button" variant="outline" onClick={download}>
                 Baixar arquivo
               </Button>
             )}
