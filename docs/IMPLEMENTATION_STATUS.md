@@ -19,7 +19,8 @@
 | D | IndexedDB→cloud migrate wizard | `deferred_with_reason` | Blocked without Supabase project |
 | E | Import Web Worker + limits | `implemented` | Worker + fallback + cancel |
 | E | Regulatory migrations | `implemented` | `202607110005_regulatory_governance.sql` |
-| F–L | Later phases | `pending` | Continue after gate green |
+| F | Landing honesty + onboarding checklist | `implemented` | PT-BR CTAs; no “SPED com um clique” |
+| F–L | Later phases | `pending` | Cloud sync, Stripe live, E2E, admin/LGPD |
 
 ## Files (this wave)
 

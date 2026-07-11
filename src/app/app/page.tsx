@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { FolderOpen, Upload, Activity, FileStack } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Circle, FolderOpen, Upload, Activity, FileStack } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { mergeBatchLists } from "@/lib/store/idb-store";
 import type { Batch } from "@/types";
+
+type ChecklistItem = {
+  id: string;
+  label: string;
+  done: boolean;
+  href: string;
+};
 
 export default function AppHomePage() {
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -35,13 +42,61 @@ export default function AppHomePage() {
     ? Math.round(batches.reduce((a, b) => a + b.healthScore, 0) / batches.length)
     : 0;
 
+  const checklist: ChecklistItem[] = useMemo(() => {
+    const hasBatch = batches.length > 0;
+    const hasAudit = batches.some((b) => (b.quality?.warnings?.length || 0) > 0 || b.healthScore < 100);
+    return [
+      {
+        id: "demo",
+        label: "Ambiente local de demonstração ativo",
+        done: true,
+        href: "/app/settings",
+      },
+      {
+        id: "batch",
+        label: "Primeiro lote importado",
+        done: hasBatch,
+        href: "/app/upload",
+      },
+      {
+        id: "audit",
+        label: "Revisar qualidade / achados",
+        done: hasBatch && hasAudit,
+        href: hasBatch ? `/app/batches/${batches[0]!.id}/quality` : "/app/audit",
+      },
+      {
+        id: "export",
+        label: "Gerar primeira exportação",
+        done: false,
+        href: hasBatch ? `/app/batches/${batches[0]!.id}/exports` : "/app/batches",
+      },
+      {
+        id: "efd",
+        label: "Conhecer diagnóstico EFD ICMS/IPI",
+        done: false,
+        href: "/app/obligations/efd-icms-ipi",
+      },
+      {
+        id: "team",
+        label: "Convite de equipe (requer Supabase)",
+        done: false,
+        href: "/app/settings",
+      },
+    ];
+  }, [batches]);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Visão geral
-        </h1>
-        <p className="text-slate-400 mt-1">Laboratório de análise de lotes XML fiscais.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display), sans-serif" }}>
+            Visão geral
+          </h1>
+          <p className="text-slate-400 mt-1">
+            Laboratório de análise de lotes XML fiscais — dados neste navegador até a nuvem SaaS.
+          </p>
+        </div>
+        <Badge tone="warning">Dados locais · IndexedDB</Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -72,10 +127,11 @@ export default function AppHomePage() {
           <CardContent className="space-y-2">
             {!loading && batches.length === 0 && (
               <div className="rounded-xl border border-dashed border-white/15 p-8 text-center text-slate-400">
-                Nenhum lote ainda. Envie um ZIP para começar.
+                <p className="font-medium text-slate-200">Nenhum lote ainda</p>
+                <p className="mt-1 text-sm">Importe um ZIP para popular a visão geral com dados reais deste navegador.</p>
                 <div className="mt-4">
                   <Link href="/app/upload" className="text-sky-300 hover:underline">
-                    Ir para upload
+                    Ir para importações
                   </Link>
                 </div>
               </div>
@@ -100,31 +156,56 @@ export default function AppHomePage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações rápidas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link
-              href="/app/upload"
-              className="flex items-center gap-3 rounded-xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sky-100"
-            >
-              <Upload className="h-4 w-4" /> Upload de ZIP
-            </Link>
-            <Link
-              href="/app/search"
-              className="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-slate-200 hover:bg-white/5"
-            >
-              Busca global
-            </Link>
-            <Link
-              href="/app/batches"
-              className="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-slate-200 hover:bg-white/5"
-            >
-              Histórico de lotes
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Checklist inicial</CardTitle>
+              <CardDescription>Onboarding progressivo — itens de nuvem ficam pendentes sem Supabase.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {checklist.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-300 hover:bg-white/5"
+                >
+                  {item.done ? (
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <Circle className="h-4 w-4 mt-0.5 text-slate-500 shrink-0" />
+                  )}
+                  <span className={item.done ? "text-slate-400 line-through" : ""}>{item.label}</span>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ações rápidas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link
+                href="/app/upload"
+                className="flex items-center gap-3 rounded-xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sky-100"
+              >
+                <Upload className="h-4 w-4" /> Importar ZIP
+              </Link>
+              <Link
+                href="/app/obligations/efd-icms-ipi"
+                className="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-slate-200 hover:bg-white/5"
+              >
+                Diagnóstico EFD
+              </Link>
+              <Link
+                href="/app/batches"
+                className="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-slate-200 hover:bg-white/5"
+              >
+                Histórico de lotes
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
