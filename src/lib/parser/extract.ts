@@ -79,12 +79,26 @@ export interface FriendlySummary {
   authorizationDate?: string;
   emitterDoc?: string;
   emitterName?: string;
+  emitterIe?: string;
   emitterCity?: string;
+  emitterCityCode?: string;
   emitterUf?: string;
+  emitterAddress?: string;
+  emitterAddressNumber?: string;
+  emitterAddressCompl?: string;
+  emitterNeighborhood?: string;
+  emitterCep?: string;
   receiverDoc?: string;
   receiverName?: string;
+  receiverIe?: string;
   receiverCity?: string;
+  receiverCityCode?: string;
   receiverUf?: string;
+  receiverAddress?: string;
+  receiverAddressNumber?: string;
+  receiverAddressCompl?: string;
+  receiverNeighborhood?: string;
+  receiverCep?: string;
   serviceCity?: string;
   totalValue?: number;
   productsValue?: number;
@@ -96,6 +110,20 @@ export interface FriendlySummary {
   protocol?: string;
   nature?: string;
   cfop?: string;
+}
+
+function partyAddress(ender: Record<string, unknown> | undefined) {
+  if (!ender) return {};
+  return {
+    city: asString(deepGet(ender, ["xMun"])),
+    cityCode: asString(deepGet(ender, ["cMun"])),
+    uf: asString(deepGet(ender, ["UF"])),
+    address: asString(deepGet(ender, ["xLgr"])),
+    addressNumber: asString(deepGet(ender, ["nro"])),
+    addressCompl: asString(deepGet(ender, ["xCpl"])),
+    neighborhood: asString(deepGet(ender, ["xBairro"])),
+    cep: asString(deepGet(ender, ["CEP", "cep"])),
+  };
 }
 
 export function extractNFeSummary(parsed: unknown): FriendlySummary {
@@ -110,6 +138,8 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
   const auth = extractAuthorizationProtocol(parsed, { accessKeyFields: ["chNFe"] });
   const enderEmit = findNode(emit, ["enderEmit"]) as Record<string, unknown> | undefined;
   const enderDest = findNode(dest, ["enderDest"]) as Record<string, unknown> | undefined;
+  const emitAddr = partyAddress(enderEmit);
+  const destAddr = partyAddress(enderDest);
 
   const idAttr =
     asString(deepGet(infNFe, ["@_Id", "Id"])) ||
@@ -126,12 +156,26 @@ export function extractNFeSummary(parsed: unknown): FriendlySummary {
     authorizationDate: auth.authorizationDate,
     emitterDoc: getDoc(emit),
     emitterName: getName(emit),
-    emitterCity: asString(deepGet(enderEmit, ["xMun"])),
-    emitterUf: asString(deepGet(enderEmit, ["UF"])),
+    emitterIe: asString(deepGet(emit, ["IE", "ie"])),
+    emitterCity: emitAddr.city,
+    emitterCityCode: emitAddr.cityCode,
+    emitterUf: emitAddr.uf,
+    emitterAddress: emitAddr.address,
+    emitterAddressNumber: emitAddr.addressNumber,
+    emitterAddressCompl: emitAddr.addressCompl,
+    emitterNeighborhood: emitAddr.neighborhood,
+    emitterCep: emitAddr.cep,
     receiverDoc: getDoc(dest),
     receiverName: getName(dest),
-    receiverCity: asString(deepGet(enderDest, ["xMun"])),
-    receiverUf: asString(deepGet(enderDest, ["UF"])),
+    receiverIe: asString(deepGet(dest, ["IE", "ie"])),
+    receiverCity: destAddr.city,
+    receiverCityCode: destAddr.cityCode,
+    receiverUf: destAddr.uf,
+    receiverAddress: destAddr.address,
+    receiverAddressNumber: destAddr.addressNumber,
+    receiverAddressCompl: destAddr.addressCompl,
+    receiverNeighborhood: destAddr.neighborhood,
+    receiverCep: destAddr.cep,
     totalValue: parseNumber(deepGet(icmsTot, ["vNF"])),
     productsValue: parseNumber(deepGet(icmsTot, ["vProd"])),
     freightValue: parseNumber(deepGet(icmsTot, ["vFrete"])),

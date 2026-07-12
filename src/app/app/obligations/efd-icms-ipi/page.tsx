@@ -19,6 +19,7 @@ import {
   DEMO_ESTABLISHMENT,
   fetchObligationDemo,
 } from "@/modules/obligations/demo-fixtures";
+import { suggestInformantFromDocuments } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 import type { Batch, BatchStore } from "@/types";
 
@@ -151,6 +152,32 @@ export default function ObligationsEfdPage() {
   const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
   const effectiveStore = usingDemo ? demoStore : store;
   const docCount = useMemo(() => effectiveStore?.documents.length || 0, [effectiveStore]);
+  const informantHint = useMemo(
+    () => (effectiveStore ? suggestInformantFromDocuments(effectiveStore.documents) : null),
+    [effectiveStore],
+  );
+
+  function applyInformantFromBatch() {
+    if (!informantHint) {
+      toast.error("Nenhum emitente detectado no lote");
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      cnpj: informantHint.cnpj,
+      uf: informantHint.uf || f.uf,
+      companyName: informantHint.name || f.companyName,
+      ie: informantHint.ie || f.ie,
+      codMun: informantHint.codMun || f.codMun,
+      address: informantHint.address || f.address,
+      addressNumber: informantHint.addressNumber || f.addressNumber,
+      neighborhood: informantHint.neighborhood || f.neighborhood,
+      cep: informantHint.cep || f.cep,
+    }));
+    toast.success(
+      `Emitente do lote aplicado (${informantHint.count} NF-e · ${informantHint.distinctEmitters} CNPJ distintos)`,
+    );
+  }
 
   async function fillDemo() {
     setDemoBusy(true);
@@ -330,10 +357,24 @@ export default function ObligationsEfdPage() {
         <CardHeader>
           <CardTitle>2. Estabelecimento e período</CardTitle>
           <CardDescription>
-            Campos obrigatórios — use Preencher demo para um exemplo, ou edite manualmente.
+            O CNPJ do 0000 deve ser o da empresa informante — nas NF-e próprias ele precisa bater com o CNPJ da chave.
+            {informantHint ? (
+              <>
+                {" "}
+                Detectado no lote: {informantHint.cnpj}
+                {informantHint.name ? ` (${informantHint.name})` : ""}.
+              </>
+            ) : null}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
+          {informantHint ? (
+            <div className="md:col-span-2">
+              <Button type="button" variant="secondary" onClick={applyInformantFromBatch}>
+                Usar emitente do lote
+              </Button>
+            </div>
+          ) : null}
           {(
             [
               ["companyName", "Razão social"],

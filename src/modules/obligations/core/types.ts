@@ -31,6 +31,10 @@ export interface ObligationContext {
   email?: string;
   accountantName?: string;
   accountantCpf?: string;
+  /** CRC do contabilista — sem CRC o 0100 não é gerado (campo obrigatório no Guia). */
+  accountantCrc?: string;
+  /** Código de receita ICMS (E116 COD_REC) — específico da UF; não inventar. */
+  icmsCodRec?: string;
   documents: ObligationDocumentInput[];
   priorCreditBalance?: string; // decimal string; required for E110 when applicable
   extras?: Record<string, unknown>;
@@ -49,11 +53,21 @@ export interface ObligationDocumentInput {
   emitterIe?: string;
   emitterUf?: string;
   emitterCityCode?: string;
+  emitterAddress?: string;
+  emitterAddressNumber?: string;
+  emitterAddressCompl?: string;
+  emitterNeighborhood?: string;
+  emitterCep?: string;
   receiverDoc?: string;
   receiverName?: string;
   receiverIe?: string;
   receiverUf?: string;
   receiverCityCode?: string;
+  receiverAddress?: string;
+  receiverAddressNumber?: string;
+  receiverAddressCompl?: string;
+  receiverNeighborhood?: string;
+  receiverCep?: string;
   natureOperation?: string;
   cfopMain?: string;
   totalValue?: string;

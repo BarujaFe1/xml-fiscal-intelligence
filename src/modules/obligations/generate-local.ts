@@ -52,6 +52,8 @@ export type LocalEstablishmentInput = {
   email?: string;
   accountantName?: string;
   accountantCpf?: string;
+  accountantCrc?: string;
+  icmsCodRec?: string;
 };
 
 export type LocalGenerateResult = {

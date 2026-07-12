@@ -13,6 +13,7 @@ import type {
 import { money, moneyAdd, moneyToEfd, moneyToFixed, Money } from "@/lib/money/decimal";
 import { sha256Hex } from "@/lib/security/hash";
 import { isCnpjShape, normalizeCnpj, normalizeCpf } from "@/lib/fiscal/cnpj";
+import { cnpjFromAccessKey } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
 
 export const EFD_ICMS_IPI_LAYOUT_2026 = "EFD_ICMS_IPI_2026_DRAFT";
 export const EFD_SOURCE_ID = "official:sped:efd-icms-ipi:pending-registry";
@@ -96,6 +97,32 @@ function statusEstablishment(context: ObligationContext): ReadinessStatus {
   return "complete";
 }
 
+function chaveInformanteStatus(ctx: ObligationContext): ReadinessStatus {
+  const informante = efdCnpj(ctx.cnpj);
+  if (!informante) return "review";
+  let own = 0;
+  let other = 0;
+  for (const d of ctx.documents) {
+    const chaveCnpj = cnpjFromAccessKey(d.accessKey) || efdCnpj(d.emitterDoc);
+    if (!chaveCnpj) continue;
+    if (chaveCnpj === informante) own += 1;
+    else other += 1;
+  }
+  if (own === 0 && other > 0) return "review";
+  return "complete";
+}
+
+function resolveIndEmit(
+  ctx: ObligationContext,
+  d: ObligationContext["documents"][0],
+): "0" | "1" {
+  if (d.indEmit === "0" || d.indEmit === "1") return d.indEmit;
+  const informante = efdCnpj(ctx.cnpj);
+  const emit = efdCnpj(d.emitterDoc) || cnpjFromAccessKey(d.accessKey);
+  if (informante && emit) return informante === emit ? "0" : "1";
+  return "0";
+}
+
 export function detectEfdRequiredData(context: ObligationContext): RequiredDataResult {
   const items = [
     {
@@ -130,10 +157,18 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
     {
       id: "accountant",
       label: "Contabilista (0100)",
-      status: (context.accountantName && context.accountantCpf
+      status: (context.accountantName && context.accountantCpf && context.accountantCrc
         ? "complete"
         : "review") as ReadinessStatus,
-      message: "Recomendado para arquivo completo",
+      message: "0100 só é gerado com NOME+CPF+CRC (CRC obrigatório no Guia)",
+    },
+    {
+      id: "chave_informante",
+      label: "CNPJ informante × chaves NF-e",
+      status: chaveInformanteStatus(context),
+      message:
+        "CNPJ do 0000 deve coincidir com o CNPJ da chave nas NF-e de emissão própria — use «Usar emitente do lote»",
+      remediation: "Alinhe o CNPJ/UF do estabelecimento ao emitente predominante do ZIP",
     },
     {
       id: "documents",
@@ -162,7 +197,7 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
     {
       id: "bloco_hkg",
       label: "Blocos B/G/H/K",
-      status: "ok" as ReadinessStatus,
+      status: "complete" as ReadinessStatus,
       message: "Gerados vazios (IND_MOV=1) conforme Guia — inventário/CIAP/controle fora do rascunho.",
     },
   ];
@@ -250,6 +285,10 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
         ie: d.emitterIe,
         uf: d.emitterUf,
         mun: d.emitterCityCode,
+        end: d.emitterAddress,
+        num: d.emitterAddressNumber,
+        compl: d.emitterAddressCompl,
+        bairro: d.emitterNeighborhood,
       },
       {
         doc: d.receiverDoc,
@@ -257,6 +296,10 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
         ie: d.receiverIe,
         uf: d.receiverUf,
         mun: d.receiverCityCode,
+        end: d.receiverAddress,
+        num: d.receiverAddressNumber,
+        compl: d.receiverAddressCompl,
+        bairro: d.receiverNeighborhood,
       },
     ]) {
       const code = participantCode(party.doc);
@@ -273,12 +316,12 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
           docs.cnpj,
           docs.cpf,
           onlyDigits(party.ie),
-          party.mun || "",
+          onlyDigits(party.mun).slice(0, 7),
           "", // SUFRAMA
-          "", // END
-          "", // NUM
-          "", // COMPL
-          "", // BAIRRO
+          efdSanitize(party.end || "NAO INFORMADO", 60),
+          efdSanitize(party.num, 10),
+          efdSanitize(party.compl, 60),
+          efdSanitize(party.bairro || "NAO INFORMADO", 60),
         ],
         lineage: [
           {
@@ -351,7 +394,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
   for (const d of ctx.documents) {
     if (!(d.documentType === "NFE" || d.model === "55")) continue;
     const indOper = d.indOper || (d.cfopMain?.startsWith("5") || d.cfopMain?.startsWith("6") ? "1" : "0");
-    const indEmit = d.indEmit || "0";
+    const indEmit = resolveIndEmit(ctx, d);
     const codPart = participantCode(indEmit === "0" ? d.receiverDoc : d.emitterDoc);
     const tot = d.icmsTot || {};
     const c100: ObligationRecord = {
@@ -569,7 +612,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     build0005(context),
   ];
 
-  if (context.accountantName && context.accountantCpf) {
+  if (context.accountantName && context.accountantCpf && context.accountantCrc) {
     // 0100: REG NOME CPF CRC CNPJ CEP END NUM COMPL BAIRRO FONE FAX EMAIL COD_MUN (14)
     bloco0.push({
       type: "0100",
@@ -577,7 +620,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
         "0100",
         context.accountantName,
         onlyDigits(context.accountantCpf),
-        "", // CRC
+        efdSanitize(context.accountantCrc, 15),
         "", // CNPJ escritório
         "", // CEP
         "", // END
@@ -590,6 +633,10 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
         onlyDigits(context.codMun).slice(0, 7), // COD_MUN
       ],
     });
+  } else if (context.accountantName || context.accountantCpf) {
+    warnings.push(
+      "0100 omitido: CRC do contabilista é obrigatório no Guia — informe CRC para gerar o registro.",
+    );
   }
 
   bloco0.push(...build0150(context));
@@ -620,6 +667,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
 
   // Bloco E — obrigatório; E110 com totais derivados dos C190 (não é parecer fiscal)
   const e110 = buildE110FromC190(cFlat);
+  const e116 = buildE116IfNeeded(e110, context);
   const blocoE: ObligationRecord[] = [
     { type: "E001", fields: ["E001", "0"] },
     {
@@ -627,11 +675,20 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
       fields: ["E100", dateEfd(context.periodStart), dateEfd(context.periodEnd)],
     },
     e110,
-    { type: "E990", fields: ["E990", "4"] },
   ];
+  if (e116) {
+    e110.children = [e116];
+    blocoE.push(e116);
+  }
+  blocoE.push({ type: "E990", fields: ["E990", String(blocoE.length + 1)] });
   warnings.push(
     "E110 gerado com totais derivados dos C190 (débitos/créditos ICMS). Saldo anterior/ajustes zerados — conferir e completar no PVA.",
   );
+  if (e116 && !context.icmsCodRec) {
+    warnings.push(
+      "E116 gerado sem COD_REC (código de receita da UF) — preencha o código estadual antes de transmitir.",
+    );
+  }
   if (context.activityCode === "0") {
     warnings.push(
       "IND_ATIV=0 (industrial) exige E500/IPI no PVA — este rascunho não gera E500. Use IND_ATIV=1 se não for industrial.",
@@ -753,6 +810,33 @@ function buildE110FromC190(cFlat: ObligationRecord[]): ObligationRecord {
       sldApurado, // 13 VL_ICMS_RECOLHER (deduções 0)
       sldTransp, // 14 VL_SLD_CREDOR_TRANSPORTAR
       z, // 15 DEB_ESP
+    ],
+  };
+}
+
+/** E116 obrigatório quando VL_ICMS_RECOLHER + DEB_ESP > 0 (Guia). */
+function buildE116IfNeeded(
+  e110: ObligationRecord,
+  ctx: ObligationContext,
+): ObligationRecord | null {
+  const vlRecolher = e110.fields[12] || "0,00";
+  const debEsp = e110.fields[14] || "0,00";
+  const total = money(vlRecolher).plus(money(debEsp));
+  if (total.scaled <= 0n) return null;
+  const mesRef = (ctx.periodEnd || "").slice(5, 7) + (ctx.periodEnd || "").slice(0, 4);
+  return {
+    type: "E116",
+    fields: [
+      "E116",
+      "000", // COD_OR — ICMS a recolher
+      moneyToEfd(total),
+      dateEfd(ctx.periodEnd), // DT_VCTO — conferir legislação UF
+      efdSanitize(ctx.icmsCodRec || "", 60), // COD_REC
+      "", // NUM_PROC
+      "", // IND_PROC
+      "", // PROC
+      "", // TXT_COMPL
+      mesRef, // MES_REF mmaaaa
     ],
   };
 }

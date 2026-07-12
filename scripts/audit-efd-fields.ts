@@ -25,6 +25,7 @@ const EXPECTED: Record<string, number> = {
   E001: 2,
   E100: 3,
   E110: 15,
+  E116: 10,
   E990: 2,
   G001: 2,
   G990: 2,

@@ -14,6 +14,7 @@ import {
   fetchObligationDemo,
   OBLIGATION_LABELS,
   type ObligationId,
+  suggestInformantFromDocuments,
 } from "@/modules/obligations";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 import type { Batch, BatchStore } from "@/types";
@@ -90,10 +91,34 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
   const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
   const effectiveStore = usingDemo ? demoStore : batchId ? store : null;
   const docCount = useMemo(() => effectiveStore?.documents.length || 0, [effectiveStore]);
+  const informantHint = useMemo(
+    () => (effectiveStore ? suggestInformantFromDocuments(effectiveStore.documents) : null),
+    [effectiveStore],
+  );
   const needsDocs =
     obligationId === "efd-icms-ipi" ||
     obligationId === "efd-contribuicoes" ||
     obligationId === "reinf";
+
+  function applyInformantFromBatch() {
+    if (!informantHint) {
+      toast.error("Nenhum emitente detectado no lote");
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      cnpj: informantHint.cnpj,
+      uf: informantHint.uf || f.uf,
+      companyName: informantHint.name || f.companyName,
+      ie: informantHint.ie || f.ie,
+      codMun: informantHint.codMun || f.codMun,
+      address: informantHint.address || f.address,
+      addressNumber: informantHint.addressNumber || f.addressNumber,
+      neighborhood: informantHint.neighborhood || f.neighborhood,
+      cep: informantHint.cep || f.cep,
+    }));
+    toast.success(`Emitente do lote aplicado (${informantHint.count} NF-e)`);
+  }
 
   async function fillDemo() {
     setDemoBusy(true);
@@ -191,6 +216,13 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
+          {informantHint && obligationId === "efd-icms-ipi" ? (
+            <div className="sm:col-span-2">
+              <Button type="button" variant="secondary" onClick={applyInformantFromBatch}>
+                Usar emitente do lote ({informantHint.cnpj})
+              </Button>
+            </div>
+          ) : null}
           {(
             [
               ["cnpj", "CNPJ"],
