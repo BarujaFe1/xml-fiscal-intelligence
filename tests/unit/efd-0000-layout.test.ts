@@ -33,6 +33,7 @@ const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   E001: 2,
   E100: 3,
   E110: 15,
+  E116: 10,
   E990: 2,
   G001: 2,
   G990: 2,
@@ -80,8 +81,6 @@ function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
       address: "AV PAULISTA",
       addressNumber: "1000",
       neighborhood: "BELA VISTA",
-      accountantName: "Contador",
-      accountantCpf: "39053344705",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
     },
     documents: [parsed.document],
@@ -172,5 +171,25 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     expect(idxH).toBeGreaterThan(idxG);
     expect(idxK).toBeGreaterThan(idxH);
     expect(idx1).toBeGreaterThan(idxK);
+  });
+
+  it("marca IND_EMIT=1 quando CNPJ da chave difere do informante", async () => {
+    const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
+    const c100 = (out.serialized?.content || "").split(/\r?\n/).find((l) => l.startsWith("|C100|"));
+    expect(c100).toBeTruthy();
+    const fields = c100!.replace(/^\|/, "").replace(/\|$/, "").split("|");
+    expect(fields[2]).toBe("1");
+  });
+
+  it("inclui E116 quando há ICMS a recolher", async () => {
+    const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
+    const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
+    const e110 = lines.find((l) => l.startsWith("|E110|"));
+    expect(e110).toBeTruthy();
+    const e110Fields = e110!.replace(/^\|/, "").replace(/\|$/, "").split("|");
+    const vlRecolher = e110Fields[12];
+    if (vlRecolher && vlRecolher !== "0,00") {
+      expect(lines.some((l) => l.startsWith("|E116|"))).toBe(true);
+    }
   });
 });

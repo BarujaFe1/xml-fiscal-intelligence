@@ -5,6 +5,11 @@ export { ecdPlugin, ECD_LAYOUT_2026 } from "@/modules/obligations/ecd/plugin";
 export { ecfPlugin, ECF_LAYOUT_2026 } from "@/modules/obligations/ecf/plugin";
 export { reinfPlugin, REINF_LAYOUT_2026 } from "@/modules/obligations/reinf/plugin";
 export { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+export {
+  suggestInformantFromDocuments,
+  cnpjFromAccessKey,
+  type InformantSuggestion,
+} from "@/modules/obligations/efd-icms-ipi/suggest-informant";
 export { normalizeNFeItemTax, normalizeIcmsTot } from "@/modules/obligations/efd-icms-ipi/tax/normalize-nfe-tax";
 export {
   obligationRegistry,

@@ -132,8 +132,6 @@ describe("EFD ICMS/IPI plugin", () => {
         address: "AV PAULISTA",
         addressNumber: "1000",
         neighborhood: "BELA VISTA",
-        accountantName: "Contador Demo",
-        accountantCpf: "12345678901",
         layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
       },
       documents: [parsed.document],

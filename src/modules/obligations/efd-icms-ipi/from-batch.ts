@@ -30,6 +30,8 @@ export interface EstablishmentFiscalInput {
   email?: string;
   accountantName?: string;
   accountantCpf?: string;
+  accountantCrc?: string;
+  icmsCodRec?: string;
   layoutVersion: string;
 }
 
@@ -62,10 +64,36 @@ export function buildObligationContextFromBatch(input: {
         issueDate: d.issueDate,
         emitterDoc: d.emitterDoc,
         emitterName: d.emitterName,
+        emitterIe: d.emitterIe || flatStr(d.flattenedJson, ["emit.IE", "emit/IE"]),
         emitterUf: d.emitterUf,
+        emitterCityCode:
+          d.emitterCityCode || flatStr(d.flattenedJson, ["enderEmit.cMun", "enderEmit/cMun"]),
+        emitterAddress:
+          d.emitterAddress || flatStr(d.flattenedJson, ["enderEmit.xLgr", "enderEmit/xLgr"]),
+        emitterAddressNumber:
+          d.emitterAddressNumber || flatStr(d.flattenedJson, ["enderEmit.nro", "enderEmit/nro"]),
+        emitterAddressCompl:
+          d.emitterAddressCompl || flatStr(d.flattenedJson, ["enderEmit.xCpl", "enderEmit/xCpl"]),
+        emitterNeighborhood:
+          d.emitterNeighborhood ||
+          flatStr(d.flattenedJson, ["enderEmit.xBairro", "enderEmit/xBairro"]),
+        emitterCep: d.emitterCep || flatStr(d.flattenedJson, ["enderEmit.CEP", "enderEmit/CEP"]),
         receiverDoc: d.receiverDoc,
         receiverName: d.receiverName,
+        receiverIe: d.receiverIe || flatStr(d.flattenedJson, ["dest.IE", "dest/IE"]),
         receiverUf: d.receiverUf,
+        receiverCityCode:
+          d.receiverCityCode || flatStr(d.flattenedJson, ["enderDest.cMun", "enderDest/cMun"]),
+        receiverAddress:
+          d.receiverAddress || flatStr(d.flattenedJson, ["enderDest.xLgr", "enderDest/xLgr"]),
+        receiverAddressNumber:
+          d.receiverAddressNumber || flatStr(d.flattenedJson, ["enderDest.nro", "enderDest/nro"]),
+        receiverAddressCompl:
+          d.receiverAddressCompl || flatStr(d.flattenedJson, ["enderDest.xCpl", "enderDest/xCpl"]),
+        receiverNeighborhood:
+          d.receiverNeighborhood ||
+          flatStr(d.flattenedJson, ["enderDest.xBairro", "enderDest/xBairro"]),
+        receiverCep: d.receiverCep || flatStr(d.flattenedJson, ["enderDest.CEP", "enderDest/CEP"]),
         natureOperation: d.natureOperation,
         cfopMain: d.cfopMain,
         totalValue: moneyToFixed(d.totalValue || 0),
@@ -134,8 +162,26 @@ export function buildObligationContextFromBatch(input: {
     email: establishment.email,
     accountantName: establishment.accountantName,
     accountantCpf: establishment.accountantCpf,
+    accountantCrc: establishment.accountantCrc,
+    icmsCodRec: establishment.icmsCodRec,
     documents: docs,
   };
+}
+
+function flatStr(
+  flat: Record<string, string | number | boolean | null> | undefined,
+  suffixes: string[],
+): string | undefined {
+  if (!flat) return undefined;
+  for (const [k, v] of Object.entries(flat)) {
+    if (v === null || v === undefined || v === "") continue;
+    const norm = k.replace(/\//g, ".");
+    for (const s of suffixes) {
+      const sn = s.replace(/\//g, ".");
+      if (norm.endsWith(sn) || norm.includes(`.${sn}`)) return String(v);
+    }
+  }
+  return undefined;
 }
 
 function findIcmsTot(obj: unknown): unknown {
