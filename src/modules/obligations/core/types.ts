@@ -19,6 +19,16 @@ export interface ObligationContext {
   cnpj: string;
   ie?: string;
   companyName: string;
+  /** Código IBGE do município (COD_MUN 0000) — 7 dígitos. */
+  codMun?: string;
+  tradeName?: string;
+  cep?: string;
+  address?: string;
+  addressNumber?: string;
+  addressCompl?: string;
+  neighborhood?: string;
+  phone?: string;
+  email?: string;
   accountantName?: string;
   accountantCpf?: string;
   documents: ObligationDocumentInput[];

@@ -41,6 +41,15 @@ export type LocalEstablishmentInput = {
   purpose: "0" | "1";
   periodStart: string;
   periodEnd: string;
+  codMun?: string;
+  tradeName?: string;
+  cep?: string;
+  address?: string;
+  addressNumber?: string;
+  addressCompl?: string;
+  neighborhood?: string;
+  phone?: string;
+  email?: string;
   accountantName?: string;
   accountantCpf?: string;
 };

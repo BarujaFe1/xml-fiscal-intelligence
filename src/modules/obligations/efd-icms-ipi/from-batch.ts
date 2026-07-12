@@ -19,6 +19,15 @@ export interface EstablishmentFiscalInput {
   purpose: "0" | "1";
   periodStart: string;
   periodEnd: string;
+  codMun?: string;
+  tradeName?: string;
+  cep?: string;
+  address?: string;
+  addressNumber?: string;
+  addressCompl?: string;
+  neighborhood?: string;
+  phone?: string;
+  email?: string;
   accountantName?: string;
   accountantCpf?: string;
   layoutVersion: string;
@@ -114,6 +123,15 @@ export function buildObligationContextFromBatch(input: {
     cnpj: establishment.cnpj,
     ie: establishment.ie,
     companyName: establishment.companyName,
+    codMun: establishment.codMun,
+    tradeName: establishment.tradeName,
+    cep: establishment.cep,
+    address: establishment.address,
+    addressNumber: establishment.addressNumber,
+    addressCompl: establishment.addressCompl,
+    neighborhood: establishment.neighborhood,
+    phone: establishment.phone,
+    email: establishment.email,
     accountantName: establishment.accountantName,
     accountantCpf: establishment.accountantCpf,
     documents: docs,
