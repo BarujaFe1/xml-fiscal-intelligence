@@ -11,20 +11,38 @@ import {
 } from "@/modules/obligations";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 
-/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI. */
+/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI 3.2.3. */
 const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   "0000": 15,
   "0001": 2,
+  "0005": 10,
   "0100": 14,
   "0150": 13,
   "0190": 3,
   "0200": 13,
   "0990": 2,
+  B001: 2,
+  B990: 2,
   C001: 2,
   C100: 29,
   C170: 38,
-  C190: 11,
+  C190: 12,
   C990: 2,
+  D001: 2,
+  D990: 2,
+  E001: 2,
+  E100: 3,
+  E110: 15,
+  E990: 2,
+  G001: 2,
+  G990: 2,
+  H001: 2,
+  H990: 2,
+  K001: 2,
+  K990: 2,
+  "1001": 2,
+  "1010": 14,
+  "1990": 2,
   "9001": 2,
   "9900": 3,
   "9990": 2,
@@ -52,10 +70,16 @@ function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
       uf: "SP",
       companyName: "EMPRESA DEMO LTDA",
       profile: "A",
-      activityCode: "0",
+      activityCode: "1",
       purpose: "0",
       periodStart,
       periodEnd,
+      codMun: "3550308",
+      tradeName: "EMPRESA DEMO",
+      cep: "01310100",
+      address: "AV PAULISTA",
+      addressNumber: "1000",
+      neighborhood: "BELA VISTA",
       accountantName: "Contador",
       accountantCpf: "39053344705",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
@@ -123,5 +147,30 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
     expect(lines.some((l) => l.startsWith("|C170|"))).toBe(false);
     expect(lines.some((l) => l.startsWith("|C190|"))).toBe(true);
+  });
+
+  it("inclui 0005 e blocos B/G/H/K vazios na ordem do Guia", async () => {
+    const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
+    const types = (out.serialized?.content || "")
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((l) => l.replace(/^\|/, "").split("|")[0]);
+    expect(types.slice(0, 3)).toEqual(["0000", "0001", "0005"]);
+    const idx0 = types.indexOf("0990");
+    const idxB = types.indexOf("B001");
+    const idxC = types.indexOf("C001");
+    const idxE = types.indexOf("E001");
+    const idxG = types.indexOf("G001");
+    const idxH = types.indexOf("H001");
+    const idxK = types.indexOf("K001");
+    const idx1 = types.indexOf("1001");
+    expect(idx0).toBeGreaterThan(-1);
+    expect(idxB).toBeGreaterThan(idx0);
+    expect(idxC).toBeGreaterThan(idxB);
+    expect(idxE).toBeGreaterThan(idxC);
+    expect(idxG).toBeGreaterThan(idxE);
+    expect(idxH).toBeGreaterThan(idxG);
+    expect(idxK).toBeGreaterThan(idxH);
+    expect(idx1).toBeGreaterThan(idxK);
   });
 });

@@ -161,9 +161,9 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
     },
     {
       id: "bloco_hkg",
-      label: "Blocos H/K/G",
-      status: "unsupported" as ReadinessStatus,
-      message: "Fora do MVP controlado",
+      label: "Blocos B/G/H/K",
+      status: "ok" as ReadinessStatus,
+      message: "Gerados vazios (IND_MOV=1) conforme Guia — inventário/CIAP/controle fora do rascunho.",
     },
   ];
 
@@ -184,7 +184,7 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     "", // CPF
     efdSanitize(ctx.uf, 2),
     onlyDigits(ctx.ie),
-    "", // COD_MUN — pending cadastro
+    onlyDigits(ctx.codMun).slice(0, 7), // COD_MUN
     "", // IM
     "", // SUFRAMA
     efdSanitize(ctx.profile || "", 1),
@@ -209,6 +209,35 @@ function build0000(ctx: ObligationContext): ObligationRecord {
     },
   ];
   return { type: "0000", fields, lineage };
+}
+
+/** 0005 obrigatório (Guia Prático) — 10 campos. */
+function build0005(ctx: ObligationContext): ObligationRecord {
+  const fantasia = efdSanitize(ctx.tradeName || ctx.companyName, 60);
+  return {
+    type: "0005",
+    fields: [
+      "0005",
+      fantasia,
+      onlyDigits(ctx.cep).slice(0, 8),
+      efdSanitize(ctx.address, 60),
+      efdSanitize(ctx.addressNumber, 10),
+      efdSanitize(ctx.addressCompl, 60),
+      efdSanitize(ctx.neighborhood, 60),
+      onlyDigits(ctx.phone).slice(0, 11),
+      "", // FAX
+      efdSanitize(ctx.email, 255),
+    ],
+  };
+}
+
+function emptyBlock(prefix: "B" | "G" | "H" | "K"): ObligationRecord[] {
+  const open = `${prefix}001`;
+  const close = `${prefix}990`;
+  return [
+    { type: open, fields: [open, "1"] },
+    { type: close, fields: [close, "2"] },
+  ];
 }
 
 function build0150(ctx: ObligationContext): ObligationRecord[] {
@@ -465,7 +494,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
     }
 
     for (const agg of c190Map.values()) {
-      // C190: 11 campos
+      // C190: 12 campos (Guia 3.2.3) — inclui COD_OBS
       c100.children!.push({
         type: "C190",
         fields: [
@@ -476,10 +505,11 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
           moneyToEfd(agg.vlOpr),
           moneyToEfd(agg.vlBc),
           moneyToEfd(agg.vlIcms),
-          "0",
-          "0",
-          "0",
+          "0", // VL_BC_ICMS_ST
+          "0", // VL_ICMS_ST
+          "0", // VL_RED_BC
           moneyToEfd(agg.vlIpi),
+          "", // COD_OBS
         ],
         lineage: [
           {
@@ -519,14 +549,25 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
 
   const warnings: string[] = [
     `COD_VER=${efdIcmsIpiCodVer(context.periodEnd)} derivado do ano de DT_FIN (conferir tabela do Ato COTEPE no PVA).`,
-    "COD_MUN/IM vazios no 0000 — completar cadastro do estabelecimento antes de transmitir.",
     "TIPO_ITEM=00 em 0200 exige confirmação do contador para uso em produção.",
     "IND_FRT=9 quando frete não informado — revise.",
     "C170 omitido para NF-e/NFC-e (facultativo no Guia quando há chave de acesso) — detalhe do item no XML.",
+    "Blocos B/G/H/K gerados vazios (IND_MOV=1) — inventário/CIAP/controle não preenchidos.",
     "Arquivo destinado à pré-validação interna e importação no PVA oficial.",
   ];
+  if (!onlyDigits(context.codMun) || onlyDigits(context.codMun).length !== 7) {
+    warnings.push("COD_MUN ausente/inválido no 0000 — obrigatório no Guia (7 dígitos IBGE).");
+  }
+  if (!onlyDigits(context.cep) || !context.address || !context.neighborhood) {
+    warnings.push("0005 incompleto (CEP/END/BAIRRO obrigatórios) — complete o cadastro do estabelecimento.");
+  }
 
-  const bloco0: ObligationRecord[] = [build0000(context), { type: "0001", fields: ["0001", "0"] }];
+  // Ordem Bloco 0: 0000 → 0001 → 0005 → 0100? → 0150 → 0190 → 0200 → 0990
+  const bloco0: ObligationRecord[] = [
+    build0000(context),
+    { type: "0001", fields: ["0001", "0"] },
+    build0005(context),
+  ];
 
   if (context.accountantName && context.accountantCpf) {
     // 0100: REG NOME CPF CRC CNPJ CEP END NUM COMPL BAIRRO FONE FAX EMAIL COD_MUN (14)
@@ -546,7 +587,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
         "", // FONE
         "", // FAX
         "", // EMAIL
-        "", // COD_MUN
+        onlyDigits(context.codMun).slice(0, 7), // COD_MUN
       ],
     });
   }
@@ -570,7 +611,8 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   ];
   blocoC.push({ type: "C990", fields: ["C990", String(blocoC.length + 1)] });
 
-  // Bloco D — sem CT-e/comunicação neste MVP (IND_MOV=1)
+  // Ordem oficial dos blocos: 0 → B → C → D → E → G → H → K → 1 → 9
+  const blocoB = emptyBlock("B");
   const blocoD: ObligationRecord[] = [
     { type: "D001", fields: ["D001", "1"] },
     { type: "D990", fields: ["D990", "2"] },
@@ -595,6 +637,10 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
       "IND_ATIV=0 (industrial) exige E500/IPI no PVA — este rascunho não gera E500. Use IND_ATIV=1 se não for industrial.",
     );
   }
+
+  const blocoG = emptyBlock("G");
+  const blocoH = emptyBlock("H");
+  const blocoK = emptyBlock("K");
 
   // Bloco 1 — 1010 obrigatório (todas as respostas N neste rascunho)
   const bloco1: ObligationRecord[] = [
@@ -621,7 +667,17 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     { type: "1990", fields: ["1990", "3"] },
   ];
 
-  const body = [...bloco0, ...blocoC, ...blocoD, ...blocoE, ...bloco1];
+  const body = [
+    ...bloco0,
+    ...blocoB,
+    ...blocoC,
+    ...blocoD,
+    ...blocoE,
+    ...blocoG,
+    ...blocoH,
+    ...blocoK,
+    ...bloco1,
+  ];
   const counts = new Map<string, number>();
   for (const r of body) counts.set(r.type, (counts.get(r.type) || 0) + 1);
 
