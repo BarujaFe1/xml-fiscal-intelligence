@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-13 — `chore/portfolio-quality-pass`
+
+### Added
+- Synthetic fixtures: NF-e with prefixed namespaces, NFC-e mod 65, cancellation event (`tests/fixtures/synthetic/`).
+- Regression tests `tests/unit/parser-fixtures-synthetic.test.ts`.
+- Portfolio docs: `PORTFOLIO_HANDOFF.md`, `DEMO_WALKTHROUGH.md`, `SCREENSHOTS.md`.
+- Honest README rewrite (lab/MVP, no false “enterprise/premium” claims).
+
+### Fixed
+- `KNOWN_LIMITATIONS.md` aligned with current EFD COD_VER / E110–E116 behavior.
+- **NFC-e:** `parseXmlDocument` now runs NF-e extractors for `NFCE` (model/items were dropped after detect).
+
+### Docs
+- `PORTFOLIO_CASE.md` updated for interview narrative without overclaim.
+
 ## Unreleased — `feat/saas-enterprise-hardening`
 
 ### Fixed

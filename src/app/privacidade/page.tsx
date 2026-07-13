@@ -15,8 +15,9 @@ export default function PrivacyPage() {
         consentimento e mascaramento.
       </p>
       <p>
-        Contato do encarregado (placeholder): privacy@example.local — substituir antes de produção
-        comercial.
+        Contato do encarregado (lab/MVP): atualizar e-mail institucional antes de qualquer
+        oferta comercial. Enquanto isso, trate lotes como dados sensíveis e use apenas samples
+        anonimizados em demos públicas.
       </p>
       <Link href="/" className="text-sky-300">
         Voltar

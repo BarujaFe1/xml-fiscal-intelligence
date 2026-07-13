@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic NF-e cancellation event — anonymized -->
+<procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
+  <evento versao="1.00">
+    <infEvento Id="ID1101113526031122233300018155001000009999112345678001">
+      <cOrgao>35</cOrgao>
+      <tpAmb>2</tpAmb>
+      <CNPJ>11222333000181</CNPJ>
+      <chNFe>35260311222333000181550010000099991123456780</chNFe>
+      <dhEvento>2026-06-12T10:00:00-03:00</dhEvento>
+      <tpEvento>110111</tpEvento>
+      <nSeqEvento>1</nSeqEvento>
+      <verEvento>1.00</verEvento>
+      <detEvento versao="1.00">
+        <descEvento>Cancelamento</descEvento>
+        <nProt>135260099999999</nProt>
+        <xJust>Cancelamento sintetico para fixture de parser</xJust>
+      </detEvento>
+    </infEvento>
+  </evento>
+  <retEvento versao="1.00">
+    <infEvento>
+      <tpAmb>2</tpAmb>
+      <verAplic>SP_NFE_PL_009</verAplic>
+      <cOrgao>35</cOrgao>
+      <cStat>135</cStat>
+      <xMotivo>Evento registrado e vinculado a NF-e</xMotivo>
+      <chNFe>35260311222333000181550010000099991123456780</chNFe>
+      <tpEvento>110111</tpEvento>
+      <nSeqEvento>1</nSeqEvento>
+      <dhRegEvento>2026-06-12T10:01:00-03:00</dhRegEvento>
+      <nProt>135260088888888</nProt>
+    </infEvento>
+  </retEvento>
+</procEventoNFe>
