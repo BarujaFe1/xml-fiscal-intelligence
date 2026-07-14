@@ -34,5 +34,7 @@ npm run vercel:sync-env
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `FEATURE_CLOUD_PROCESSING=true`
 - `NEXT_PUBLIC_FEATURE_CLOUD_PROCESSING=true`
+- `STORAGE_PROVIDER=supabase`
+- `STORAGE_BUCKET_XML=xml-batches`
 
 Dashboard: https://vercel.com/barujafe1s-projects/xml-fiscal-intelligence/settings/environment-variables

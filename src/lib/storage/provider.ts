@@ -126,7 +126,10 @@ export class SupabasePrivateStorage implements StorageProvider {
 
 export function getStorageProvider(): StorageProvider {
   const provider = (process.env.STORAGE_PROVIDER || "local").toLowerCase();
-  if (provider === "supabase" && hasServiceRole()) {
+  const cloudOn =
+    process.env.FEATURE_CLOUD_PROCESSING === "true" ||
+    process.env.FEATURE_CLOUD_PROCESSING === "1";
+  if ((provider === "supabase" || cloudOn) && hasServiceRole()) {
     return new SupabasePrivateStorage();
   }
   return new LocalPrivateStorage();
