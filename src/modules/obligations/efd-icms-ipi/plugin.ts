@@ -14,6 +14,8 @@ import { money, moneyAdd, moneyToEfd, moneyToFixed, Money } from "@/lib/money/de
 import { sha256Hex } from "@/lib/security/hash";
 import { isCnpjShape, normalizeCnpj, normalizeCpf } from "@/lib/fiscal/cnpj";
 import { cnpjFromAccessKey } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
+import { getEfdUfPlugin } from "@/modules/obligations/efd-icms-ipi/uf/registry";
+import { validateBlockOpenerOrder } from "@/modules/obligations/efd-icms-ipi/validate-structure";
 
 export const EFD_ICMS_IPI_LAYOUT_2026 = "EFD_ICMS_IPI_2026_DRAFT";
 export const EFD_SOURCE_ID = "official:sped:efd-icms-ipi:pending-registry";
@@ -382,6 +384,43 @@ function build0200(ctx: ObligationContext): ObligationRecord[] {
   return [...map.values()];
 }
 
+/** 0400 — naturezas de operação únicas do lote (COD_NAT / DESCR_NAT). */
+function build0400(ctx: ObligationContext): ObligationRecord[] {
+  const map = new Map<string, ObligationRecord>();
+  let seq = 1;
+  for (const d of ctx.documents) {
+    const desc = efdSanitize(d.natureOperation, 60);
+    if (!desc) continue;
+    const existing = [...map.values()].find((r) => r.fields[2] === desc);
+    if (existing) continue;
+    const cod = `N${String(seq).padStart(3, "0")}`;
+    seq += 1;
+    map.set(cod, {
+      type: "0400",
+      fields: ["0400", efdSanitize(cod, 10), desc],
+      lineage: [
+        {
+          record: "0400",
+          field: "DESCR_NAT",
+          value: desc,
+          sourceType: "xml",
+          sourceRef: d.id,
+          xmlPath: "ide/natOp",
+          ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_0400`,
+        },
+      ],
+    });
+  }
+  return [...map.values()];
+}
+
+function resolveCodSit(d: ObligationContext["documents"][0]): string {
+  if (d.codSit) return efdSanitize(d.codSit, 2).padStart(2, "0").slice(-2);
+  const st = (d.status || "").toLowerCase();
+  if (st.includes("cancel")) return "02";
+  return "00";
+}
+
 /** CST/CSOSN ICMS no C170/C190: N 003* */
 function cstIcms3(item: ObligationContext["documents"][0]["items"][0]): string {
   const raw = onlyDigits(item.tax.icms.cst || item.tax.icms.csosn || "");
@@ -397,6 +436,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
     const indEmit = resolveIndEmit(ctx, d);
     const codPart = participantCode(indEmit === "0" ? d.receiverDoc : d.emitterDoc);
     const tot = d.icmsTot || {};
+    const codSit = resolveCodSit(d);
     const c100: ObligationRecord = {
       type: "C100",
       fields: [
@@ -405,7 +445,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
         indEmit,
         codPart,
         d.model || "55",
-        d.codSit || "00",
+        codSit,
         d.series || "",
         d.number || "",
         d.accessKey || "",
@@ -439,6 +479,14 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
           sourceRef: d.id,
           xmlPath: d.xmlPathHints?.vNF || "ICMSTot/vNF",
           ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C100_VL_DOC`,
+        },
+        {
+          record: "C100",
+          field: "COD_SIT",
+          value: codSit,
+          sourceType: d.codSit ? "manual" : "derived",
+          sourceRef: d.id,
+          ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C100_COD_SIT`,
         },
       ],
       children: [],
@@ -648,6 +696,12 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     bloco0.push({ type: "0190", fields: ["0190", unid, unid] });
   }
   bloco0.push(...build0200(context));
+  const nat0400 = build0400(context);
+  if (nat0400.length) {
+    bloco0.push(...nat0400);
+  } else {
+    warnings.push("0400 omitido — nenhuma natureza da operação (natOp) nos documentos.");
+  }
   bloco0.push({ type: "0990", fields: ["0990", String(bloco0.length + 1)] });
 
   const cFamily = buildC100Family(context);
@@ -666,8 +720,13 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   ];
 
   // Bloco E — obrigatório; E110 com totais derivados dos C190 (não é parecer fiscal)
-  const e110 = buildE110FromC190(cFlat);
-  const e116 = buildE116IfNeeded(e110, context);
+  const e110 = buildE110FromC190(cFlat, context.priorCreditBalance);
+  const ufPlugin = getEfdUfPlugin(context.uf);
+  const codRec =
+    efdSanitize(context.icmsCodRec || "", 60) ||
+    ufPlugin.suggestIcmsCodRec?.({ periodEnd: context.periodEnd }) ||
+    "";
+  const e116 = buildE116IfNeeded(e110, context, codRec);
   const blocoE: ObligationRecord[] = [
     { type: "E001", fields: ["E001", "0"] },
     {
@@ -681,12 +740,18 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     blocoE.push(e116);
   }
   blocoE.push({ type: "E990", fields: ["E990", String(blocoE.length + 1)] });
-  warnings.push(
-    "E110 gerado com totais derivados dos C190 (débitos/créditos ICMS). Saldo anterior/ajustes zerados — conferir e completar no PVA.",
-  );
-  if (e116 && !context.icmsCodRec) {
+  if (context.priorCreditBalance) {
     warnings.push(
-      "E116 gerado sem COD_REC (código de receita da UF) — preencha o código estadual antes de transmitir.",
+      `E110 VL_SLD_CREDOR_ANT=${context.priorCreditBalance} (informado manualmente — não inventado).`,
+    );
+  } else {
+    warnings.push(
+      "E110 gerado com totais derivados dos C190 (débitos/créditos ICMS). Saldo anterior/ajustes zerados — informe priorCreditBalance se houver.",
+    );
+  }
+  if (e116 && !codRec) {
+    warnings.push(
+      `E116 gerado sem COD_REC — informe código estadual (UF ${context.uf || "??"}; tabela plugin vazia até fonte oficial).`,
     );
   }
   if (context.activityCode === "0") {
@@ -769,9 +834,12 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
 
 /**
  * E110 (15 campos). Débitos/créditos = soma VL_ICMS dos C190 por IND_OPER do C100 pai.
- * Ajustes e saldo anterior = 0 (exigem input manual / período anterior).
+ * Saldo anterior só se `priorCreditBalance` informado (nunca inventado).
  */
-function buildE110FromC190(cFlat: ObligationRecord[]): ObligationRecord {
+function buildE110FromC190(
+  cFlat: ObligationRecord[],
+  priorCreditBalance?: string,
+): ObligationRecord {
   let debits = money("0");
   let credits = money("0");
   let currentIndOper = "0";
@@ -781,35 +849,36 @@ function buildE110FromC190(cFlat: ObligationRecord[]): ObligationRecord {
       continue;
     }
     if (r.type !== "C190") continue;
-    // C190: REG CST CFOP ALIQ VL_OPR VL_BC VL_ICMS ...
     const vlIcms = r.fields[6] || "0";
     if (currentIndOper === "1") debits = debits.plus(money(vlIcms));
     else credits = credits.plus(money(vlIcms));
   }
   const z = "0,00";
+  const prior = money(priorCreditBalance || "0");
   const vlDeb = moneyToEfd(debits);
   const vlCred = moneyToEfd(credits);
-  const diff = debits.scaled - credits.scaled; // VL_SLD_CREDOR_ANT = 0
-  const sldApurado = diff > 0n ? moneyToEfd(new Money(diff)) : z;
-  const sldTransp = diff < 0n ? moneyToEfd(new Money(-diff)) : z;
+  const vlPrior = priorCreditBalance ? moneyToEfd(prior) : z;
+  const net = debits.scaled - credits.scaled - prior.scaled;
+  const sldApurado = net > 0n ? moneyToEfd(new Money(net)) : z;
+  const sldTransp = net < 0n ? moneyToEfd(new Money(-net)) : z;
   return {
     type: "E110",
     fields: [
       "E110",
-      vlDeb, // 02 VL_TOT_DEBITOS
-      z, // 03 VL_AJ_DEBITOS
-      z, // 04 VL_TOT_AJ_DEBITOS
-      z, // 05 VL_ESTORNOS_CRED
-      vlCred, // 06 VL_TOT_CREDITOS
-      z, // 07 VL_AJ_CREDITOS
-      z, // 08 VL_TOT_AJ_CREDITOS
-      z, // 09 VL_ESTORNOS_DEB
-      z, // 10 VL_SLD_CREDOR_ANT
-      sldApurado, // 11 VL_SLD_APURADO
-      z, // 12 VL_TOT_DED
-      sldApurado, // 13 VL_ICMS_RECOLHER (deduções 0)
-      sldTransp, // 14 VL_SLD_CREDOR_TRANSPORTAR
-      z, // 15 DEB_ESP
+      vlDeb,
+      z,
+      z,
+      z,
+      vlCred,
+      z,
+      z,
+      z,
+      vlPrior,
+      sldApurado,
+      z,
+      sldApurado,
+      sldTransp,
+      z,
     ],
   };
 }
@@ -818,6 +887,7 @@ function buildE110FromC190(cFlat: ObligationRecord[]): ObligationRecord {
 function buildE116IfNeeded(
   e110: ObligationRecord,
   ctx: ObligationContext,
+  codRec: string,
 ): ObligationRecord | null {
   const vlRecolher = e110.fields[12] || "0,00";
   const debEsp = e110.fields[14] || "0,00";
@@ -828,15 +898,15 @@ function buildE116IfNeeded(
     type: "E116",
     fields: [
       "E116",
-      "000", // COD_OR — ICMS a recolher
+      "000",
       moneyToEfd(total),
-      dateEfd(ctx.periodEnd), // DT_VCTO — conferir legislação UF
-      efdSanitize(ctx.icmsCodRec || "", 60), // COD_REC
-      "", // NUM_PROC
-      "", // IND_PROC
-      "", // PROC
-      "", // TXT_COMPL
-      mesRef, // MES_REF mmaaaa
+      dateEfd(ctx.periodEnd),
+      efdSanitize(codRec, 60),
+      "",
+      "",
+      "",
+      "",
+      mesRef,
     ],
   };
 }
@@ -846,16 +916,16 @@ export async function validateEfdBuild(
 ): Promise<ValidationResult> {
   const issues: ValidationResult["issues"] = [];
   const types = build.records.map((r) => r.type);
-  if (!types.includes("0000")) {
-    issues.push({ code: "EFD_MISSING_0000", severity: "error", message: "Registro 0000 ausente" });
-  }
-  if (!types.includes("9999")) {
-    issues.push({ code: "EFD_MISSING_9999", severity: "error", message: "Registro 9999 ausente" });
+  for (const s of validateBlockOpenerOrder(types)) {
+    issues.push({
+      code: s.code,
+      severity: s.severity,
+      message: s.message,
+    });
   }
   for (const w of build.warnings) {
     issues.push({ code: "EFD_BUILD_WARNING", severity: "warning", message: w });
   }
-  // hierarchy: C170 must follow a C100 in flattened list — soft check
   let sawC100 = false;
   for (const r of build.records) {
     if (r.type === "C100") sawC100 = true;
@@ -868,6 +938,15 @@ export async function validateEfdBuild(
       });
     }
     if (r.type === "C990") sawC100 = false;
+  }
+  const r0400 = build.records.find((r) => r.type === "0400");
+  if (r0400 && r0400.fields.length !== 3) {
+    issues.push({
+      code: "EFD_0400_FIELD_COUNT",
+      severity: "error",
+      record: "0400",
+      message: `0400 deve ter 3 campos (incl. REG); veio ${r0400.fields.length}`,
+    });
   }
   return { level: 1, ok: !issues.some((i) => i.severity === "error"), issues };
 }

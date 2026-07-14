@@ -49,8 +49,13 @@ function sampleContext() {
 }
 
 describe("all obligation plugins (assisted)", () => {
-  it("marks all five as active in registry", () => {
-    expect(Object.values(obligationRegistry).every((s) => s === "active")).toBe(true);
+  it("exposes honest maturity profiles (none are production)", () => {
+    expect(obligationRegistry["efd-icms-ipi"]).toBe("internal_beta");
+    expect(obligationRegistry["efd-contribuicoes"]).toBe("internal_beta");
+    expect(obligationRegistry.ecd).toBe("development");
+    expect(obligationRegistry.ecf).toBe("development");
+    expect(obligationRegistry.reinf).toBe("development");
+    expect(Object.values(obligationRegistry).every((s) => s !== "production")).toBe(true);
   });
 
   it("generates EFD ICMS/IPI from sample NF-e", async () => {
@@ -64,7 +69,7 @@ describe("all obligation plugins (assisted)", () => {
     const out = await runObligationPlugin(efdContribuicoesPlugin, sampleContext());
     expect(out.readiness.canGenerate).toBe(true);
     expect(out.serialized?.content).toMatch(/\|A100\|/);
-    expect(out.manifest?.disclaimer).toMatch(/PVA/i);
+    expect(out.manifest?.disclaimer).toMatch(/PGE/i);
   });
 
   it("generates ECD skeleton with DEMO chart and accountant", async () => {
@@ -93,7 +98,8 @@ describe("all obligation plugins (assisted)", () => {
     const out = await runObligationPlugin(reinfPlugin, sampleContext());
     expect(out.readiness.canGenerate).toBe(true);
     const parsed = JSON.parse(out.serialized!.content);
-    expect(parsed.events[0].evento).toBe("R-1000");
-    expect(out.manifest?.disclaimer).toMatch(/certificado/i);
+    expect(parsed.events[0].code).toBe("R-1000");
+    expect(parsed.events[0].contentHash).toBeTruthy();
+    expect(out.manifest?.disclaimer).toMatch(/FEATURE_REINF_SUBMIT|agente local/i);
   });
 });

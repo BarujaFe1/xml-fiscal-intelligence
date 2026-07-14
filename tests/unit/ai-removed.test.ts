@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 
@@ -29,7 +29,6 @@ describe("AI product surface removed", () => {
   });
 
   it("módulo src/modules/ai não existe mais", () => {
-    const { existsSync } = require("fs") as typeof import("fs");
     expect(existsSync(path.join(process.cwd(), "src/modules/ai/index.ts"))).toBe(false);
     expect(existsSync(path.join(process.cwd(), "src/modules/ai/provider.ts"))).toBe(false);
   });
