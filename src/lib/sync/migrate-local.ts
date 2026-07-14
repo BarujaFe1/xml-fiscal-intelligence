@@ -5,6 +5,7 @@ import {
   idbSaveBatchStore,
   idbDeleteBatch,
 } from "@/lib/store/idb-store";
+import { buildMigrateSnapshot } from "@/lib/sync/build-migrate-snapshot";
 
 export interface LocalBatchInventoryItem {
   id: string;
@@ -22,6 +23,8 @@ export interface MigrationPlan {
   companyLabel?: string;
   establishmentLabel?: string;
   keepLocalCopy: boolean;
+  /** Upload privacy-aware JSON snapshot to private storage after metadata upsert. */
+  uploadSnapshot?: boolean;
 }
 
 export interface MigrationBatchResult {
@@ -30,6 +33,7 @@ export interface MigrationBatchResult {
   syncStatus: SyncStatus;
   message: string;
   cloudBatchId?: string;
+  snapshotPath?: string;
 }
 
 function approxStoreBytes(store: BatchStore): number {
@@ -165,8 +169,31 @@ export async function migrateLocalBatches(plan: MigrationPlan): Promise<{
         syncError: undefined,
       });
 
-      if (!plan.keepLocalCopy) {
-        // Keep until explicit confirmation in UI — here we only mark; deletion is separate.
+      let snapshotPath: string | undefined;
+      if (plan.uploadSnapshot !== false) {
+        try {
+          const snap = buildMigrateSnapshot(store);
+          const period =
+            store.batch.year && store.batch.month
+              ? `${store.batch.year}-${String(store.batch.month).padStart(2, "0")}`
+              : undefined;
+          const snapRes = await fetch("/api/batches/migrate/snapshot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workspaceId: plan.workspaceId,
+              batchId,
+              period,
+              snapshot: snap,
+            }),
+          });
+          if (snapRes.ok) {
+            const snapData = (await snapRes.json()) as { path?: string };
+            snapshotPath = snapData.path;
+          }
+        } catch {
+          // Metadata already synced — snapshot is best-effort.
+        }
       }
 
       results.push({
@@ -174,9 +201,10 @@ export async function migrateLocalBatches(plan: MigrationPlan): Promise<{
         ok: true,
         syncStatus: "synced",
         message: data.duplicate
-          ? "Já existia na nuvem (idempotente por hash/lote)"
-          : "Metadados registrados na nuvem; XML permanece local até cloud processing",
+          ? `Já existia na nuvem${snapshotPath ? " · snapshot atualizado" : ""}`
+          : `Metadados na nuvem${snapshotPath ? " · snapshot storage" : " · XML/ZIP bruto ainda local"}`,
         cloudBatchId: data.cloudBatchId || batchId,
+        snapshotPath,
       });
     } catch (err) {
       cloudConfigured = false;

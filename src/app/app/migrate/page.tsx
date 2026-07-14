@@ -96,7 +96,7 @@ export default function MigratePage() {
       if (!cloudConfigured) {
         toast.message("Nuvem indisponível — lotes permanecem locais");
       } else if (r.every((x) => x.ok)) {
-        toast.success("Migração concluída (metadados + docs)");
+        toast.success("Migração concluída (metadados + snapshot quando disponível)");
       } else {
         toast.error("Migração parcial — veja o relatório");
       }
@@ -124,8 +124,9 @@ export default function MigratePage() {
         </h1>
         <p className="text-slate-400 mt-1 text-sm">
           Assistente idempotente por lote (UUID estável a partir do id local). Fase:{" "}
-          <span className="font-mono text-sky-300">{phase}</span>. XML bruto permanece no navegador
-          até cloud storage estar habilitado.
+          <span className="font-mono text-sky-300">{phase}</span>. Metadados sobem ao Postgres;
+          snapshot JSON (docs/itens, sem ZIP bruto) sobe ao bucket privado quando a nuvem estiver
+          ligada. O ZIP/XML original só existe se ainda estiver no navegador ou for reenviado.
         </p>
       </div>
 

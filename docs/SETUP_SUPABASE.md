@@ -8,13 +8,14 @@
 
 ## Applied migrations (MCP + repo)
 
-`schema_core` → `schema_enterprise` → `saas_foundation` → `jobs_obligations` → `billing_entitlements_v2` → `official_sources_seed` → `regulatory_governance` → **`rls_remaining` (006)** → **`plan_seeds_and_profile_trigger` (007)** → **`security_advisor_fixes` (008)**
+`schema_core` → `schema_enterprise` → `saas_foundation` → `jobs_obligations` → `billing_entitlements_v2` → `official_sources_seed` → `regulatory_governance` → **`rls_remaining` (006)** → **`plan_seeds_and_profile_trigger` (007)** → **`security_advisor_fixes` (008)** → **`remove_ai_entitlement`** → **`efd_status_and_cloud_companies_v2`** → storage bucket **`xml-batches`** (privado; SQL em `supabase/migrations/202607140003_storage_bucket_xml_batches.sql`)
 
 ## `.env.local` (gitignored)
 
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / publishable
 - `SUPABASE_SERVICE_ROLE_KEY` / `DATABASE_URL`
 - `FEATURE_CLOUD_PROCESSING=true` + `NEXT_PUBLIC_FEATURE_CLOUD_PROCESSING=true`
+- `STORAGE_PROVIDER=supabase` + `STORAGE_BUCKET_XML=xml-batches` (fallback: provider usa Supabase se `FEATURE_CLOUD_PROCESSING` + service role)
 
 ## Auth URL config (Dashboard)
 
