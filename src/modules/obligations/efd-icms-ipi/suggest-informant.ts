@@ -107,3 +107,42 @@ export function suggestInformantFromDocuments(
     distinctEmitters: counts.size,
   };
 }
+
+/** Enrich establishment fields from a specific emitter CNPJ present in the batch. */
+export function suggestInformantByCnpj(
+  documents: DocumentSummary[],
+  cnpjRaw: string,
+): InformantSuggestion | null {
+  const want = onlyDigits(cnpjRaw);
+  if (want.length !== 14) return null;
+  let count = 0;
+  let sample: DocumentSummary | undefined;
+  let uf: string | undefined;
+  const all = new Set<string>();
+  for (const d of documents) {
+    if (!(d.documentType === "NFE" || d.documentType === "NFCE" || d.model === "55")) {
+      continue;
+    }
+    const cnpj = onlyDigits(d.emitterDoc) || cnpjFromAccessKey(d.accessKey);
+    if (cnpj.length !== 14) continue;
+    all.add(cnpj);
+    if (cnpj !== want) continue;
+    count += 1;
+    if (!sample) sample = d;
+    if (!uf) uf = d.emitterUf || ufFromAccessKey(d.accessKey);
+  }
+  if (!count || !sample) return null;
+  return {
+    cnpj: want,
+    uf: uf || sample.emitterUf,
+    name: sample.emitterName,
+    ie: sample.emitterIe,
+    codMun: sample.emitterCityCode,
+    address: sample.emitterAddress,
+    addressNumber: sample.emitterAddressNumber,
+    neighborhood: sample.emitterNeighborhood,
+    cep: sample.emitterCep,
+    count,
+    distinctEmitters: all.size,
+  };
+}

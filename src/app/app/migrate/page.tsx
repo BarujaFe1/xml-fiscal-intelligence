@@ -21,29 +21,41 @@ export default function MigratePage() {
   const [items, setItems] = useState<LocalBatchInventoryItem[]>([]);
   const [totalBytes, setTotalBytes] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [workspaceId, setWorkspaceId] = useState("ws_local_demo");
+  const [workspaceId, setWorkspaceId] = useState("");
   const [companyLabel, setCompanyLabel] = useState("");
   const [establishmentLabel, setEstablishmentLabel] = useState("");
   const [keepLocal, setKeepLocal] = useState(true);
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<MigrationBatchResult[]>([]);
+  const [phase, setPhase] = useState<string>("discovered");
 
   const refresh = useCallback(async () => {
     const inv = await inventoryLocalBatches();
     setItems(inv.items);
     setTotalBytes(inv.totalApproxBytes);
     setSelected(new Set(inv.items.filter((i) => i.syncStatus !== "synced").map((i) => i.id)));
+    setPhase(inv.items.length ? "prepared" : "discovered");
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {
       void (async () => {
+        const stored =
+          typeof localStorage !== "undefined"
+            ? localStorage.getItem("xfi:workspace-id")
+            : null;
+        const id = stored || crypto.randomUUID();
+        if (!stored && typeof localStorage !== "undefined") {
+          localStorage.setItem("xfi:workspace-id", id);
+        }
+        if (!cancelled) setWorkspaceId(id);
         const inv = await inventoryLocalBatches();
         if (cancelled) return;
         setItems(inv.items);
         setTotalBytes(inv.totalApproxBytes);
         setSelected(new Set(inv.items.filter((i) => i.syncStatus !== "synced").map((i) => i.id)));
+        setPhase(inv.items.length ? "prepared" : "discovered");
       })();
     });
     return () => {
@@ -67,19 +79,24 @@ export default function MigratePage() {
     }
     setBusy(true);
     setResults([]);
+    setPhase("uploading");
     try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("xfi:workspace-id", workspaceId);
+      }
       const { results: r, cloudConfigured } = await migrateLocalBatches({
         batchIds: [...selected],
-        workspaceId: workspaceId || "ws_local_demo",
+        workspaceId: workspaceId || crypto.randomUUID(),
         companyLabel: companyLabel || undefined,
         establishmentLabel: establishmentLabel || undefined,
         keepLocalCopy: keepLocal,
       });
       setResults(r);
+      setPhase(r.every((x) => x.ok) ? "synchronized" : cloudConfigured ? "conflict" : "failed");
       if (!cloudConfigured) {
         toast.message("Nuvem indisponível — lotes permanecem locais");
       } else if (r.every((x) => x.ok)) {
-        toast.success("Migração concluída (metadados)");
+        toast.success("Migração concluída (metadados + docs)");
       } else {
         toast.error("Migração parcial — veja o relatório");
       }
@@ -106,8 +123,9 @@ export default function MigratePage() {
           Migrar lotes locais → nuvem
         </h1>
         <p className="text-slate-400 mt-1 text-sm">
-          Assistente idempotente por hash/lote. XML bruto permanece no navegador até cloud processing
-          estar habilitado. Sem Supabase, a migração falha de forma segura.
+          Assistente idempotente por lote (UUID estável a partir do id local). Fase:{" "}
+          <span className="font-mono text-sky-300">{phase}</span>. XML bruto permanece no navegador
+          até cloud storage estar habilitado.
         </p>
       </div>
 

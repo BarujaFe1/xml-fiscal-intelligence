@@ -5,11 +5,7 @@ import {
   validateComplementaryPreview,
 } from "@/modules/obligations/efd-icms-ipi/complementary";
 import { reconcileBatchDocuments, explainConfidence } from "@/modules/reconciliation";
-import {
-  containsSensitiveAiInput,
-  maskFiscalText,
-  MockAiProvider,
-} from "@/modules/ai/provider";
+import { maskFiscalText } from "@/lib/security/mask-fiscal";
 import type { DocumentSummary } from "@/types";
 
 describe("EFD complementary CSV", () => {
@@ -50,19 +46,10 @@ describe("reconciliation", () => {
   });
 });
 
-describe("AI masking", () => {
-  it("masks keys and blocks sensitive demo input detection", () => {
+describe("fiscal masking", () => {
+  it("masks access keys in free text", () => {
     expect(maskFiscalText("chave 35260312345678901234567890123456789012345678")).toContain(
       "[CHAVE]",
     );
-    expect(containsSensitiveAiInput("envie o xml completo")).toBe(true);
-  });
-
-  it("requires consent", async () => {
-    const p = new MockAiProvider();
-    const denied = await p.chat({ question: "oi", consent: false });
-    expect(denied.answer).toMatch(/Consentimento/i);
-    const ok = await p.chat({ question: "resumo", consent: true });
-    expect(ok.needsHumanReview).toBe(true);
   });
 });

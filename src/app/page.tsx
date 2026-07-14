@@ -173,7 +173,7 @@ export default function LandingPage() {
                 </h2>
                 <p className="mt-2 text-slate-400 max-w-xl">
                   XMLs reais fora do Git. Sem scraping SEFAZ. Sem armazenamento improvisado de
-                  certificado. IA e billing em demonstração até configuração real.
+                  certificado. Billing em demonstração até configuração real.
                 </p>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-300">

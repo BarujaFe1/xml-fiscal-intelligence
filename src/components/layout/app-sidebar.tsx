@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bot,
   FolderOpen,
   GitBranch,
   LayoutDashboard,
@@ -53,7 +52,6 @@ const navGroups = [
     links: [
       { href: "/app/migrate", label: "Migrar lotes", icon: CloudUpload },
       { href: "/app/admin", label: "Admin / suporte", icon: Shield },
-      { href: "/app/ai", label: "IA (demonstração)", icon: Bot },
       { href: "/app/billing", label: "Planos", icon: CreditCard },
       { href: "/app/settings", label: "Configurações", icon: Settings },
     ],

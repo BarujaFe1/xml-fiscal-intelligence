@@ -5,7 +5,7 @@ import { runFiscalAudit } from "@/modules/audit/fiscal-audit-engine";
 import { buildDocumentRelationships } from "@/modules/relationships";
 import { validateAgainstXsd } from "@/modules/validation/xsd-validator";
 import { validateXmlSignature } from "@/modules/validation/xml-signature-validator";
-import { assertSafeSelectSql } from "@/modules/ai";
+import { assertSafeSelectSql } from "@/lib/security/sql-guard";
 import { buildSpedPreviewTree } from "@/modules/sped/preview";
 import type { Batch, DocumentItem, DocumentSummary } from "@/types";
 

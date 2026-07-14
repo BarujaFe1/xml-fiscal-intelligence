@@ -9,7 +9,7 @@
 7. **NFS-e** não alimenta EFD ICMS/IPI; parser municipal é best-effort.  
 8. Contadores do **Bloco 9** são determinísticos aproximados — validar no PVA.  
 9. **Sem armazenamento de certificado A1/A3** nesta versão.  
-10. IA permanece mock (`ENABLE_AI=false`) e não escreve registros fiscais.  
+10. Assistente de IA **removido** do produto (ver `docs/AI_REMOVAL_REPORT.md`).
 11. Supabase/RLS podem existir no projeto; sync completo de XML bruto multi-tenant ainda parcial.  
 12. Web Worker de import faz fallback para main thread se o bundler rejeitar a URL.  
 13. Export “Itens por CFOP e NCM” **não** é apuração de ICMS.  

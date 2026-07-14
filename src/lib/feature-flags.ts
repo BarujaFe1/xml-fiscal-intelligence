@@ -1,10 +1,10 @@
 /**
  * Server-evaluated feature flags. Never put secrets in public flags.
+ * AI flags removed — produto sem assistente de IA nesta versão.
  */
 export type FeatureFlag =
   | "cloudProcessing"
   | "localProcessing"
-  | "ai"
   | "billing"
   | "efdGeneration"
   | "pvaImport"
@@ -23,7 +23,6 @@ export function getFeatureFlags(): Record<FeatureFlag, boolean> {
   return {
     cloudProcessing: envBool("FEATURE_CLOUD_PROCESSING", false),
     localProcessing: envBool("FEATURE_LOCAL_PROCESSING", true),
-    ai: envBool("ENABLE_AI", false) || envBool("NEXT_PUBLIC_ENABLE_AI", false),
     billing: envBool("NEXT_PUBLIC_BILLING_READY", false) && process.env.BILLING_PROVIDER === "stripe",
     efdGeneration: envBool("FEATURE_EFD_GENERATION", true),
     pvaImport: envBool("FEATURE_PVA_IMPORT", false),

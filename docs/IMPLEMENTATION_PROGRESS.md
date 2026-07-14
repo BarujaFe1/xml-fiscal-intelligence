@@ -1,25 +1,29 @@
-# Implementation Progress — Enterprise Production Hardening
+# Implementation Progress — cloud / EFD / no-AI
 
-**Branch:** `feat/enterprise-production-hardening`  
-**Updated:** 2026-07-11  
-**Billing:** deferred (Stripe keys / durable checkout later)
+**Branch:** `feat/cloud-multiuser-official-efd`  
+**Updated:** 2026-07-14
 
-| Fase | Item | Status | Arquivos | Testes | Pendência |
-| ---- | ---- | ------ | -------- | ------ | --------- |
-| 0 | Baseline + branch | `verified` | docs/IMPLEMENTATION_BASELINE.md | gate verde | e2e browsers |
-| 1 | Matriz de achados | `implemented` | docs/AUDIT_FINDINGS_RESOLUTION.md | — | SHA pós-commit |
-| 2 | DATA-001 quality score | `verified` | src/lib/quality, types, UI | quality-score | — |
-| 3 | EXPORT manifests | `tested` | src/lib/export/* | export-manifest | PDF deferred |
-| 4 | Security headers | `implemented` | next.config.ts | typecheck | CSP refine |
-| 5 | Cloud readiness gate | `implemented` | docs/CLOUD_READINESS.md, /api/ready | — | Vercel env |
-| 6 | Wave-2 lineage/parser/redaction/reprocess | `implemented` | process-memory, capability-registry, redaction, analysis/* | hardening-wave2 | — |
-| 7 | Wave-3 flatten/RTC/PVA/CNPJ export/usage | `implemented` | flatten, fixtures, pva, excel, usage | hardening-wave3 (94 total) | — |
-| 8 | Pente-fino docs + PERF | `implemented` | PERF_BENCHMARK, landing matrix, PT-BR tabs | — | axe e2e |
-| 9 | Billing Stripe | `deferred` | — | — | user later |
+## Concluído
 
-## Deferred / external
+1. Remoção completa da superfície de IA + testes negativos.
+2. Cadastro multi-empresa (PDF SIEG) + painel nas obrigações.
+3. `EfdGenerationStatus`, `FiscalDecimal`, contratos de repositório.
+4. Migração cloud: UUID estável (corrige `ws_local_demo`), fases UI, docs metadados.
+5. PVA assistido: status explícito → lifecycle; persistência com service role.
+6. Sync empresas → API `cloud_companies`.
+7. Migrations `202607140001` / `202607140002`.
 
-- BILLING-001 Stripe Checkout + webhooks  
-- SEC-003 signed storage URLs (needs cloud SoT)  
-- Live two-tenant RLS CI against remote Supabase  
-- Prod Vercel env for Supabase (`/api/health` supabase:false until set)
+## Gates
+
+| Suite | Result |
+| ----- | ------ |
+| typecheck | pass |
+| test | **139** passed / 1 skipped |
+| build | pass |
+
+## Ainda pendente / externo
+
+- Upload XML bruto para storage privado em lote
+- Apply migrations no projeto Supabase prod
+- Homologação PVA com evidências locais
+- Multiusuário/convites end-to-end

@@ -9,7 +9,6 @@ export type EntitlementKey =
   | "canUsePrivacyMode"
   | "hasApiAccess"
   | "hasAdvancedAudit"
-  | "hasAiExplanations"
   | "hasPriorityProcessing"
   | "maxCompanies"
   | "maxEstablishments"
@@ -30,7 +29,6 @@ export const PLAN_SEEDS = {
       canUsePrivacyMode: true,
       hasApiAccess: false,
       hasAdvancedAudit: true,
-      hasAiExplanations: false,
       hasPriorityProcessing: false,
       maxCompanies: 1,
       maxEstablishments: 2,
@@ -49,7 +47,6 @@ export const PLAN_SEEDS = {
       canUsePrivacyMode: true,
       hasApiAccess: false,
       hasAdvancedAudit: true,
-      hasAiExplanations: false,
       hasPriorityProcessing: false,
       maxCompanies: 3,
       maxEstablishments: 10,
@@ -68,7 +65,6 @@ export const PLAN_SEEDS = {
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
-      hasAiExplanations: true,
       hasPriorityProcessing: false,
       maxCompanies: 15,
       maxEstablishments: 50,
@@ -87,7 +83,6 @@ export const PLAN_SEEDS = {
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
-      hasAiExplanations: true,
       hasPriorityProcessing: true,
       maxCompanies: 100,
       maxEstablishments: 500,
@@ -106,7 +101,6 @@ export const PLAN_SEEDS = {
       canUsePrivacyMode: true,
       hasApiAccess: true,
       hasAdvancedAudit: true,
-      hasAiExplanations: true,
       hasPriorityProcessing: true,
       maxCompanies: 10000,
       maxEstablishments: 100000,

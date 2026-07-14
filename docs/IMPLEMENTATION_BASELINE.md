@@ -1,9 +1,9 @@
-# Implementation Baseline — Enterprise Production Hardening
+# Implementation Baseline — feat/cloud-multiuser-official-efd
 
-**Date:** 2026-07-11  
-**Branch:** `feat/enterprise-production-hardening`  
-**Initial commit:** `938efe7` (from `master` after SaaS hardening merge)  
-**Prompt:** SUPERMEGAPROMPT definitivo (correção integral / pente-fino)
+**Date:** 2026-07-14  
+**Branch:** `feat/cloud-multiuser-official-efd`  
+**Parent:** `chore/portfolio-quality-pass` (+ cadastro multi-empresa PDF local)  
+**Prompt:** SUPERMEGAPROMPT EFD real + cloud + multiusuário + remoção IA
 
 ## Toolchain
 
@@ -13,43 +13,47 @@
 | npm | 10.9.2 |
 | Next.js | 16.2.10 |
 | React | 19.2.4 |
-| TypeScript | (project) |
 
-## Quality gate (pre-change)
+## Quality gate (início desta branch)
 
 | Suite | Result |
 | ----- | ------ |
-| `npm run lint` | pass |
 | `npm run typecheck` | pass |
-| `npm run test` | **67** passed (10 files) |
-| `npm run build` | pass |
-| `npm run test:e2e` | deferred — run after build when browsers installed |
+| `npm run test` | **129** passed / 1 skipped (130) |
+| `npm run lint` | 9 errors pré-existentes + hooks `use*` (corrigidos); warnings massivos em bundle |
+| `npm run build` | a repetir após remoção IA |
+| `npm run test:e2e` | bloqueado nesta máquina até Playwright browsers |
 
-Raw logs: `docs/_baseline_*.txt` (local artifacts; do not treat as product docs).
+## PDF Guia Prático anexado (Downloads)
 
-## Module posture (verified at baseline)
+| Campo | Valor |
+| ----- | ----- |
+| Arquivo local | `C:\Users\User1\Downloads\file.pdf` |
+| SHA-256 | `bde603281ce8ad1e9f6f521a3df3ef825e6333497e30dfb9c01de8ecaa81c25b` |
+| Páginas | 366 |
+| Título (meta) | GUIA PRÁTICO DA ESCRITURAÇÃO FISCAL DIGITAL - EFD |
+| Cabeçalho p.1 | Guia Prático EFD-ICMS/IPI — Versão **3.2.3** |
+| Atualização | **06 de maio de 2026** |
+| Uso na competência | Confirmar no portal SPED antes de misturar com 2026 vs 2027; o gerador atual declara layout `EFD_ICMS_IPI_LAYOUT_2026` — **não** tratar 3.2.3 como regra única sem matriz de vigência |
 
-| Module | Classification |
-| ------ | -------------- |
-| ZIP import + IndexedDB | produção (local) |
-| Parser NFe/CTe/NFSe | funcional parcial |
-| Quality score | **bug confirmado** (denominador artificial) |
-| Exports | funcional parcial / empty frágil |
-| Auth Supabase SSR | schema-ready + local env; prod env may lack keys |
-| Cloud migrate | parcial (metadata only) |
-| Billing | mock default |
-| AI | mock |
-| EFD ICMS/IPI | diagnóstico / prontidão |
-| RLS | enabled on public tables; matrix not fully CI-proven |
+## Inventário rápido (estado real)
 
-## Known blockers external
+| Área | Estado |
+| ---- | ------ |
+| Import ZIP + IndexedDB | Produção local |
+| Parser NFe/NFCe/CTe | Funcional parcial |
+| EFD ICMS/IPI TXT | Geração assistida local + pré-validação; PVA assistido |
+| Auth Supabase SSR | Preparado; depende de env |
+| RLS schemas | Migrations existem; testes RLS incompletos |
+| Cloud = fonte da verdade | **Não** — IDB ainda predomina |
+| IA | **Removida nesta branch** (ver `AI_REMOVAL_REPORT.md`) |
+| Cadastro empresas PDF SIEG | Local IndexedDB (esta linha de trabalho) |
 
-- Stripe secrets / webhook for live billing  
-- Vercel env for Supabase may be incomplete on production  
-- PVA desktop for level-3 validation  
+## Rollback
 
-## Constraints
+```bash
+git checkout chore/portfolio-quality-pass
+# ou reset da branch feat/cloud-multiuser-official-efd
+```
 
-- No push/merge/deploy without explicit authorization  
-- No inventing fiscal data  
-- Honesty of diagnostic vs validated states  
+Não fazer push/deploy sem autorização.

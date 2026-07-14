@@ -77,7 +77,7 @@ npm run build
 
 - Pastas `private-*` gitignored — **nunca** commitar XML/ZIP/certificado real  
 - XXE: `processEntities: false`; Zip Slip e denylist de executáveis no import  
-- IA desligada por padrão (`ENABLE_AI=false`); mock não escreve registros fiscais  
+- Sem assistente de IA no produto (removido)  
 - Detalhes: [`docs/SECURITY_AND_PRIVACY.md`](docs/SECURITY_AND_PRIVACY.md), [`docs/LGPD_DATA_MAP.md`](docs/LGPD_DATA_MAP.md)
 
 ## Deploy público

@@ -70,6 +70,8 @@ export type LocalGenerateResult = {
   label: string;
   disclaimer: string;
   error?: string;
+  /** Lifecycle honesty — never equal to official RFB transmission by itself. */
+  generationStatus?: import("@/modules/obligations/efd-icms-ipi/status").EfdGenerationStatus;
 };
 
 export async function generateObligationLocal(input: {
@@ -140,11 +142,13 @@ export async function generateObligationLocal(input: {
       disclaimer:
         "Pré-validação/prontidão apenas. Não é validação PVA nem parecer fiscal.",
       error: "Geração bloqueada por pendências",
+      generationStatus: "readiness_blocked",
     };
   }
 
+  const internallyOk = result.validation?.ok ?? false;
   return {
-    ok: result.validation?.ok ?? false,
+    ok: internallyOk,
     obligationId: id,
     readiness: result.readiness,
     validation: result.validation,
@@ -158,6 +162,9 @@ export async function generateObligationLocal(input: {
     warnings: result.build?.warnings || [],
     label: "pré-validação interna — conferir no ambiente oficial",
     disclaimer: result.manifest.disclaimer,
+    generationStatus: internallyOk
+      ? "pva_validation_pending"
+      : "txt_generated",
   };
 }
 
