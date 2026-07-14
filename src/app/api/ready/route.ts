@@ -14,7 +14,6 @@ export async function GET() {
     supabaseConfigured: isSupabaseConfigured(),
     billingLive: billingIsLive(),
     cloudProcessing: flags.cloudProcessing,
-    ai: flags.ai,
     efdGeneration: flags.efdGeneration,
   };
   return NextResponse.json(

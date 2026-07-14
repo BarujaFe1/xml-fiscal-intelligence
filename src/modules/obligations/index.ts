@@ -7,9 +7,18 @@ export { reinfPlugin, REINF_LAYOUT_2026 } from "@/modules/obligations/reinf/plug
 export { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
 export {
   suggestInformantFromDocuments,
+  suggestInformantByCnpj,
   cnpjFromAccessKey,
   type InformantSuggestion,
 } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
+export {
+  type EfdGenerationStatus,
+  type ReadinessStatus,
+  type CloudMigrationStatus,
+  EFD_GENERATION_STATUS_LABELS,
+  isOfficialTransmissionClaim,
+} from "@/modules/obligations/efd-icms-ipi/status";
+export { resolveEfdLayoutGuide } from "@/modules/obligations/efd-icms-ipi/versions/resolve-layout";
 export { normalizeNFeItemTax, normalizeIcmsTot } from "@/modules/obligations/efd-icms-ipi/tax/normalize-nfe-tax";
 export {
   obligationRegistry,

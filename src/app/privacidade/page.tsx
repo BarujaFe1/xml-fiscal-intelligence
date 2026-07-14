@@ -11,12 +11,13 @@ export default function PrivacyPage() {
       </p>
       <p>
         Em modo local, documentos fiscais permanecem no navegador (IndexedDB). Em modo SaaS, dados
-        são segregados por workspace com RLS. XML bruto não deve ser enviado a provedores de IA sem
-        consentimento e mascaramento.
+        são segregados por workspace com RLS. Esta versão do produto não envia dados a provedores
+        de IA.
       </p>
       <p>
-        Contato do encarregado (placeholder): privacy@example.local — substituir antes de produção
-        comercial.
+        Contato do encarregado (lab/MVP): atualizar e-mail institucional antes de qualquer
+        oferta comercial. Enquanto isso, trate lotes como dados sensíveis e use apenas samples
+        anonimizados em demos públicas.
       </p>
       <Link href="/" className="text-sky-300">
         Voltar

@@ -24,7 +24,7 @@ Validação de assinatura digital, quando disponível, é **técnica** e não ga
 | Real data in git | `.gitignore` for `data/`, `private-*`, `*.zip`, `*.pfx` |
 | UI exposure | CNPJ/CPF masking toggle |
 | Secrets | `.env.example` only; no keys committed |
-| AI | `ENABLE_AI=false` + mock; `ENABLE_DATA_MASKING=true` |
+| AI | **Removido** do produto (2026-07); sem ENABLE_AI |
 | SEFAZ | Only official channels with user credentials — no scraping |
 
 ## Local private folders (gitignored)

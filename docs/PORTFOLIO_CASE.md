@@ -2,52 +2,44 @@
 
 ## Problem
 
-Accountants and fiscal analysts download monthly XML batches (often via SIEG certificate vaults). Turning those ZIPs into searchable, exportable, quality-checked datasets is still mostly manual.
+Analistas fiscais e times operacionais recebem ZIPs mensais de XML (NF-e/CT-e/NFS-e). Transformar isso em dataset pesquisável, exportável e auditável ainda é trabalho manual e frágil.
 
 ## Motivation
 
-Build a **real product surface**: not a toy parser demo, but a premium analysis lab that respects Brazilian fiscal XML diversity and privacy constraints.
+Construir uma **superfície de produto realista** (lab/MVP): parser resiliente, ETL no browser, analytics operacional e obrigações assistidas — com privacidade e sem claims jurídicos falsos.
 
 ## Architecture
 
-Full-stack Next.js MVP with a clean seam to Supabase + optional FastAPI. Local filesystem store proves the UX end-to-end without blocking on cloud credentials.
+Next.js full-stack com BatchStore tipado em IndexedDB; schema Supabase preparado; plugins de obrigações determinísticos (sem IA inventando imposto).
 
 ## Parser
 
-- Family detection by structure
-- Generic flatten (every tag → path)
-- Friendly extractors per document type
-- Item explosion for multi-`det` NF-e
-- Linked documents for CT-e
-- Resilient NFSe service extraction
+- Detecção por estrutura (inclui namespaces prefixados)  
+- Flatten genérico de tags  
+- Extractors por família (NF-e, CT-e, NFS-e)  
+- Itens multi-`det`  
+- Fixtures sintéticas em `tests/fixtures/synthetic/`  
 
 ## Challenges
 
-- NFSe schema fragmentation across municipalities
-- Keeping exports usable when tag cardinality explodes
-- Safe ZIP handling
-- Not leaking real fiscal data in a public repo
+- Variância municipal de NFS-e  
+- Export usável com cardinalidade alta de tags  
+- ZIP/XML maliciosos  
+- Não vazar dados fiscais reais no repositório público  
 
 ## Trade-offs
 
 | Choice | Why | Cost |
 |--------|-----|------|
-| Next-only MVP | Ship + deploy fast | Large batches may need worker later |
-| Filesystem store | Zero cloud setup | Not multi-user yet |
-| Top-N dynamic Excel columns | Practical sheets | Not literally infinite columns |
-| Best-effort NFSe | Coverage without false certainty | Edge municipalities need adapters |
+| Parse no browser | Evita limite de body Vercel | SoT local por usuário |
+| IndexedDB | Demo sem cloud | Não é multi-user completo |
+| EFD assistido | Estudo/PVA import | Não é arquivo oficial |
+| NFS-e best-effort | Cobertura sem falsa certeza | Municípios edge precisam adaptadores |
 
 ## Screenshots
 
-Run locally and capture:
+Ver [`docs/SCREENSHOTS.md`](SCREENSHOTS.md).
 
-1. Landing  
-2. Upload  
-3. Batch dashboard  
-4. Document detail / tree  
-5. Quality insights  
-6. Excel export  
+## Interview narrative
 
-## Next steps
-
-Wire Supabase, async processing, and month-over-month comparison to turn the MVP into a SaaS.
+Ver [`docs/DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) e [`docs/PORTFOLIO_HANDOFF.md`](PORTFOLIO_HANDOFF.md).

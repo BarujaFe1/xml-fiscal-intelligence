@@ -3,6 +3,8 @@
  * Does not automate or redistribute the PVA.
  */
 
+import type { EfdGenerationStatus } from "@/modules/obligations/efd-icms-ipi/status";
+
 export type PvaResultStatus = "ok" | "errors" | "warnings" | "unknown";
 
 export interface PvaValidationImport {
@@ -74,6 +76,13 @@ export function inferPvaStatus(issues: PvaValidationImport["issues"]): PvaResult
   if (issues.some((i) => i.severity === "error")) return "errors";
   if (issues.some((i) => i.severity === "warning")) return "warnings";
   return "unknown";
+}
+
+export function pvaResultToGenerationStatus(status: PvaResultStatus): EfdGenerationStatus {
+  if (status === "ok") return "pva_validated";
+  if (status === "errors") return "pva_rejected";
+  if (status === "warnings") return "pva_validated";
+  return "pva_validation_pending";
 }
 
 const LS_KEY = "xfi_pva_runs";

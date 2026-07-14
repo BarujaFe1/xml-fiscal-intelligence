@@ -1,17 +1,18 @@
 # Known Limitations
 
-1. **IndexedDB** remains primary storage for full XML payloads; cloud migrate currently registers batch **metadata** only.  
-2. **EFD COD_VER** placeholder `019` until official source registry is populated.  
-3. **TIPO_ITEM=00** on 0200 requires accountant confirmation.  
-4. **E110** not auto-generated from XML sums — apuração real still gated.  
-5. **Stripe** checkout unavailable until `BILLING_PROVIDER=stripe` + keys; UI shows “Planos” demo.  
-6. Next 16 routing uses `src/proxy.ts` (former middleware convention).  
-7. **NFS-e** is not treated as EFD ICMS/IPI input.  
-8. **Bloco 9 counters** are deterministic approximations — validate in PVA.  
-9. **No A1/A3 certificate storage** by design in this version.  
-10. AI remains mock (`ENABLE_AI=false`) and must not write fiscal records.  
-11. Supabase project live (`uaqydwvdmwrwlvznoztd`) with RLS; full multi-tenant document sync still partial.  
-12. **Web Worker import** falls back to main thread if the bundler rejects the worker URL.  
-13. Export “Itens por CFOP e NCM” is **not** ICMS apuração — labeled explicitly.  
-14. Landing/demo CTAs must not promise “SPED válido” or automatic conformity.  
-15. `/api/ready` `commercialReady` stays false until Stripe is live.
+1. **IndexedDB** permanece a fonte de verdade para XML/lote no browser; cloud/Supabase registra metadados de forma parcial.  
+2. **COD_VER** EFD deriva do ano de `DT_FIN` (ex.: 020 em 2026) — conferir tabela do Ato COTEPE no PVA.  
+3. **TIPO_ITEM=00** em 0200 exige confirmação do contador.  
+4. **E110/E116** são rascunho derivado dos C190; saldo anterior/ajustes/COD_REC estadual não são inventados.  
+5. **Stripe** checkout indisponível até `BILLING_PROVIDER=stripe` + keys; UI de planos é demonstração.  
+6. Next 16 usa `src/proxy.ts` (ex-middleware).  
+7. **NFS-e** não alimenta EFD ICMS/IPI; parser municipal é best-effort.  
+8. Contadores do **Bloco 9** são determinísticos aproximados — validar no PVA.  
+9. **Sem armazenamento de certificado A1/A3** nesta versão.  
+10. Assistente de IA **removido** do produto (ver `docs/AI_REMOVAL_REPORT.md`).
+11. Supabase/RLS podem existir no projeto; sync completo de XML bruto multi-tenant ainda parcial.  
+12. Web Worker de import faz fallback para main thread se o bundler rejeitar a URL.  
+13. Export “Itens por CFOP e NCM” **não** é apuração de ICMS.  
+14. Landing/demo **não** prometem “SPED válido” ou conformidade automática.  
+15. `/api/ready` `commercialReady` permanece false até billing real.  
+16. IE/CNPJ de fixtures demo podem falhar dígito verificador no PVA — use emitente real do lote.  

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic NF-e with explicit namespace prefixes — anonymized, no real PII -->
+<nfe:nfeProc xmlns:nfe="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <nfe:NFe>
+    <nfe:infNFe Id="NFe35260311222333000181550010000099991123456780" versao="4.00">
+      <nfe:ide>
+        <nfe:cUF>35</nfe:cUF>
+        <nfe:natOp>Venda sintetica</nfe:natOp>
+        <nfe:mod>55</nfe:mod>
+        <nfe:serie>1</nfe:serie>
+        <nfe:nNF>9999</nfe:nNF>
+        <nfe:dhEmi>2026-06-10T09:00:00-03:00</nfe:dhEmi>
+        <nfe:tpNF>1</nfe:tpNF>
+        <nfe:cMunFG>3550308</nfe:cMunFG>
+        <nfe:tpAmb>2</nfe:tpAmb>
+        <nfe:finNFe>1</nfe:finNFe>
+      </nfe:ide>
+      <nfe:emit>
+        <nfe:CNPJ>11222333000181</nfe:CNPJ>
+        <nfe:xNome>EMITENTE FIXTURE NS LTDA</nfe:xNome>
+        <nfe:enderEmit>
+          <nfe:xLgr>Rua Fixture</nfe:xLgr>
+          <nfe:nro>1</nfe:nro>
+          <nfe:xBairro>Centro</nfe:xBairro>
+          <nfe:cMun>3550308</nfe:cMun>
+          <nfe:xMun>Sao Paulo</nfe:xMun>
+          <nfe:UF>SP</nfe:UF>
+          <nfe:CEP>01001000</nfe:CEP>
+        </nfe:enderEmit>
+        <nfe:IE>123456789012</nfe:IE>
+      </nfe:emit>
+      <nfe:dest>
+        <nfe:CNPJ>99888777000166</nfe:CNPJ>
+        <nfe:xNome>DESTINATARIO FIXTURE LTDA</nfe:xNome>
+        <nfe:enderDest>
+          <nfe:xLgr>Av Destino</nfe:xLgr>
+          <nfe:nro>10</nfe:nro>
+          <nfe:xBairro>Jardins</nfe:xBairro>
+          <nfe:cMun>3550308</nfe:cMun>
+          <nfe:xMun>Sao Paulo</nfe:xMun>
+          <nfe:UF>SP</nfe:UF>
+          <nfe:CEP>01452000</nfe:CEP>
+        </nfe:enderDest>
+      </nfe:dest>
+      <nfe:det nItem="1">
+        <nfe:prod>
+          <nfe:cProd>SKU-NS-1</nfe:cProd>
+          <nfe:xProd>Item namespaced</nfe:xProd>
+          <nfe:NCM>84713012</nfe:NCM>
+          <nfe:CFOP>5102</nfe:CFOP>
+          <nfe:uCom>UN</nfe:uCom>
+          <nfe:qCom>1.0000</nfe:qCom>
+          <nfe:vUnCom>100.00</nfe:vUnCom>
+          <nfe:vProd>100.00</nfe:vProd>
+        </nfe:prod>
+        <nfe:imposto>
+          <nfe:ICMS>
+            <nfe:ICMS00>
+              <nfe:orig>0</nfe:orig>
+              <nfe:CST>00</nfe:CST>
+              <nfe:vBC>100.00</nfe:vBC>
+              <nfe:pICMS>18.00</nfe:pICMS>
+              <nfe:vICMS>18.00</nfe:vICMS>
+            </nfe:ICMS00>
+          </nfe:ICMS>
+        </nfe:imposto>
+      </nfe:det>
+      <nfe:total>
+        <nfe:ICMSTot>
+          <nfe:vBC>100.00</nfe:vBC>
+          <nfe:vICMS>18.00</nfe:vICMS>
+          <nfe:vProd>100.00</nfe:vProd>
+          <nfe:vNF>100.00</nfe:vNF>
+          <nfe:vPIS>0.00</nfe:vPIS>
+          <nfe:vCOFINS>0.00</nfe:vCOFINS>
+        </nfe:ICMSTot>
+      </nfe:total>
+    </nfe:infNFe>
+  </nfe:NFe>
+  <nfe:protNFe versao="4.00">
+    <nfe:infProt>
+      <nfe:tpAmb>2</nfe:tpAmb>
+      <nfe:chNFe>35260311222333000181550010000099991123456780</nfe:chNFe>
+      <nfe:dhRecbto>2026-06-10T09:01:00-03:00</nfe:dhRecbto>
+      <nfe:nProt>135260099999999</nfe:nProt>
+      <nfe:cStat>100</nfe:cStat>
+      <nfe:xMotivo>Autorizado o uso da NF-e</nfe:xMotivo>
+    </nfe:infProt>
+  </nfe:protNFe>
+</nfe:nfeProc>

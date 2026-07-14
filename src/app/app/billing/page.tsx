@@ -26,10 +26,6 @@ const FRIENDLY_LIMITS: Record<string, { label: string; format: (v: boolean | num
     label: "Auditoria avançada",
     format: (v) => (v ? "Incluída" : "Não incluída"),
   },
-  hasAiExplanations: {
-    label: "Assistente IA",
-    format: (v) => (v ? "Incluído" : "Não incluído"),
-  },
 };
 
 const isDev = process.env.NODE_ENV === "development";

@@ -46,6 +46,7 @@ function buildSummary(
 ): ReturnType<typeof extractNFeSummary> {
   switch (documentType) {
     case "NFE":
+    case "NFCE":
       return extractNFeSummary(parsed);
     case "CTE":
       return extractCTeSummary(parsed);
@@ -59,6 +60,7 @@ function buildSummary(
 function buildItems(documentType: DocumentType, parsed: unknown) {
   switch (documentType) {
     case "NFE":
+    case "NFCE":
       return extractNFeItems(parsed);
     case "CTE":
       return extractCTeLinkedDocs(parsed);

@@ -14,9 +14,20 @@ import {
   fetchObligationDemo,
   OBLIGATION_LABELS,
   type ObligationId,
+  suggestInformantByCnpj,
   suggestInformantFromDocuments,
 } from "@/modules/obligations";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
+import {
+  CompanyDirectoryPanel,
+  type CompanyDirectoryApply,
+} from "@/components/obligations/company-directory-panel";
+import { getLastCompanyCnpj, setLastCompanyCnpj } from "@/lib/store/last-company";
+import {
+  getCompanyByCnpj,
+  listEstablishments,
+  localCompanyToFiscalPatch,
+} from "@/lib/store/local-cadastro";
 import type { Batch, BatchStore } from "@/types";
 
 const emptyForm = {
@@ -64,6 +75,33 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
       setBatches(list);
       if (list[0]) setBatchId(list[0].id);
     });
+    void (async () => {
+      const last = getLastCompanyCnpj();
+      if (!last) return;
+      const co = await getCompanyByCnpj(last);
+      if (!co) return;
+      const ests = await listEstablishments();
+      const est = ests.find((e) => e.companyId === co.id);
+      const patch = localCompanyToFiscalPatch(co, est);
+      setForm((f) => {
+        if (f.companyName || f.cnpj) return f;
+        return {
+          ...f,
+          cnpj: patch.cnpj || f.cnpj,
+          companyName: patch.companyName || f.companyName,
+          ie: patch.ie || f.ie,
+          uf: patch.uf || f.uf,
+          codMun: patch.codMun || f.codMun,
+          cep: patch.cep || f.cep,
+          address: patch.address || f.address,
+          addressNumber: patch.addressNumber || f.addressNumber,
+          neighborhood: patch.neighborhood || f.neighborhood,
+          tradeName: patch.tradeName || f.tradeName,
+          accountantName: patch.accountantName || f.accountantName,
+          accountantCpf: patch.accountantCpf || f.accountantCpf,
+        };
+      });
+    })();
   }, []);
 
   useEffect(() => {
@@ -117,7 +155,27 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
       neighborhood: informantHint.neighborhood || f.neighborhood,
       cep: informantHint.cep || f.cep,
     }));
+    setLastCompanyCnpj(informantHint.cnpj);
     toast.success(`Emitente do lote aplicado (${informantHint.count} NF-e)`);
+  }
+
+  function applyCompanyDirectory(patch: CompanyDirectoryApply) {
+    setForm((f) => ({
+      ...f,
+      cnpj: patch.cnpj || f.cnpj,
+      companyName: patch.companyName || f.companyName,
+      uf: patch.uf || f.uf,
+      ie: patch.ie || f.ie,
+      codMun: patch.codMun || f.codMun,
+      address: patch.address || f.address,
+      addressNumber: patch.addressNumber || f.addressNumber,
+      neighborhood: patch.neighborhood || f.neighborhood,
+      cep: patch.cep || f.cep,
+      tradeName: patch.tradeName || f.tradeName,
+      accountantName: patch.accountantName || f.accountantName,
+      accountantCpf: patch.accountantCpf || f.accountantCpf,
+    }));
+    if (patch.cnpj) setLastCompanyCnpj(patch.cnpj);
   }
 
   async function fillDemo() {
@@ -216,13 +274,36 @@ export function ObligationAssistant({ obligationId }: { obligationId: Obligation
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
-          {informantHint && obligationId === "efd-icms-ipi" ? (
+          {informantHint &&
+          (obligationId === "efd-icms-ipi" ||
+            obligationId === "efd-contribuicoes" ||
+            obligationId === "reinf") ? (
             <div className="sm:col-span-2">
               <Button type="button" variant="secondary" onClick={applyInformantFromBatch}>
                 Usar emitente do lote ({informantHint.cnpj})
               </Button>
             </div>
           ) : null}
+          <CompanyDirectoryPanel
+            onApply={applyCompanyDirectory}
+            currentForm={{
+              companyName: form.companyName,
+              cnpj: form.cnpj,
+              ie: form.ie,
+              uf: form.uf,
+              codMun: form.codMun,
+              cep: form.cep,
+              address: form.address,
+              addressNumber: form.addressNumber,
+              neighborhood: form.neighborhood,
+              tradeName: form.tradeName,
+              accountantName: form.accountantName,
+              accountantCpf: form.accountantCpf,
+            }}
+            enrichFromBatch={(cnpj) =>
+              effectiveStore ? suggestInformantByCnpj(effectiveStore.documents, cnpj) : null
+            }
+          />
           {(
             [
               ["cnpj", "CNPJ"],

@@ -25,7 +25,6 @@ const NAV = [
   { href: "/app/relationships", label: "Relacionamentos", icon: GitCompare },
   { href: "/app/obligations", label: "Obrigações / EFD", icon: FileSearch },
   { href: "/app/sped", label: "Diagnóstico EFD", icon: FileSearch },
-  { href: "/app/ai", label: "IA (demonstração)", icon: Search },
   { href: "/app/billing", label: "Planos", icon: Settings },
   { href: "/app/settings", label: "Configurações", icon: Settings },
 ];

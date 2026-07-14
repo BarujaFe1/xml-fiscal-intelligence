@@ -19,8 +19,21 @@ import {
   DEMO_ESTABLISHMENT,
   fetchObligationDemo,
 } from "@/modules/obligations/demo-fixtures";
-import { suggestInformantFromDocuments } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
+import {
+  suggestInformantByCnpj,
+  suggestInformantFromDocuments,
+} from "@/modules/obligations/efd-icms-ipi/suggest-informant";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
+import {
+  CompanyDirectoryPanel,
+  type CompanyDirectoryApply,
+} from "@/components/obligations/company-directory-panel";
+import { getLastCompanyCnpj, setLastCompanyCnpj } from "@/lib/store/last-company";
+import {
+  getCompanyByCnpj,
+  localCompanyToFiscalPatch,
+  listEstablishments,
+} from "@/lib/store/local-cadastro";
 import type { Batch, BatchStore } from "@/types";
 
 export default function ObligationsEfdPage() {
@@ -38,10 +51,14 @@ export default function ObligationsEfdPage() {
     validation?: { ok: boolean; issues: Array<{ severity: string; message: string }> };
     lineageSample?: Array<Record<string, unknown>>;
     disclaimer?: string;
+    generationStatus?: string;
   } | null>(null);
 
   const [pvaVersion, setPvaVersion] = useState("");
   const [pvaReport, setPvaReport] = useState("");
+  const [pvaResultStatus, setPvaResultStatus] = useState<"ok" | "errors" | "warnings" | "unknown">(
+    "unknown",
+  );
   const [pvaBusy, setPvaBusy] = useState(false);
   const [pvaRecord, setPvaRecord] = useState<Record<string, unknown> | null>(null);
   const [pvaRuns, setPvaRuns] = useState<
@@ -94,6 +111,33 @@ export default function ObligationsEfdPage() {
         })),
       );
     });
+    void (async () => {
+      const last = getLastCompanyCnpj();
+      if (!last) return;
+      const co = await getCompanyByCnpj(last);
+      if (!co) return;
+      const ests = await listEstablishments();
+      const est = ests.find((e) => e.companyId === co.id);
+      const patch = localCompanyToFiscalPatch(co, est);
+      setForm((f) => {
+        if (f.companyName || f.cnpj) return f;
+        return {
+          ...f,
+          cnpj: patch.cnpj || f.cnpj,
+          companyName: patch.companyName || f.companyName,
+          ie: patch.ie || f.ie,
+          uf: patch.uf || f.uf,
+          codMun: patch.codMun || f.codMun,
+          cep: patch.cep || f.cep,
+          address: patch.address || f.address,
+          addressNumber: patch.addressNumber || f.addressNumber,
+          neighborhood: patch.neighborhood || f.neighborhood,
+          tradeName: patch.tradeName || f.tradeName,
+          accountantName: patch.accountantName || f.accountantName,
+          accountantCpf: patch.accountantCpf || f.accountantCpf,
+        };
+      });
+    })();
   }, []);
 
   async function refreshPvaRuns() {
@@ -174,9 +218,29 @@ export default function ObligationsEfdPage() {
       neighborhood: informantHint.neighborhood || f.neighborhood,
       cep: informantHint.cep || f.cep,
     }));
+    setLastCompanyCnpj(informantHint.cnpj);
     toast.success(
       `Emitente do lote aplicado (${informantHint.count} NF-e · ${informantHint.distinctEmitters} CNPJ distintos)`,
     );
+  }
+
+  function applyCompanyDirectory(patch: CompanyDirectoryApply) {
+    setForm((f) => ({
+      ...f,
+      cnpj: patch.cnpj || f.cnpj,
+      companyName: patch.companyName || f.companyName,
+      uf: patch.uf || f.uf,
+      ie: patch.ie || f.ie,
+      codMun: patch.codMun || f.codMun,
+      address: patch.address || f.address,
+      addressNumber: patch.addressNumber || f.addressNumber,
+      neighborhood: patch.neighborhood || f.neighborhood,
+      cep: patch.cep || f.cep,
+      tradeName: patch.tradeName || f.tradeName,
+      accountantName: patch.accountantName || f.accountantName,
+      accountantCpf: patch.accountantCpf || f.accountantCpf,
+    }));
+    if (patch.cnpj) setLastCompanyCnpj(patch.cnpj);
   }
 
   async function fillDemo() {
@@ -261,6 +325,9 @@ export default function ObligationsEfdPage() {
     }
     setPvaBusy(true);
     try {
+      const workspaceId =
+        (typeof localStorage !== "undefined" && localStorage.getItem("xfi:workspace-id")) ||
+        "ws_local_demo";
       const res = await fetch("/api/obligations/efd-icms-ipi/pva", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -269,7 +336,10 @@ export default function ObligationsEfdPage() {
           contentHash: result?.contentHash,
           pvaVersion: pvaVersion.trim(),
           reportText: pvaReport,
+          resultStatus: pvaResultStatus === "unknown" ? undefined : pvaResultStatus,
           notes: "Registro manual assistido",
+          workspaceId,
+          persistReport: true,
         }),
       });
       const { readJsonOrTextError } = await import("@/modules/obligations/generate-local");
@@ -281,6 +351,9 @@ export default function ObligationsEfdPage() {
         return;
       }
       setPvaRecord(data.record as Record<string, unknown>);
+      if (typeof data.generationStatus === "string") {
+        setResult((r) => (r ? { ...r, generationStatus: data.generationStatus as string } : r));
+      }
       try {
         const { saveLocalPvaRun } = await import("@/modules/obligations/efd-icms-ipi/pva/workflow");
         saveLocalPvaRun(data.record as Parameters<typeof saveLocalPvaRun>[0]);
@@ -288,7 +361,11 @@ export default function ObligationsEfdPage() {
       } catch {
         // ignore
       }
-      toast.success("Resultado do PVA registrado (nível 3 — informado pelo usuário)");
+      toast.success(
+        data.persisted
+          ? `PVA registrado e persistido · status ${String(data.generationStatus || "")}`
+          : `PVA registrado localmente · status ${String(data.generationStatus || "")}`,
+      );
     } finally {
       setPvaBusy(false);
     }
@@ -375,6 +452,26 @@ export default function ObligationsEfdPage() {
               </Button>
             </div>
           ) : null}
+          <CompanyDirectoryPanel
+            onApply={applyCompanyDirectory}
+            currentForm={{
+              companyName: form.companyName,
+              cnpj: form.cnpj,
+              ie: form.ie,
+              uf: form.uf,
+              codMun: form.codMun,
+              cep: form.cep,
+              address: form.address,
+              addressNumber: form.addressNumber,
+              neighborhood: form.neighborhood,
+              tradeName: form.tradeName,
+              accountantName: form.accountantName,
+              accountantCpf: form.accountantCpf,
+            }}
+            enrichFromBatch={(cnpj) =>
+              effectiveStore ? suggestInformantByCnpj(effectiveStore.documents, cnpj) : null
+            }
+          />
           {(
             [
               ["companyName", "Razão social"],
@@ -613,6 +710,14 @@ export default function ObligationsEfdPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          {result?.generationStatus ? (
+            <p className="text-xs text-slate-300">
+              Status da geração:{" "}
+              <span className="font-mono text-sky-300">{result.generationStatus}</span>
+              {" · "}
+              TXT gerado ≠ transmitido à RFB.
+            </p>
+          ) : null}
           <div className="space-y-1">
             <Label>Versão do PVA</Label>
             <Input
@@ -620,6 +725,21 @@ export default function ObligationsEfdPage() {
               onChange={(e) => setPvaVersion(e.target.value)}
               placeholder="ex.: PVA EFD ICMS/IPI 5.0.0"
             />
+          </div>
+          <div className="space-y-1">
+            <Label>Resultado informado</Label>
+            <select
+              className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+              value={pvaResultStatus}
+              onChange={(e) =>
+                setPvaResultStatus(e.target.value as "ok" | "errors" | "warnings" | "unknown")
+              }
+            >
+              <option value="unknown">Inferir do relatório</option>
+              <option value="ok">Aceito sem erros</option>
+              <option value="warnings">Advertências</option>
+              <option value="errors">Erros bloqueantes</option>
+            </select>
           </div>
           <div className="space-y-1">
             <Label>Trecho do relatório (opcional)</Label>
@@ -630,7 +750,7 @@ export default function ObligationsEfdPage() {
               placeholder={"ERRO: ...\nAVISO: ..."}
             />
           </div>
-          <Button type="button" variant="secondary" disabled={pvaBusy} onClick={registerPva}>
+          <Button type="button" variant="secondary" disabled={pvaBusy} onClick={() => void registerPva()}>
             {pvaBusy ? "Registrando…" : "Registrar resultado do PVA"}
           </Button>
           {pvaRecord && (

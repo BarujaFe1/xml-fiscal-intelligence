@@ -37,5 +37,6 @@ See migrations `202607110004_official_sources_seed.sql` and `202607110005_regula
 
 | Date | Source | Notes |
 | ---- | ------ | ----- |
+| 2026-07-14 | Guia Prático EFD 3.2.3 (PDF local) | SHA-256 `bde60328…c25b`; atualização 06/05/2026; cruzar vigência 2026 vs 2027 antes de hardcode |
 | 2026-07-11 | Manual DV CNPJ | Implemented ASCII−48 mod11 in `src/lib/fiscal/cnpj.ts` |
 | 2026-07-11 | RTC portal | Documented readiness; no invented tax mapping |

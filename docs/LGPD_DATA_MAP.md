@@ -30,7 +30,7 @@
 | Vercel | Hosting | Request metadata |
 | Supabase | Auth + DB + storage | Account + tenant data |
 | Stripe | Payments | Billing identity |
-| AI provider (optional) | Explanations | Masked excerpts only if ENABLE_AI |
+| ~~AI provider~~ | Removido | — |
 
 ## Data subject rights (product hooks)
 

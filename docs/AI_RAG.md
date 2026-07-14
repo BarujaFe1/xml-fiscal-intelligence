@@ -1,24 +1,6 @@
-# AI / RAG
+# AI / RAG — HISTÓRICO (recurso removido)
 
-## Status
+> **2026-07-14:** Assistente de IA foi removido do produto.  
+> Ver [`AI_REMOVAL_REPORT.md`](./AI_REMOVAL_REPORT.md).
 
-Mock provider in `src/modules/ai`.
-
-```env
-ENABLE_AI=false
-AI_PROVIDER=mock
-ENABLE_DATA_MASKING=true
-OPENAI_API_KEY=
-XAI_API_KEY=
-```
-
-## Safety
-
-- No external calls when mock / `ENABLE_AI=false`  
-- `assertSafeSelectSql` allows only SELECT  
-- Answers must cite limitations — never definitive tax advice  
-- Mask identifiers before any future external provider  
-
-## UI
-
-`/app/ai` — chat mock + SQL preview guard.
+Este arquivo permanece apenas como histórico. Não habilite `ENABLE_AI` — a variável não existe mais no `.env.example`.

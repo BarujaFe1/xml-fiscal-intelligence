@@ -1,33 +1,52 @@
 # README — XML Fiscal Intelligence
 
-**Plataforma fiscal/data product para importar, processar, pesquisar, auditar e exportar lotes de XML (NF-e, CT-e, NFS-e).**
+**Lab analítico full-stack:** importar ZIPs de XML fiscal (NF-e, NFC-e, CT-e, NFS-e), normalizar tags/itens, buscar, auditar heurísticamente e exportar planilhas — com privacidade e limites legais explícitos.
 
-![stack](https://img.shields.io/badge/Next.js-16-black) ![ts](https://img.shields.io/badge/TypeScript-5-blue) ![privacy](https://img.shields.io/badge/privacy-fiscal%20first-emerald)
+![stack](https://img.shields.io/badge/Next.js-16-black) ![ts](https://img.shields.io/badge/TypeScript-5-blue) ![tests](https://img.shields.io/badge/vitest-121-green)
 
-> Este sistema auxilia análise, organização, auditoria e diagnóstico fiscal, mas **não substitui** validação contábil/fiscal profissional, legislação aplicável, consultoria tributária, nem o PVA/SPED oficial.
+> **Não é PVA/SPED oficial**, não é parecer contábil e não substitui validação profissional. Geração EFD é **rascunho assistido** para importação/estudo no PVA.
 
 ---
 
 ## Problema
 
-ZIPs mensais (SIEG e similares) exigem extrair, classificar, buscar tags, consolidar itens e auditar inconsistências — trabalho lento e frágil.
+Lotes mensais (ZIP) de XML exigem extrair, classificar, buscar tags, consolidar itens e checar inconsistências — fluxo lento e fácil de errar à mão.
 
-## Solução
+## Solução (fluxo demonstrável)
 
-1. Upload seguro de ZIP (parse no navegador — sem limite de 4,5 MB da Vercel)  
-2. Detecção NF-e / NFC-e / CT-e / NFS-e / eventos  
-3. Flatten de tags + itens + classificação CFOP  
-4. Importação **incremental** (SHA-256) e duplicidade por chave/hash  
-5. Busca, dashboards, quality score  
-6. Auditoria fiscal + relacionamentos NF-e↔CT-e  
-7. SPED preview (diagnóstico) + IA mock segura  
-8. Export Excel / CSV / JSON / HTML  
+1. Upload de ZIP no navegador (parse client-side — evita limite de body da Vercel)  
+2. Detecção de família documental + flatten de tags + explosão de itens  
+3. Deduplicação por SHA-256 / chave; importação incremental  
+4. Busca, filtros, quality score, export Excel/CSV/JSON  
+5. Auditoria heurística + relações NF-e↔CT-e  
+6. Obrigacões assistidas (EFD ICMS/IPI e outras) — **pré-validação interna**, não transmissão  
 
-## Stack
+## O que este projeto demonstra (portfólio)
 
-Next.js App Router · TypeScript · Tailwind · Recharts · Zod-ready types · IndexedDB · Postgres schema (Supabase) · OpenAPI draft
+| Área | Evidência no repo |
+|------|-------------------|
+| Parsing XML fiscal + namespaces | `src/lib/parser/*`, fixtures em `tests/fixtures/synthetic/` |
+| ETL no browser (ZIP → store tipado) | `src/lib/store/*`, IndexedDB |
+| Analytics operacional | dashboards, quality score, exports |
+| Domínio fiscal com honestidade | banners EFD/PVA, `docs/KNOWN_LIMITATIONS.md` |
+| Testes | Vitest (parser, EFD, zip, security corpus) |
 
-## Como rodar
+## Stack real
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind · fast-xml-parser · JSZip · ExcelJS · IndexedDB · Vitest · (opcional) Supabase schema/RLS · deploy Vercel.
+
+## Arquitetura (visão)
+
+```
+ZIP → parser (detect/flatten/extract) → BatchStore (IndexedDB)
+                                         ├─ busca / filtros / export
+                                         ├─ audit heurística
+                                         └─ plugins de obrigações (EFD draft)
+```
+
+Fonte de verdade de lote grande: **IndexedDB do navegador**. Postgres/Supabase: schema e metadados parciais — não é sync completo de XML bruto.
+
+## Quick start
 
 ```bash
 npm install
@@ -37,17 +56,15 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000) → **Upload**.
 
-### Samples anonimizados
+### Samples anonimizados (sem PII real)
 
 ```powershell
-Compress-Archive -Path samples\anonymized\*.xml -DestinationPath private-imports\samples.zip
+Compress-Archive -Path samples\anonymized\*.xml -DestinationPath private-imports\samples.zip -Force
 ```
 
-### ZIP real
+Roteiro de demo 3–5 min: [`docs/DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md).
 
-Coloque em `private-imports/` ou `private-test-data/` (gitignored). **Nunca** committe XMLs reais.
-
-## Scripts
+## Gates
 
 ```bash
 npm run lint
@@ -56,43 +73,45 @@ npm run test
 npm run build
 ```
 
-## Documentação
+## Privacidade e limites legais
 
-| Doc | Conteúdo |
-|-----|----------|
-| [ENTERPRISE_UPGRADE_PLAN.md](docs/ENTERPRISE_UPGRADE_PLAN.md) | Plano e fases |
-| [HANDOFF.md](docs/HANDOFF.md) | O que foi entregue |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitetura |
-| [SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md) | LGPD / privacidade |
-| [IMPORT_PIPELINE.md](docs/IMPORT_PIPELINE.md) | Pipeline de import |
-| [openapi.yaml](docs/openapi.yaml) | Contrato API |
+- Pastas `private-*` gitignored — **nunca** commitar XML/ZIP/certificado real  
+- XXE: `processEntities: false`; Zip Slip e denylist de executáveis no import  
+- Sem assistente de IA no produto (removido)  
+- Detalhes: [`docs/SECURITY_AND_PRIVACY.md`](docs/SECURITY_AND_PRIVACY.md), [`docs/LGPD_DATA_MAP.md`](docs/LGPD_DATA_MAP.md)
 
-## Segurança
+## Deploy público
 
-- Sem scraping SEFAZ / automação indevida  
-- Pastas `private-*` ignoradas  
-- IA desligada por padrão (`ENABLE_AI=false`)  
-- Assinatura/XSD: stubs documentados (sem promessa jurídica)  
+https://xml-fiscal-intelligence.vercel.app  
 
-## Deploy
+Em produção, lotes grandes permanecem no **IndexedDB do usuário**. Reimporte o ZIP após limpar o storage do site se necessário.
 
-```bash
-npx vercel
-```
+## Limitações honestas
 
-Em produção, lotes ficam no **IndexedDB do navegador** (FS efêmero na Vercel).
+- NFS-e municipal: **best-effort** (schemas variam)  
+- EFD: rascunho assistido — conferir no PVA; não inventamos COD_REC/IE  
+- XSD/assinatura: stubs técnicos, não validade jurídica  
+- Multi-tenant cloud de XML bruto: parcial  
+- Lista viva: [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md)
 
-## Limitações
+## Documentação útil
 
-- Persistência multi-usuário Postgres ainda schema-ready  
-- SPED é preview/diagnóstico  
-- DuckDB/Parquet e OCR: preparados na documentação  
-- NFS-e municipal: best-effort  
+| Doc | Uso |
+|-----|-----|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Visão de módulos |
+| [PARSER_CAPABILITY_MATRIX.md](docs/PARSER_CAPABILITY_MATRIX.md) | O que o parser afirma |
+| [PORTFOLIO_HANDOFF.md](docs/PORTFOLIO_HANDOFF.md) | Before/after e entrevista |
+| [DEMO_WALKTHROUGH.md](docs/DEMO_WALKTHROUGH.md) | Demo guiada |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Histórico |
 
-## Portfólio
+## Roteiro rápido de entrevista
 
-Narrativa em [docs/PORTFOLIO_CASE.md](docs/PORTFOLIO_CASE.md).
+1. Problema do ZIP mensal → BatchStore tipado  
+2. Namespaces / NFC-e / eventos (fixtures sintéticas)  
+3. Trade-off IndexedDB vs API body limits  
+4. Por que EFD não é “SPED válido”  
+5. Controles de privacidade e o que *não* está no escopo  
 
 ---
 
-Feito para transformar o ZIP do mês em decisão — rápido, auditável e responsável.
+Feito para transformar o ZIP do mês em dataset pesquisável e auditável — com limites explícitos.
