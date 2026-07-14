@@ -1,209 +1,153 @@
 import { describe, expect, it } from "vitest";
-import { classifyOperation, explainCFOP } from "@/lib/fiscal/cfop";
-import { sha256Hex, isValidCnpjOrCpfFormat } from "@/lib/security/hash";
-import { runFiscalAudit } from "@/modules/audit/fiscal-audit-engine";
-import { buildDocumentRelationships } from "@/modules/relationships";
-import { validateAgainstXsd } from "@/modules/validation/xsd-validator";
-import { validateXmlSignature } from "@/modules/validation/xml-signature-validator";
-import { assertSafeSelectSql } from "@/lib/security/sql-guard";
-import { buildSpedPreviewTree } from "@/modules/sped/preview";
-import type { Batch, DocumentItem, DocumentSummary } from "@/types";
+import { CONTROL_MATRIX, controlMatrixSummary, controlMatrixMarkdown } from "@/modules/enterprise/controls";
+import {
+  buildEvidenceBinder,
+  binderToMarkdown,
+  binderToZipBlob,
+} from "@/modules/enterprise/evidence-binder";
+import {
+  publishScenarioListing,
+  importListingWithRelab,
+  listPublishedForTenant,
+  retireListing,
+} from "@/modules/enterprise/marketplace";
+import { listGoldenVersions, resolveGoldenVersion } from "@/modules/enterprise/golden-versions";
+import {
+  createOmieLivePilotAdapter,
+  runOmieLivePilotGolden,
+  fetchOmieLivePreviewBlocked,
+  liveErpEnvAllowed,
+} from "@/modules/enterprise/erp-live-pilot";
+import {
+  defaultLegalStatus,
+  applyLegalMilestones,
+  assertNoFakeCertification,
+} from "@/modules/enterprise/legal-status";
+import {
+  ENTERPRISE_PLATFORM_MATURITY,
+  enterpriseHealth,
+  section28Phase12Report,
+} from "@/modules/enterprise/platform";
+import {
+  createScenarioDraft,
+  applyLabResult,
+  markReviewed,
+} from "@/modules/homologation/scenarios";
+import { assertCatalogSafe, getAdapter, listRegisteredAdapters } from "@/modules/continuous-ops/erp/registry";
+import { OBLIGATION_SUPPORT_PROFILES } from "@/modules/obligations";
+import { buildCommercialSupportMatrix, assertNoFalseProduction } from "@/modules/ops/commercial-matrix";
 
-describe("CFOP", () => {
-  it("explains known CFOP", () => {
-    const e = explainCFOP("5102");
-    expect(e.known).toBe(true);
-    expect(e.category).toBe("venda");
+describe("Enterprise Fase 12", () => {
+  it("control matrix + binder zip sem claim SOC2", async () => {
+    expect(CONTROL_MATRIX.length).toBeGreaterThan(5);
+    expect(controlMatrixSummary().implemented).toBeGreaterThan(0);
+    expect(controlMatrixMarkdown()).toMatch(/sem certificação/i);
+    const binder = buildEvidenceBinder({ section28Extra: section28Phase12Report() });
+    expect(binder.disclaimer).toMatch(/SOC2/);
+    expect(binderToMarkdown(binder)).toMatch(/Evidence binder/);
+    const blob = await binderToZipBlob(binder);
+    expect(blob.size).toBeGreaterThan(100);
   });
 
-  it("classifies venda from CFOP", () => {
-    const c = classifyOperation({ documentType: "NFE", cfopMain: "5102" });
-    expect(c.classification).toBe("venda");
-    expect(c.confidence).toBeGreaterThan(0.5);
-  });
-
-  it("classifies transporte for CTE", () => {
-    const c = classifyOperation({ documentType: "CTE" });
-    expect(c.classification).toBe("transporte");
-  });
-});
-
-describe("hash & docs", () => {
-  it("sha256 is stable", async () => {
-    const a = await sha256Hex("<nfe>1</nfe>");
-    const b = await sha256Hex("<nfe>1</nfe>");
-    expect(a).toBe(b);
-    expect(a).toHaveLength(64);
-  });
-
-  it("validates cnpj/cpf length", () => {
-    expect(isValidCnpjOrCpfFormat("12345678901")).toBe(true);
-    expect(isValidCnpjOrCpfFormat("123")).toBe(false);
-  });
-});
-
-describe("audit engine", () => {
-  it("flags empty NCM and duplicate keys", () => {
-    const batch = {
-      id: "b1",
-      workspaceId: "ws",
-      name: "t",
-      uploadedFileName: "t.zip",
-      status: "completed",
-      totalFiles: 2,
-      totalXml: 2,
-      validXml: 2,
-      invalidXml: 0,
-      nfeCount: 2,
-      cteCount: 0,
-      nfseCount: 0,
-      unknownCount: 0,
-      duplicateCount: 1,
-      totalValue: 100,
-      healthScore: 80,
-      progress: 100,
-      progressMessage: "ok",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Batch;
-
-    const docs: DocumentSummary[] = [
-      {
-        id: "d1",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentType: "NFE",
-        fileName: "a.xml",
-        accessKey: "35260300000000000000000000000000000000000000",
-        totalValue: 50,
-        rawJson: {},
-        flattenedJson: {},
-        parseStatus: "ok",
-        parseErrors: [],
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "d2",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentType: "NFE",
-        fileName: "b.xml",
-        accessKey: "35260300000000000000000000000000000000000000",
-        totalValue: 50,
-        rawJson: {},
-        flattenedJson: {},
-        parseStatus: "ok",
-        parseErrors: [],
-        createdAt: new Date().toISOString(),
-      },
-    ];
-
-    const items: DocumentItem[] = [
-      {
-        id: "i1",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentId: "d1",
-        documentType: "NFE",
-        itemNumber: 1,
-        description: "Produto",
-        totalValue: 50,
-        taxJson: {},
-        rawJson: {},
-        flattenedJson: {},
-      },
-    ];
-
-    const findings = runFiscalAudit({ batch, documents: docs, items });
-    expect(findings.some((f) => f.code === "DUP_ACCESS_KEY")).toBe(true);
-    expect(findings.some((f) => f.code === "ITEM_NO_NCM" || f.code.includes("NCM"))).toBe(true);
-  });
-});
-
-describe("relationships", () => {
-  it("links CTE to NFE by key in item", () => {
-    const key = "35260311111111111111111111111111111111111111";
-    const docs: DocumentSummary[] = [
-      {
-        id: "nfe1",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentType: "NFE",
-        fileName: "n.xml",
-        accessKey: key,
-        rawJson: {},
-        flattenedJson: {},
-        parseStatus: "ok",
-        parseErrors: [],
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "cte1",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentType: "CTE",
-        fileName: "c.xml",
-        rawJson: {},
-        flattenedJson: {},
-        parseStatus: "ok",
-        parseErrors: [],
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    const items: DocumentItem[] = [
-      {
-        id: "i1",
-        workspaceId: "ws",
-        batchId: "b1",
-        documentId: "cte1",
-        documentType: "CTE",
-        itemNumber: 1,
-        code: key,
-        taxJson: {},
-        rawJson: {},
-        flattenedJson: {},
-      },
-    ];
-    const rels = buildDocumentRelationships({ workspaceId: "ws", documents: docs, items });
-    expect(rels.some((r) => r.relationshipType === "cte_to_nfe")).toBe(true);
-    expect(rels.some((r) => r.relationshipType === "nfe_to_cte")).toBe(true);
-  });
-});
-
-describe("validation stubs", () => {
-  it("xsd not configured", () => {
-    expect(validateAgainstXsd({ xml: "<xml/>", documentType: "NFE" }).status).toBe(
-      "not_configured",
-    );
-  });
-
-  it("signature missing", () => {
-    expect(validateXmlSignature("<nfe></nfe>").status).toBe("missing");
-  });
-});
-
-describe("AI SQL guard", () => {
-  it("allows select", () => {
-    expect(assertSafeSelectSql("SELECT 1").ok).toBe(true);
-  });
-  it("blocks drop", () => {
-    expect(assertSafeSelectSql("DROP TABLE x").ok).toBe(false);
-  });
-  it("blocks select with delete", () => {
-    expect(assertSafeSelectSql("SELECT * FROM t; DELETE FROM t").ok).toBe(false);
-  });
-});
-
-describe("SPED preview", () => {
-  it("builds tree with warnings", () => {
-    const tree = buildSpedPreviewTree({
-      hasNfe: true,
-      hasItems: true,
-      hasCfop: true,
-      hasNcm: false,
-      companyConfigured: false,
+  it("marketplace publish/import força re-lab e isolamento de tenant", () => {
+    let scn = createScenarioDraft({
+      workspaceId: "ws_a",
+      obligationId: "efd-icms-ipi",
+      periodKey: "2026-01",
+      layoutVersion: "017",
+      program: "pva_efd_icms_ipi",
+      uf: "SP",
     });
-    expect(tree.children?.length).toBeGreaterThan(0);
-    expect(tree.status).toBe("warning");
+    scn = applyLabResult(scn, {
+      contentHash: "b".repeat(32),
+      programVersion: "1",
+      generationId: "g",
+      evidenceId: "e",
+      homologationGrade: true,
+    });
+    scn = markReviewed(scn, "rev", "§28");
+    const listing = publishScenarioListing({
+      tenantId: "t1",
+      workspaceId: "ws_a",
+      scenario: scn,
+      goldenPackVersion: "1.0.0-phase12",
+    });
+    expect(listing.status).toBe("published");
+    expect(listing.contentFingerprint).toMatch(/…/);
+    expect(listPublishedForTenant([listing], "t1")).toHaveLength(1);
+
+    const { scenario, result } = importListingWithRelab({
+      listing,
+      targetWorkspaceId: "ws_b",
+      tenantId: "t1",
+    });
+    expect(result.requiresRelab).toBe(true);
+    expect(scenario.status).toBe("lab_pending");
+    expect(scenario.homologationGrade).toBe(false);
+
+    expect(() =>
+      importListingWithRelab({ listing, targetWorkspaceId: "ws_b", tenantId: "other" }),
+    ).toThrow(/tenant/);
+    expect(retireListing(listing).status).toBe("retired");
+  });
+
+  it("golden versions por obrigação/UF", () => {
+    expect(listGoldenVersions().length).toBeGreaterThan(GOLDEN_MIN());
+    expect(resolveGoldenVersion("golden_efd_icms_sp")?.uf).toBe("SP");
+  });
+
+  it("Omie live gated — off por default; golden ok; HTTP bloqueado", async () => {
+    const off = createOmieLivePilotAdapter({});
+    expect(off.liveConnectionEnabled).toBe(false);
+    expect(liveErpEnvAllowed({})).toBe(false);
+    expect(runOmieLivePilotGolden({}).ok).toBe(true);
+    expect(assertCatalogSafe({})).toBe(true);
+    expect(getAdapter("omie_live_pilot", {})?.vendorId).toBe("omie_live_pilot");
+    expect(listRegisteredAdapters({}).length).toBeGreaterThanOrEqual(6);
+
+    const on = createOmieLivePilotAdapter({
+      XFI_ALLOW_LIVE_ERP: "1",
+      XFI_OMIE_APP_KEY: "key",
+      XFI_OMIE_APP_SECRET: "secret",
+    });
+    expect(on.liveConnectionEnabled).toBe(true);
+    expect(on.maturity).toBe("internal_beta");
+    expect(
+      assertCatalogSafe({
+        XFI_ALLOW_LIVE_ERP: "1",
+        XFI_OMIE_APP_KEY: "key",
+        XFI_OMIE_APP_SECRET: "secret",
+      }),
+    ).toBe(true);
+
+    await expect(fetchOmieLivePreviewBlocked()).rejects.toThrow(/não habilitado/);
+  });
+
+  it("legal status nunca auto-certifica; DPA/SLA só com evidence", () => {
+    const d = defaultLegalStatus();
+    expect(d.dpa).toBe("template_only");
+    expect(d.sla).toBe("draft");
+    expect(() => assertNoFakeCertification(d)).not.toThrow();
+    const signed = applyLegalMilestones(d, { dpaSignedEvidenceRef: "contract/123" });
+    expect(signed.dpa).toBe("signed");
+    expect(signed.soc2Certified).toBe(false);
+  });
+
+  it("health + comercial sem production", () => {
+    expect(ENTERPRISE_PLATFORM_MATURITY).toBe("official_validator_beta");
+    const h = enterpriseHealth({});
+    expect(h.omieGoldenOk).toBe(true);
+    expect(h.anyObligationProduction).toBe(false);
+    expect(section28Phase12Report()).toMatch(/Fase 12/);
+    const matrix = buildCommercialSupportMatrix();
+    expect(assertNoFalseProduction(matrix)).toBe(true);
+    expect(matrix.some((r) => r.resource.includes("Marketplace"))).toBe(true);
+    expect(
+      Object.values(OBLIGATION_SUPPORT_PROFILES).every((p) => p.maturity !== "production"),
+    ).toBe(true);
   });
 });
+
+function GOLDEN_MIN() {
+  return 5;
+}

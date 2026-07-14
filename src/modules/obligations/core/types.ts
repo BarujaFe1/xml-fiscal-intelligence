@@ -206,8 +206,11 @@ export interface FiscalObligationPlugin {
   supportedVersions: string[];
   resolveVersion(context: ObligationContext): Promise<{ layoutVersion: string; sourceId: string }>;
   detectRequiredData(context: ObligationContext): Promise<RequiredDataResult>;
+  /** Alias preferido (SUPERMEGAPROMPT) — default via detectRequiredData. */
+  evaluateReadiness?(context: ObligationContext): Promise<RequiredDataResult>;
   build(context: ObligationContext): Promise<ObligationBuildResult>;
   validate(build: ObligationBuildResult, context: ObligationContext): Promise<ValidationResult>;
+  validateInternally?(build: ObligationBuildResult, context: ObligationContext): Promise<ValidationResult>;
   serialize(build: ObligationBuildResult, context: ObligationContext): Promise<SerializedObligation>;
   createManifest(
     build: ObligationBuildResult,

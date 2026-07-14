@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "secrets:scan-paths": "node scripts/check-secret-paths.mjs",
     "perf:bench": "tsx --tsconfig tsconfig.json scripts/perf-benchmark.ts",
     "vercel:sync-env": "node scripts/sync-vercel-env.mjs",
     "efd:sample": "tsx --tsconfig tsconfig.json scripts/generate-sample-efd.ts",

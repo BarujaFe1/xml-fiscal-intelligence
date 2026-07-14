@@ -70,12 +70,16 @@ export async function runObligationPlugin(
   serialized?: SerializedObligation;
   manifest?: GenerationManifest;
 }> {
-  const readiness = await plugin.detectRequiredData(context);
+  const readiness = plugin.evaluateReadiness
+    ? await plugin.evaluateReadiness(context)
+    : await plugin.detectRequiredData(context);
   if (!readiness.canGenerate) {
     return { readiness };
   }
   const build = await plugin.build(context);
-  const validation = await plugin.validate(build, context);
+  const validation = plugin.validateInternally
+    ? await plugin.validateInternally(build, context)
+    : await plugin.validate(build, context);
   const serialized = await plugin.serialize(build, context);
   const manifest = await plugin.createManifest(build, serialized, context, validation);
   return { readiness, build, validation, serialized, manifest };

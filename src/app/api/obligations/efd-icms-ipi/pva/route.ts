@@ -1,5 +1,6 @@
 import {
   inferPvaStatus,
+  isHomologationGradePvaRun,
   mapPvaIssuesToInternal,
   parsePvaReportText,
   pvaResultToGenerationStatus,
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
       persisted,
       generationStatus,
       validationLevel: 3,
+      homologationGrade: isHomologationGradePvaRun(record),
       disclaimer: record.disclaimer,
       note: persisted
         ? "Persistido em pva_validation_runs"

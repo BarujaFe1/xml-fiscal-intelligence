@@ -36,6 +36,15 @@ const DISCLAIMER =
   "Resultado conforme relatório informado pelo usuário a partir do PVA oficial. O sistema não executa o PVA nem declara conformidade automática.";
 
 export function mapPvaIssuesToInternal(input: PvaValidationImport): PvaValidationRecord {
+  if (!input.contentHash?.trim()) {
+    // Soft allow for legacy, but tag note — homologation matrix requires hash
+    input = {
+      ...input,
+      notes: [input.notes, "AVISO: contentHash ausente — não conta para validated_scope"]
+        .filter(Boolean)
+        .join(" | "),
+    };
+  }
   return {
     id: `pva_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     importedAt: new Date().toISOString(),
@@ -44,6 +53,16 @@ export function mapPvaIssuesToInternal(input: PvaValidationImport): PvaValidatio
     validatedAt: input.validatedAt || new Date().toISOString(),
     ...input,
   };
+}
+
+/** Homologation bar: contentHash + pvaVersion + non-unknown result. */
+export function isHomologationGradePvaRun(run: Pick<PvaValidationImport, "contentHash" | "pvaVersion" | "resultStatus">): boolean {
+  return Boolean(
+    run.contentHash?.trim() &&
+      run.pvaVersion?.trim() &&
+      run.resultStatus &&
+      run.resultStatus !== "unknown",
+  );
 }
 
 /** Parse a simple line-oriented PVA-like report (best-effort, user-supplied). */

@@ -1,0 +1,60 @@
+{
+  "version": "2026.1-draft",
+  "sourceIds": [
+    "official:sped:efd-reinf:hub",
+    "official:efd-reinf:manual-2.1.2.1"
+  ],
+  "notes": "Subset Fase 3 — não cobre todos os eventos oficiais. Ampliar só com fonte versionada.",
+  "events": [
+    {
+      "code": "R-1000",
+      "series": "R-1000",
+      "label": "Informações do contribuinte",
+      "implemented": true,
+      "requiresPeriod": true
+    },
+    {
+      "code": "R-2010",
+      "series": "R-2000",
+      "label": "Retenção contribuição previdenciária — serviços tomados",
+      "implemented": true,
+      "requiresPeriod": true,
+      "candidateFromXml": "NFSE"
+    },
+    {
+      "code": "R-2020",
+      "series": "R-2000",
+      "label": "Retenção contribuição previdenciária — serviços prestados",
+      "implemented": false,
+      "requiresPeriod": true
+    },
+    {
+      "code": "R-4010",
+      "series": "R-4000",
+      "label": "Pagamentos/créditos a beneficiário pessoa física (subset)",
+      "implemented": false,
+      "requiresPeriod": true
+    },
+    {
+      "code": "R-4099",
+      "series": "R-4000",
+      "label": "Fechamento/reabertura dos eventos da série 4000 (placeholder)",
+      "implemented": false,
+      "requiresPeriod": true
+    },
+    {
+      "code": "R-2099",
+      "series": "R-2000",
+      "label": "Fechamento dos eventos periódicos",
+      "implemented": true,
+      "requiresPeriod": true
+    },
+    {
+      "code": "R-9000",
+      "series": "controle",
+      "label": "Exclusão de eventos",
+      "implemented": true,
+      "requiresPeriod": false
+    }
+  ]
+}

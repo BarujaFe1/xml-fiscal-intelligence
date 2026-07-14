@@ -4,13 +4,25 @@ import { efdContribuicoesPlugin } from "@/modules/obligations/efd-contribuicoes/
 import { ecdPlugin } from "@/modules/obligations/ecd/plugin";
 import { ecfPlugin } from "@/modules/obligations/ecf/plugin";
 import { reinfPlugin } from "@/modules/obligations/reinf/plugin";
+import {
+  type ObligationId,
+  OBLIGATION_LABELS,
+  OBLIGATION_BLURBS,
+  isObligationId,
+} from "@/modules/obligations/core/registry/ids";
+import { OBLIGATION_SUPPORT_PROFILES, getSupportProfile } from "@/modules/obligations/core/registry/maturity-profiles";
+import type { ObligationMaturity } from "@/modules/obligations/core/maturity";
 
-export type ObligationId =
-  | "efd-icms-ipi"
-  | "efd-contribuicoes"
-  | "ecd"
-  | "ecf"
-  | "reinf";
+export type {
+  ObligationId,
+} from "@/modules/obligations/core/registry/ids";
+export {
+  OBLIGATION_LABELS,
+  OBLIGATION_BLURBS,
+  OBLIGATION_IDS,
+  isObligationId,
+} from "@/modules/obligations/core/registry/ids";
+export { OBLIGATION_SUPPORT_PROFILES, getSupportProfile } from "@/modules/obligations/core/registry/maturity-profiles";
 
 export const obligationPlugins: Record<ObligationId, FiscalObligationPlugin> = {
   "efd-icms-ipi": efdIcmsIpiPlugin,
@@ -20,35 +32,21 @@ export const obligationPlugins: Record<ObligationId, FiscalObligationPlugin> = {
   reinf: reinfPlugin,
 };
 
-export const obligationRegistry: Record<ObligationId, "active" | "stub"> = {
-  "efd-icms-ipi": "active",
-  "efd-contribuicoes": "active",
-  ecd: "active",
-  ecf: "active",
-  reinf: "active",
-};
-
-export const OBLIGATION_LABELS: Record<ObligationId, string> = {
-  "efd-icms-ipi": "EFD ICMS/IPI (SPED Fiscal)",
-  "efd-contribuicoes": "EFD-Contribuições",
-  ecd: "ECD",
-  ecf: "ECF",
-  reinf: "EFD-Reinf",
-};
-
-export const OBLIGATION_BLURBS: Record<ObligationId, string> = {
-  "efd-icms-ipi": "Geração assistida com prontidão, TXT, manifesto e pré-validação interna.",
-  "efd-contribuicoes": "Rascunho PIS/COFINS a partir de NF-e — conferir no PVA EFD-Contribuições.",
-  ecd: "Esqueleto contábil com plano DEMO — não deriva lançamentos de XML fiscal.",
-  ecf: "Esqueleto estrutural — sem cálculo de IRPJ/CSLL a partir de NF-e.",
-  reinf: "Pacote R-1000 + candidatos a eventos — sem transmissão/certificado.",
+/** @deprecated use OBLIGATION_SUPPORT_PROFILES[id].maturity — kept for gradual migration */
+export const obligationRegistry: Record<ObligationId, ObligationMaturity> = {
+  "efd-icms-ipi": OBLIGATION_SUPPORT_PROFILES["efd-icms-ipi"].maturity,
+  "efd-contribuicoes": OBLIGATION_SUPPORT_PROFILES["efd-contribuicoes"].maturity,
+  ecd: OBLIGATION_SUPPORT_PROFILES.ecd.maturity,
+  ecf: OBLIGATION_SUPPORT_PROFILES.ecf.maturity,
+  reinf: OBLIGATION_SUPPORT_PROFILES.reinf.maturity,
 };
 
 export function getObligationPlugin(id: string): FiscalObligationPlugin | null {
-  if (id in obligationPlugins) return obligationPlugins[id as ObligationId];
+  if (isObligationId(id)) return obligationPlugins[id];
   return null;
 }
 
-export function isObligationId(id: string): id is ObligationId {
-  return id in obligationPlugins;
+export function canOpenAssistant(id: ObligationId): boolean {
+  const m = getSupportProfile(id).maturity;
+  return m !== "planned";
 }
