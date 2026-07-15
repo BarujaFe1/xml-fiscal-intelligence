@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, FolderOpen, Upload, Activity, FileStack } from "lucide-react";
+import { CheckCircle2, Circle, FolderOpen, Upload, Activity, FileStack, Inbox } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { mergeBatchLists } from "@/lib/store/idb-store";
 import type { Batch } from "@/types";
+import { PageHeader } from "@/components/design-system/PageHeader";
+import { EnvironmentIndicator } from "@/components/design-system/EnvironmentIndicator";
+import { EmptyState } from "@/components/design-system/EmptyState";
+import { NextActionCard } from "@/components/design-system/NextActionCard";
+import { ProgressSteps } from "@/components/design-system/ProgressSteps";
 
 type ChecklistItem = {
   id: string;
@@ -17,6 +23,7 @@ type ChecklistItem = {
 };
 
 export default function AppHomePage() {
+  const router = useRouter();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +50,8 @@ export default function AppHomePage() {
     ? Math.round(scored.reduce((a, b) => a + (b.healthScore as number), 0) / scored.length)
     : null;
 
+  const currentStep = batches.length > 0 ? 1 : 0;
+
   const checklist: ChecklistItem[] = useMemo(() => {
     const hasBatch = batches.length > 0;
     const hasAudit = batches.some(
@@ -54,8 +63,8 @@ export default function AppHomePage() {
     );
     return [
       {
-        id: "demo",
-        label: "Ambiente local de demonstração ativo",
+        id: "local",
+        label: "Armazenamento local ativo",
         done: true,
         href: "/app/settings",
       },
@@ -85,7 +94,7 @@ export default function AppHomePage() {
       },
       {
         id: "team",
-        label: "Convite de equipe (requer Supabase)",
+        label: "Convite de equipe (requer sincronização em nuvem)",
         done: false,
         href: "/app/settings",
       },
@@ -94,17 +103,15 @@ export default function AppHomePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-            Visão geral
-          </h1>
-          <p className="text-slate-400 mt-1">
-            Laboratório de análise de lotes XML fiscais — dados neste navegador até a nuvem SaaS.
-          </p>
-        </div>
-        <Badge tone="warning">Dados locais · IndexedDB</Badge>
-      </div>
+      <PageHeader
+        title="Visão geral"
+        description="Análise de lotes XML fiscais — dados ficam neste dispositivo até você ativar a sincronização."
+        actions={
+          <EnvironmentIndicator mode="local" onExplain={() => router.push("/app/settings?secao=armazenamento")} />
+        }
+      />
+
+      <ProgressSteps steps={["Importar", "Conferir", "Resolver", "Fechar"]} current={currentStep} />
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
@@ -133,15 +140,11 @@ export default function AppHomePage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {!loading && batches.length === 0 && (
-              <div className="rounded-xl border border-dashed border-white/15 p-8 text-center text-slate-400">
-                <p className="font-medium text-slate-200">Nenhum lote ainda</p>
-                <p className="mt-1 text-sm">Importe um ZIP para popular a visão geral com dados reais deste navegador.</p>
-                <div className="mt-4">
-                  <Link href="/app/upload" className="text-sky-300 hover:underline">
-                    Ir para importações
-                  </Link>
-                </div>
-              </div>
+              <EmptyState
+                icon={Inbox}
+                title="Nenhum lote ainda"
+                description="Importe um arquivo ZIP para popular a visão geral com dados reais deste dispositivo."
+              />
             )}
             {batches.slice(0, 8).map((b) => (
               <Link
@@ -164,10 +167,23 @@ export default function AppHomePage() {
         </Card>
 
         <div className="space-y-4">
+          {!loading && batches.length === 0 && (
+            <NextActionCard
+              icon={Upload}
+              title="Comece importando os documentos deste período"
+              description="Importe um arquivo ZIP com os XMLs fiscais para iniciar a análise."
+              actionLabel="Iniciar importação"
+              onAction={() => router.push("/app/upload")}
+            />
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Checklist inicial</CardTitle>
-              <CardDescription>Onboarding progressivo — itens de nuvem ficam pendentes sem Supabase.</CardDescription>
+              <CardDescription>
+                Onboarding progressivo — itens de sincronização ficam pendentes sem o serviço de
+                armazenamento.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {checklist.map((item) => (

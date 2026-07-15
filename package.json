@@ -10,13 +10,18 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rls": "vitest run --config vitest.rls.config.ts",
+    "test:db": "vitest run --config vitest.rls.config.ts",
     "test:e2e": "playwright test",
     "secrets:scan-paths": "node scripts/check-secret-paths.mjs",
     "perf:bench": "tsx --tsconfig tsconfig.json scripts/perf-benchmark.ts",
     "vercel:sync-env": "node scripts/sync-vercel-env.mjs",
     "efd:sample": "tsx --tsconfig tsconfig.json scripts/generate-sample-efd.ts",
     "obligations:demo-samples": "tsx --tsconfig tsconfig.json scripts/generate-all-obligations-demo.ts",
-    "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts"
+    "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "screenshots:all": "node scripts/screenshots-all.mjs",
+    "test:visual": "playwright test --config playwright.visual.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

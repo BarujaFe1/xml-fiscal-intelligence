@@ -1,0 +1,41 @@
+{
+  "competence": "2026-06",
+  "profile": "A",
+  "pvaUsedAt": "2026-07-15",
+  "category": "Campo obrigatório",
+  "totalErrors": 2,
+  "status": "pva_rejected",
+  "specificCorrection": "blocked_external",
+  "sourceArtifact": "private-exports/probe-efd-fix/efd.txt",
+  "note": "Resumo fornecido pelo usuário não traz registro/campo/linha/mensagem/valor. Campos abaixo permanecem desconhecidos até o relatório detalhado do PVA.",
+  "errors": [
+    {
+      "index": 1,
+      "block": null,
+      "recordCode": null,
+      "lineNumber": null,
+      "fieldNumber": null,
+      "fieldName": null,
+      "message": null,
+      "expectedValue": null,
+      "currentValue": null,
+      "officialRule": null,
+      "mappedTo": null,
+      "resolutionStatus": "requires_manual_review"
+    },
+    {
+      "index": 2,
+      "block": null,
+      "recordCode": null,
+      "lineNumber": null,
+      "fieldNumber": null,
+      "fieldName": null,
+      "message": null,
+      "expectedValue": null,
+      "currentValue": null,
+      "officialRule": null,
+      "mappedTo": null,
+      "resolutionStatus": "requires_manual_review"
+    }
+  ]
+}

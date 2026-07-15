@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Minified/vendored browser workers must not be linted.
+    "public/**",
   ]),
 ]);
 

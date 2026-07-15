@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { FileArchive, Loader2, UploadCloud, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/design-system/PageHeader";
 import { Input, Label } from "@/components/ui/input";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import { runImportPipeline } from "@/lib/import/run-import-worker";
@@ -144,15 +145,10 @@ export default function UploadPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Importações
-        </h1>
-        <p className="text-slate-400 mt-1">
-          O ZIP é processado no navegador (Web Worker quando disponível) e salvo no IndexedDB deste
-          dispositivo.
-        </p>
-      </div>
+      <PageHeader
+        title="Importações"
+        description="O ZIP é processado no navegador (Web Worker quando disponível) e salvo localmente neste dispositivo."
+      />
 
       <LocalPersistenceBanner />
 
@@ -166,28 +162,36 @@ export default function UploadPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div
-              {...getRootProps()}
-              className={`cursor-pointer rounded-2xl border border-dashed p-10 text-center transition ${
-                isDragActive
-                  ? "border-sky-400 bg-sky-500/10"
-                  : "border-white/15 bg-slate-950/40 hover:bg-white/5"
-              }`}
-            >
-              <input {...getInputProps()} />
-              <UploadCloud className="mx-auto h-8 w-8 text-sky-300" />
-              <p className="mt-3 text-slate-200">
-                {file
-                  ? `${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`
-                  : isDragActive
-                    ? "Solte o ZIP aqui"
-                    : "Arraste o ZIP ou clique para selecionar"}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Apenas .xml internos são lidos. Executáveis, Zip Slip e limites de compressão são
-                bloqueados.
-              </p>
-            </div>
+            <>
+              <input
+                {...getInputProps({ "aria-label": "Selecionar arquivos para importação" })}
+                className="sr-only"
+              />
+              <div
+                {...getRootProps({
+                  role: "button",
+                  "aria-label": "Selecionar arquivos para importação",
+                })}
+                className={`cursor-pointer rounded-2xl border border-dashed p-10 text-center transition ${
+                  isDragActive
+                    ? "border-sky-400 bg-sky-500/10"
+                    : "border-white/15 bg-slate-950/40 hover:bg-white/5"
+                }`}
+              >
+                <UploadCloud className="mx-auto h-8 w-8 text-sky-300" />
+                <p className="mt-3 text-slate-200">
+                  {file
+                    ? `${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`
+                    : isDragActive
+                      ? "Solte o ZIP aqui"
+                      : "Arraste o ZIP ou clique para selecionar"}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Apenas .xml internos são lidos. Executáveis, Zip Slip e limites de compressão são
+                  bloqueados.
+                </p>
+              </div>
+            </>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -281,6 +285,9 @@ export default function UploadPage() {
       </Card>
 
       <Card>
+        <CardHeader>
+          <CardTitle>Sobre o processamento local</CardTitle>
+        </CardHeader>
         <CardContent className="p-5 text-sm text-slate-400 space-y-2">
           <p>
             Processamento local privado: dados ficam neste dispositivo até migração SaaS/cloud

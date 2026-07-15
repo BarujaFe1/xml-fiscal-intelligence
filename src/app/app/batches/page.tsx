@@ -114,7 +114,7 @@ export default function BatchesPage() {
                             Exportar
                           </Button>
                         </Link>
-                        <Button size="sm" variant="ghost" onClick={() => remove(b.id)}>
+                        <Button size="sm" variant="ghost" onClick={() => remove(b.id)} aria-label={`Excluir lote ${b.name}`}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

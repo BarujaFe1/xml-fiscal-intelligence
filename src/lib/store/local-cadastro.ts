@@ -31,6 +31,8 @@ export type LocalCompany = {
   accountantCpf?: string;
   accountantCrc?: string;
   source?: CompanySource;
+  /** Soft-delete flag — inativação mantém o histórico local. */
+  active?: boolean;
   createdAt: string;
   updatedAt?: string;
 };

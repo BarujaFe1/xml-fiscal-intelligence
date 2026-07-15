@@ -3,24 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarDays,
+  CreditCard,
+  FileCode2,
   FolderOpen,
-  GitBranch,
   LayoutDashboard,
-  Scale,
+  ArrowLeftRight,
+  Building2,
   Search,
   Settings,
+  Shield,
   ShieldAlert,
   Upload,
-  FileCode2,
   Landmark,
-  CreditCard,
+  GitBranch,
+  Scale,
   CloudUpload,
-  CalendarDays,
-  FlaskConical,
   HardDrive,
-  Building2,
-  Shield,
-  ArrowLeftRight,
+  Globe,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,51 +29,34 @@ const navGroups = [
   {
     title: "Operação",
     links: [
-      { href: "/app", label: "Visão geral", icon: LayoutDashboard },
-      { href: "/app/upload", label: "Importações", icon: Upload },
+      { href: "/app", label: "Início", icon: LayoutDashboard },
+      { href: "/app/upload", label: "Importar", icon: Upload },
       { href: "/app/batches", label: "Lotes", icon: FolderOpen },
       { href: "/app/companies", label: "Empresas", icon: Building2 },
+      { href: "/app/reconciliation", label: "Conferir", icon: ArrowLeftRight },
+      { href: "/app/closing", label: "Fechamentos", icon: CalendarDays },
     ],
   },
   {
-    title: "Inteligência fiscal",
+    title: "Análise",
     links: [
       { href: "/app/search", label: "Busca", icon: Search },
       { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
       { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
-      { href: "/app/reconciliation", label: "Conciliação", icon: ArrowLeftRight },
       { href: "/app/obligations", label: "Obrigações", icon: Landmark },
-      { href: "/app/closing", label: "Fechamento", icon: CalendarDays },
       { href: "/app/masters", label: "Dados mestres", icon: Building2 },
-      { href: "/app/validators-lab", label: "Validadores", icon: FlaskConical },
-      { href: "/app/homologation", label: "Homologação", icon: Shield },
-      { href: "/app/continuous-ops", label: "Ops contínua", icon: CloudUpload },
-      { href: "/app/governance", label: "Governança", icon: ShieldAlert },
-      { href: "/app/enterprise", label: "Enterprise", icon: HardDrive },
-      { href: "/app/scale", label: "Scale / DR", icon: CloudUpload },
-      { href: "/app/ecosystem", label: "Ecosystem", icon: GitBranch },
-      { href: "/app/compliance", label: "Compliance", icon: Shield },
-      { href: "/app/growth", label: "Growth", icon: ArrowLeftRight },
-      { href: "/app/assurance", label: "Assurance", icon: Shield },
-      { href: "/app/m", label: "Mobile RO", icon: CreditCard },
-      { href: "/app/reinf", label: "Reinf eventos", icon: Landmark },
-      { href: "/app/ledger", label: "Contábil / ECD", icon: Building2 },
-      { href: "/app/ecf", label: "ECF / e-Lalur", icon: Scale },
-      { href: "/app/contrib", label: "Contribuições", icon: CreditCard },
-      { href: "/app/ops", label: "Plataforma ops", icon: Settings },
-      { href: "/app/rtc", label: "RTC CBS/IBS", icon: FlaskConical },
-      {
-        href: "/app/sped",
-        label: "Diagnóstico EFD",
-        icon: Scale,
-      },
+      { href: "/app/sped", label: "Diagnóstico EFD", icon: Scale },
     ],
   },
   {
-    title: "Administração",
+    title: "Plataforma",
     links: [
       { href: "/app/migrate", label: "Migrar lotes", icon: CloudUpload },
-      { href: "/app/admin", label: "Admin / suporte", icon: Shield },
+      { href: "/app/validators-lab", label: "Validação oficial", icon: FlaskConical },
+      { href: "/app/rtc", label: "Simulação tributária", icon: FlaskConical },
+      { href: "/app/homologation", label: "Homologação", icon: Shield },
+      { href: "/app/continuous-ops", label: "Operações contínuas", icon: CloudUpload },
+      { href: "/app/governance", label: "Governança", icon: ShieldAlert },
       { href: "/app/billing", label: "Planos", icon: CreditCard },
       { href: "/app/settings", label: "Configurações", icon: Settings },
     ],
@@ -127,15 +111,11 @@ export function AppSidebar() {
         ))}
       </nav>
       <div className="p-4 border-t border-white/10 space-y-2 text-xs text-slate-500">
-        <div className="flex items-center gap-2">
-          <HardDrive className="h-3.5 w-3.5" />
-          Persistência local (navegador)
-        </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-slate-400">
+        <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5">
           Atalho <kbd className="text-slate-200">Ctrl</kbd>+<kbd className="text-slate-200">K</kbd>
         </div>
         <p className="text-[10px] leading-relaxed text-slate-600">
-          Diagnóstico fiscal auxiliar — não substitui PVA/SPED nem consultoria.
+          Auxílio de diagnóstico fiscal — não substitui PVA/SPED nem consultoria.
         </p>
       </div>
     </aside>

@@ -1,0 +1,17 @@
+{
+  "id": "run_2026-06_unknown_pending",
+  "workspaceId": "unknown",
+  "companyId": "unknown",
+  "establishmentId": "unknown",
+  "period": "2026-06",
+  "generationId": "probe-efd-fix-202606-A",
+  "pvaVersion": "6.1.0",
+  "executedAt": "2026-07-15",
+  "status": "rejected",
+  "errorCount": 2,
+  "warningCount": 0,
+  "originalEvidencePath": "private-exports/probe-efd-fix/efd.txt",
+  "originalEvidenceHash": null,
+  "detailLevel": "summary_only",
+  "note": "Evidência disponível é apenas o resumo do PVA. Relatório detalhado pendente (blocked_external)."
+}

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/design-system/PageHeader";
+import { EmptyState } from "@/components/design-system/EmptyState";
+import { Store } from "lucide-react";
 import { PLAN_SEEDS } from "@/lib/entitlements";
 
 const FRIENDLY_LIMITS: Record<string, { label: string; format: (v: boolean | number) => string }> = {
@@ -28,8 +31,8 @@ const FRIENDLY_LIMITS: Record<string, { label: string; format: (v: boolean | num
   },
 };
 
-const isDev = process.env.NODE_ENV === "development";
 const billingConfigured = process.env.NEXT_PUBLIC_BILLING_READY === "true";
+const commercialContact = process.env.NEXT_PUBLIC_COMMERCIAL_CONTACT;
 
 type SubSnap = {
   status: string;
@@ -54,52 +57,60 @@ export default function BillingPage() {
   }, []);
 
   const hasPaid =
-    billingConfigured &&
-    sub &&
-    (sub.status === "active" || sub.status === "trialing") &&
-    Boolean(sub.planId);
+    billingConfigured && sub && (sub.status === "active" || sub.status === "trialing") && Boolean(sub.planId);
+
+  if (!billingConfigured) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <PageHeader
+          title="Planos e assinatura"
+          description="Gerencie o plano da sua conta e a forma de pagamento quando a cobrança estiver disponível."
+        />
+        <EmptyState
+          icon={Store}
+          title="Assinaturas ainda não estão disponíveis neste ambiente"
+          description="Este ambiente não possui cobrança configurada. O catálogo abaixo é ilustrativo e nenhuma assinatura é concedida automaticamente."
+          action={
+            commercialContact ? (
+              <a
+                href={commercialContact.startsWith("http") ? commercialContact : `mailto:${commercialContact}`}
+                className="rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-sky-400"
+              >
+                Falar com o comercial
+              </a>
+            ) : undefined
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <div className="flex flex-wrap gap-2 mb-2">
-          <Badge tone={billingConfigured ? "success" : "warning"}>
-            {billingConfigured ? "Billing configurado" : "Ambiente de demonstração"}
-          </Badge>
-          {sub && (
-            <Badge tone={hasPaid ? "success" : "default"}>
-              Status servidor: {sub.status}
-              {sub.planId ? ` · ${sub.planId}` : ""}
-            </Badge>
-          )}
-        </div>
-        <h1 className="text-2xl font-bold">{hasPaid ? "Assinatura e planos" : "Planos"}</h1>
-        <p className="text-slate-400 mt-1">
-          {hasPaid
-            ? "Assinatura conforme estado verificado no servidor (webhook). Redirect de checkout não libera plano."
-            : "Catálogo comercial ilustrativo. Não há assinatura ativa concedida por redirect — Stripe precisa estar configurado e o webhook confirmado."}
-        </p>
-      </div>
+      <PageHeader
+        title={hasPaid ? "Assinatura e planos" : "Planos"}
+        description={
+          hasPaid
+            ? "Assinatura conforme estado verificado no serviço (webhook). Redirect de checkout não libera plano."
+            : "Catálogo comercial. Não há assinatura ativa concedida por redirect — o provedor de pagamento precisa estar configurado e o webhook confirmado."
+        }
+      />
 
-      {!billingConfigured && (
-        <Card className="border-amber-500/30 bg-amber-500/5">
-          <CardContent className="p-4 text-sm text-amber-100/90">
-            Cobrança indisponível. Nenhum plano pago será concedido por redirect ou query string.
-            Configure <code className="text-sky-300">BILLING_PROVIDER=stripe</code> e chaves no
-            servidor para habilitar checkout real. Endpoint{" "}
-            <code className="text-sky-300">POST /api/billing/checkout</code> responde 503 neste modo.
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-wrap gap-2">
+        {sub && (
+          <Badge tone={hasPaid ? "success" : "default"}>
+            Status do serviço: {sub.status}
+            {sub.planId ? ` · ${sub.planId}` : ""}
+          </Badge>
+        )}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {Object.entries(PLAN_SEEDS).map(([id, plan]) => (
           <Card key={id} className="bg-slate-900/40">
             <CardHeader>
               <CardTitle>{plan.label}</CardTitle>
-              <CardDescription>
-                {billingConfigured ? "Disponível para contratação" : "Prévia de limites"}
-              </CardDescription>
+              <CardDescription>Disponível para contratação</CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-slate-300 space-y-2">
               {Object.entries(FRIENDLY_LIMITS).map(([key, meta]) => {
@@ -112,9 +123,6 @@ export default function BillingPage() {
                   </div>
                 );
               })}
-              {isDev && (
-                <p className="pt-2 text-[10px] text-slate-600 font-mono">dev plan id: {id}</p>
-              )}
             </CardContent>
           </Card>
         ))}
