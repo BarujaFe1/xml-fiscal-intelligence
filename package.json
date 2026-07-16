@@ -21,6 +21,7 @@
     "db:apply": "tsx --tsconfig tsconfig.json scripts/apply-supabase-schemas.ts",
     "seed:demo": "node scripts/seed-demo.mjs",
     "screenshots:all": "node scripts/screenshots-all.mjs",
+    "screenshots:verify": "node scripts/verify-screenshot-matrix.mjs",
     "test:visual": "playwright test --config playwright.visual.config.ts"
   },
   "dependencies": {

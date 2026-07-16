@@ -1,0 +1,69 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/Users/User1/Projects/xml-fiscal-intelligence[39m
+
+ [32mÔ£ô[39m tests/unit/obligations-generate-local.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/saas-sped.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/efd-phase2-commons.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/efd-0000-layout.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/obligations-all.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/parser-fixtures-synthetic.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/compliance.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/accounting-engine.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/contrib-engine.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/assurance.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/parser.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/export-manifest.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-phase-b.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/ecf-engine.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/enterprise.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-wave3.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/ops-platform.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/homologation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/ecosystem.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/reinf-event-engine.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/growth.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/continuous-ops.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/scale.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/governance.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-wave2.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/zip.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/quality-score.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/rls-hygiene.test.ts [2m([22m[2m5 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-phase-d.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/obligation-platform-foundation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/rtc-engine.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/build-migrate-snapshot.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/company-directory-pdf.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/local-cadastro-merge.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-phase-e.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/hardening-phase-f.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/analytics.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/ai-removed.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/cloud-pva-helpers.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/malicious-corpus.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [2m[90mÔåô[39m[22m tests/unit/screenshot-manifest.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32mÔ£ô[39m tests/unit/fiscal-decimal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/obligations-demo-fill.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32mÔ£ô[39m tests/unit/storage-signed-url.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[90mstdout[2m | tests/unit/real-zip.smoke.test.ts[2m > [22m[2mreal ZIP smoke (local only)[2m > [22m[2mprocesses 202606 NFe.zip when present
+[22m[39m{
+  totalXml: [33m1147[39m,
+  valid: [33m1147[39m,
+  nfe: [33m1147[39m,
+  items: [33m3942[39m,
+  score: [33m100[39m,
+  totalValue: [33m46056121.38999997[39m
+}
+
+ [32mÔ£ô[39m tests/unit/real-zip.smoke.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 6704[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m processes 202606 NFe.zip when present [33m 6702[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m44 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (45)[39m
+[2m      Tests [22m [1m[32m240 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (242)[39m
+[2m   Start at [22m 14:22:35
+[2m   Duration [22m 7.47s[2m (transform 3.51s, setup 0ms, import 11.28s, tests 7.78s, environment 7ms)[22m
+

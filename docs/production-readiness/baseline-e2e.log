@@ -1,0 +1,67 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 test:e2e
+> playwright test
+
+
+Running 30 tests using 3 workers
+
+  Ô£ô   3 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ /login has no critical axe violations (1.3s)
+  Ô£ô   1 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ / has no critical axe violations (1.4s)
+  Ô£ô   2 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ /app has no critical axe violations (1.5s)
+  Ô£ô   5 [chromium] ÔÇ║ e2e\smoke.spec.ts:13:7 ÔÇ║ smoke SaaS honesty ÔÇ║ app overview shows local persistence posture (368ms)
+  Ô£ô   4 [chromium] ÔÇ║ e2e\smoke.spec.ts:4:7 ÔÇ║ smoke SaaS honesty ÔÇ║ landing is honest and links to demo/signup (408ms)
+  Ô£ô   8 [chromium] ÔÇ║ e2e\smoke.spec.ts:41:7 ÔÇ║ smoke SaaS honesty ÔÇ║ health endpoint responds (24ms)
+  Ô£ô   6 [chromium] ÔÇ║ e2e\smoke.spec.ts:19:7 ÔÇ║ smoke SaaS honesty ÔÇ║ billing gated by auth when Supabase configured; demo path is honest (306ms)
+  Ô£ô   7 [chromium] ÔÇ║ e2e\smoke.spec.ts:31:7 ÔÇ║ smoke SaaS honesty ÔÇ║ EFD page: auth gate or honesty banner with PVA (305ms)
+  Ô£ô   9 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/continuous-ops renders without crash (331ms)
+  Ô£ô  10 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/governance renders without crash (444ms)
+  Ô£ô  11 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/enterprise renders without crash (365ms)
+  Ô£ô  13 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/ecosystem renders without crash (380ms)
+  Ô£ô  14 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/compliance renders without crash (480ms)
+  Ô£ÿ  12 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/scale renders without crash (515ms)
+  Ô£ô  15 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/growth renders without crash (314ms)
+  Ô£ô  16 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/assurance renders without crash (374ms)
+  Ô£ô  17 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/homologation renders without crash (325ms)
+  Ô£ô  18 [chromium] ÔÇ║ e2e\smoke.spec.ts:77:7 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ assurance does not claim SOC2 certified (310ms)
+  Ô£ô  21 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/m renders without crash (268ms)
+  Ô£ô  19 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /login has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  20 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/upload has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  22 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/companies has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  23 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /signup has main + h1 and no critical/serious axe violations (1.3s)
+  Ô£ô  24 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/reconciliation has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  25 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/billing has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  26 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /forgot-password has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  27 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/closing has main + h1 and no critical/serious axe violations (1.6s)
+  Ô£ô  28 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/settings has main + h1 and no critical/serious axe violations (1.6s)
+  Ô£ô  29 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app has main + h1 and no critical/serious axe violations (1.6s)
+  Ô£ô  30 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/batches has main + h1 and no critical/serious axe violations (1.4s)
+
+
+  1) [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/scale renders without crash 
+
+    Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+    + ]
+
+      71 |       });
+      72 |       await expect(page.getByText(/Application error|Unhandled Runtime Error/i)).toHaveCount(0);
+    > 73 |       expect(errors, errors.join(" | ")).toEqual([]);
+         |                                          ^
+      74 |     });
+      75 |   }
+      76 |
+        at C:\Users\User1\Projects\xml-fiscal-intelligence\e2e\smoke.spec.ts:73:42
+
+    Error Context: test-results\smoke-phase-surfaces-F10ÔÇôF17-app-scale-renders-without-crash-chromium\error-context.md
+
+  1 failed
+    [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/scale renders without crash 
+  29 passed (14.1s)

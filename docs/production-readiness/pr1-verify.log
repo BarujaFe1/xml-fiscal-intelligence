@@ -1,0 +1,59 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 screenshots:verify
+> node scripts/verify-screenshot-matrix.mjs
+
+[verify-screenshot-matrix] C:\Users\User1\Projects\xml-fiscal-intelligence\artifacts\ui-capture\after
+  shots: 396/198 expected
+  cells checked: 99, differentiated: 81
+  gated routes (exempt): /app/companies, /app/billing
+node.exe : [verify-screenshot-matrix] FAILED with 36 violation(s):
+No C:\Program Files\nodejs\npm.ps1:29 caractere:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([verify-screens...6 violation(s)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"chromium","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"chromium","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"chromium","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"chromium","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"chromium","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"chromium","viewport":"mobile"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"chromium","viewport":"desktop"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"chromium","viewport":"tablet"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"chromium","viewport":"mobile"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"chromium","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"chromium","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"chromium","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"firefox","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"firefox","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"firefox","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"firefox","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"firefox","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"firefox","viewport":"mobile"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"firefox","viewport":"desktop"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"firefox","viewport":"tablet"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"firefox","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"firefox","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"firefox","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"firefox","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"webkit","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"webkit","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"webkit","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"webkit","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"guest","engine":"webkit","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/login","state":"error","engine":"webkit","viewport":"mobile"}
+  - 
+{"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"webkit","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"webkit","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/app/companies","state":"error","engine":"webkit","viewport":"mobile"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"webkit","viewport":"desktop"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"webkit","viewport":"tablet"}
+  - {"type":"unexpected-login-redirect","route":"/app/billing","state":"error","engine":"webkit","viewport":"mobile"}
