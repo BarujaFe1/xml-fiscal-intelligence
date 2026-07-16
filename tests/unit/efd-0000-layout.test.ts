@@ -11,7 +11,7 @@ import {
 } from "@/modules/obligations";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 
-/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI 3.2.3. */
+/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI 3.2.2 / leiaute 020. */
 const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   "0000": 15,
   "0001": 2,
@@ -25,14 +25,14 @@ const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   B990: 2,
   C001: 2,
   C100: 29,
-  C170: 38,
-  C190: 12,
+  C170: 34,
+  C190: 11,
   C990: 2,
   D001: 2,
   D990: 2,
   E001: 2,
   E100: 3,
-  E110: 15,
+  E110: 16,
   E116: 10,
   E990: 2,
   G001: 2,
@@ -141,10 +141,10 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     expect(efdSanitize("a|b|c", 5)).toBe("a/b/c");
   });
 
-  it("omite C170 para NF-e com chave (facultativo)", async () => {
+  it("emite C170 para NF-e com chave (filho obrigatório do C100)", async () => {
     const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
     const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
-    expect(lines.some((l) => l.startsWith("|C170|"))).toBe(false);
+    expect(lines.some((l) => l.startsWith("|C170|"))).toBe(true);
     expect(lines.some((l) => l.startsWith("|C190|"))).toBe(true);
   });
 
@@ -154,7 +154,7 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
       .split(/\r?\n/)
       .filter(Boolean)
       .map((l) => l.replace(/^\|/, "").split("|")[0]);
-    expect(types.slice(0, 3)).toEqual(["0000", "0001", "0005"]);
+    expect(types.slice(0, 4)).toEqual(["0000", "0001", "0002", "0005"]);
     const idx0 = types.indexOf("0990");
     const idxB = types.indexOf("B001");
     const idxC = types.indexOf("C001");

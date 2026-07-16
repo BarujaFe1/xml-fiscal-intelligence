@@ -15,6 +15,15 @@ export interface ObligationContext {
   uf: string;
   profile?: "A" | "B" | "C";
   activityCode?: string; // IND_ATIV — must be provided, never presumed
+  /** CNAE principal — 7 dígitos IBGE (usado antes do leiaute 020). */
+  cnae?: string;
+  /** Descrição da atividade — livre (usado antes do leiaute 020). */
+  cnaeDescription?: string;
+  /**
+   * Classificação do estabelecimento (0002 CLAS_ESTAB_IND, Tabela 4.5.5) —
+   * 2 dígitos. Obrigatório no leiaute 020 (NT 2025.001) em vez de CNAE/DESC_ATIV.
+   */
+  industrialClass?: string;
   purpose?: "0" | "1"; // 0=original 1=substitute — must be provided
   cnpj: string;
   ie?: string;
@@ -31,8 +40,8 @@ export interface ObligationContext {
   email?: string;
   accountantName?: string;
   accountantCpf?: string;
-  /** CRC do contabilista — sem CRC o 0100 não é gerado (campo obrigatório no Guia). */
   accountantCrc?: string;
+  accountantEmail?: string;
   /** Código de receita ICMS (E116 COD_REC) — específico da UF; não inventar. */
   icmsCodRec?: string;
   documents: ObligationDocumentInput[];

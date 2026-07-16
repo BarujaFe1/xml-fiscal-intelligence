@@ -28,6 +28,7 @@ import {
   type LocalEstablishment,
 } from "@/lib/store/local-cadastro";
 import { setLastCompanyCnpj } from "@/lib/store/last-company";
+import { syncCompaniesWithCloud } from "@/lib/cloud/companies";
 import {
   extractPdfText,
   parseCompanyDirectoryPdfText,
@@ -72,6 +73,17 @@ const EDIT_FIELDS = [
   { key: "address", label: "Endereço" },
   { key: "addressNumber", label: "Número" },
   { key: "neighborhood", label: "Bairro" },
+  { key: "activityCode", label: "IND_ATIV (0=não ind., 1=industrial)" },
+  { key: "profile", label: "Perfil SPED (A/B/C)" },
+  { key: "purpose", label: "Finalidade (0=normal, 1=retificadora)" },
+  { key: "industrialClass", label: "CLAS_ESTAB_IND (0002)" },
+  { key: "priorCreditBalance", label: "Saldo credor anterior (E110)" },
+  { key: "cnae", label: "CNAE" },
+  { key: "cnaeDescription", label: "Descrição CNAE" },
+  { key: "accountantName", label: "Contabilista — Nome" },
+  { key: "accountantCpf", label: "Contabilista — CPF" },
+  { key: "accountantCrc", label: "Contabilista — CRC" },
+  { key: "accountantEmail", label: "Contabilista — Email" },
 ] as const;
 
 export default function CompaniesPage() {
@@ -94,6 +106,17 @@ export default function CompaniesPage() {
     address: "",
     addressNumber: "",
     neighborhood: "",
+    activityCode: "",
+    profile: "",
+    purpose: "",
+    industrialClass: "",
+    priorCreditBalance: "",
+    cnae: "",
+    cnaeDescription: "",
+    accountantName: "",
+    accountantCpf: "",
+    accountantCrc: "",
+    accountantEmail: "",
   });
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -103,6 +126,7 @@ export default function CompaniesPage() {
   const [pdfBusy, setPdfBusy] = useState(false);
 
   const refresh = useCallback(async () => {
+    await syncCompaniesWithCloud().catch(() => {});
     const c = await listCompanies();
     setCompanies(c.sort((a, b) => a.name.localeCompare(b.name, "pt-BR")));
     setEstablishments(await listEstablishments());
@@ -185,6 +209,17 @@ export default function CompaniesPage() {
       address: c.address || "",
       addressNumber: c.addressNumber || "",
       neighborhood: c.neighborhood || "",
+      activityCode: c.activityCode || "",
+      profile: c.profile || "",
+      purpose: c.purpose || "",
+      industrialClass: c.industrialClass || "",
+      priorCreditBalance: c.priorCreditBalance || "",
+      cnae: c.cnae || "",
+      cnaeDescription: c.cnaeDescription || "",
+      accountantName: c.accountantName || "",
+      accountantCpf: c.accountantCpf || "",
+      accountantCrc: c.accountantCrc || "",
+      accountantEmail: c.accountantEmail || "",
     });
   }
 
@@ -206,6 +241,17 @@ export default function CompaniesPage() {
       address: edit.address.trim() || undefined,
       addressNumber: edit.addressNumber.trim() || undefined,
       neighborhood: edit.neighborhood.trim() || undefined,
+      activityCode: edit.activityCode.trim() || undefined,
+      profile: (edit.profile.trim() as "A" | "B" | "C") || undefined,
+      purpose: (edit.purpose.trim() as "0" | "1") || undefined,
+      industrialClass: edit.industrialClass.trim() || undefined,
+      priorCreditBalance: edit.priorCreditBalance.trim() || undefined,
+      cnae: edit.cnae.trim() || undefined,
+      cnaeDescription: edit.cnaeDescription.trim() || undefined,
+      accountantName: edit.accountantName.trim() || undefined,
+      accountantCpf: edit.accountantCpf.trim() || undefined,
+      accountantCrc: edit.accountantCrc.trim() || undefined,
+      accountantEmail: edit.accountantEmail.trim() || undefined,
       updatedAt: new Date().toISOString(),
       source: c.source === "sieg-pdf" || c.source === "xml-lote" ? "merged" : c.source || "manual",
     };

@@ -1,0 +1,37 @@
+{
+  "sanitized": true,
+  "containsPii": false,
+  "obligationId": "efd-icms-ipi",
+  "layoutVersion": "EFD_ICMS_IPI_2026_DRAFT",
+  "period": "2026-06",
+  "generatedAt": "2026-07-16T20:45:15.374Z",
+  "generation": {
+    "files": 301,
+    "companies": 300,
+    "distinctUf": 11,
+    "ufCounts": {
+      "RS": 1,
+      "SP": 99,
+      "GO": 125,
+      "TO": 39,
+      "PR": 7,
+      "MG": 17,
+      "DF": 2,
+      "ES": 3,
+      "MT": 2,
+      "SC": 4,
+      "RJ": 1
+    },
+    "totalNFe": 1550,
+    "totalRecords": 32195,
+    "activityAssumption": "0 (não industrial) para todos — cadastro real fica para PR4"
+  },
+  "offlineValidation": {
+    "tool": "validateEfdOffline (layout 020)",
+    "filesChecked": 301,
+    "errorCount": 0,
+    "ruleCounts": {},
+    "result": "PASS"
+  },
+  "disclaimer": "Evidência de pré-validação interna. Não substitui o PVA oficial (v6.1.0, GUI), assinatura ou transmissão. Não constitui parecer fiscal. Sem dados pessoais: CNPJ/nome/IE permaneceram apenas nos arquivos .txt gitignored."
+}

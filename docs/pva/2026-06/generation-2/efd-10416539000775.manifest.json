@@ -1,0 +1,20 @@
+{
+  "obligationId": "efd-icms-ipi",
+  "layoutVersion": "EFD_ICMS_IPI_2026_DRAFT",
+  "periodStart": "2026-06-01",
+  "periodEnd": "2026-06-30",
+  "establishmentId": "est_10416539000775",
+  "contentHash": "83a56e88a4e104cc8f966233bca82c4916f14146d991e308a04f3aa689a23ecc",
+  "generatedAt": "2026-07-16T21:34:46.611Z",
+  "warnings": [
+    "COD_VER=020 derivado do ano de DT_FIN (conferir tabela do Ato COTEPE no PVA).",
+    "TIPO_ITEM=00 em 0200 exige confirmação do contador para uso em produção.",
+    "IND_FRT=9 quando frete não informado — revise.",
+    "C170 detalhado por item (filho obrigatório do C100 para NF-e no Guia 3.2.2) — referencia 0200/0400.",
+    "Blocos B/G/H/K gerados vazios (IND_MOV=1) — inventário/CIAP/controle não preenchidos.",
+    "Arquivo destinado à pré-validação interna e importação no PVA oficial.",
+    "E110 gerado com totais derivados dos C190 (débitos/créditos ICMS). Saldo anterior/ajustes zerados — informe priorCreditBalance se houver."
+  ],
+  "validationLevel": 1,
+  "disclaimer": "Pré-validação interna apenas. Não substitui o PVA oficial, assinatura ou transmissão. Não constitui parecer fiscal."
+}

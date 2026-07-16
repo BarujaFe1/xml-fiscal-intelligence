@@ -53,6 +53,11 @@ export type LocalEstablishmentInput = {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  industrialClass?: string;
+  priorCreditBalance?: string;
+  cnae?: string;
+  cnaeDescription?: string;
   icmsCodRec?: string;
 };
 

@@ -93,6 +93,11 @@ export default function ObligationsEfdPage() {
     neighborhood: "",
     accountantName: "",
     accountantCpf: "",
+    accountantEmail: "",
+    industrialClass: "",
+    priorCreditBalance: "",
+    cnae: "",
+    cnaeDescription: "",
   });
 
   useEffect(() => {
@@ -135,6 +140,14 @@ export default function ObligationsEfdPage() {
           tradeName: patch.tradeName || f.tradeName,
           accountantName: patch.accountantName || f.accountantName,
           accountantCpf: patch.accountantCpf || f.accountantCpf,
+          accountantEmail: patch.accountantEmail || f.accountantEmail,
+          activityCode: patch.activityCode || f.activityCode,
+          profile: (patch.profile as "A" | "B" | "C") || f.profile,
+          purpose: (patch.purpose as "0" | "1") || f.purpose,
+          industrialClass: patch.industrialClass || f.industrialClass,
+          priorCreditBalance: patch.priorCreditBalance || f.priorCreditBalance,
+          cnae: patch.cnae || f.cnae,
+          cnaeDescription: patch.cnaeDescription || f.cnaeDescription,
         };
       });
     })();
@@ -259,6 +272,11 @@ export default function ObligationsEfdPage() {
         neighborhood: DEMO_ESTABLISHMENT.neighborhood || "",
         accountantName: DEMO_ESTABLISHMENT.accountantName || "",
         accountantCpf: DEMO_ESTABLISHMENT.accountantCpf || "",
+        accountantEmail: DEMO_ESTABLISHMENT.accountantEmail || "",
+        industrialClass: DEMO_ESTABLISHMENT.industrialClass || "",
+        priorCreditBalance: DEMO_ESTABLISHMENT.priorCreditBalance || "",
+        cnae: DEMO_ESTABLISHMENT.cnae || "",
+        cnaeDescription: DEMO_ESTABLISHMENT.cnaeDescription || "",
       });
       setDemoStore(data.store);
       setBatchId(DEMO_BATCH_ID);

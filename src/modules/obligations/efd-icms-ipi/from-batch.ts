@@ -31,7 +31,13 @@ export interface EstablishmentFiscalInput {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  cnae?: string;
+  cnaeDescription?: string;
+  industrialClass?: string;
   icmsCodRec?: string;
+  /** Saldo credor anterior informado manualmente (EFD E110). */
+  priorCreditBalance?: string;
   layoutVersion: string;
 }
 
@@ -147,6 +153,9 @@ export function buildObligationContextFromBatch(input: {
     uf: establishment.uf,
     profile: establishment.profile,
     activityCode: establishment.activityCode,
+    cnae: establishment.cnae,
+    cnaeDescription: establishment.cnaeDescription,
+    industrialClass: establishment.industrialClass,
     purpose: establishment.purpose,
     cnpj: establishment.cnpj,
     ie: establishment.ie,
@@ -163,7 +172,9 @@ export function buildObligationContextFromBatch(input: {
     accountantName: establishment.accountantName,
     accountantCpf: establishment.accountantCpf,
     accountantCrc: establishment.accountantCrc,
+    accountantEmail: establishment.accountantEmail,
     icmsCodRec: establishment.icmsCodRec,
+    priorCreditBalance: establishment.priorCreditBalance,
     documents: docs,
   };
 }
