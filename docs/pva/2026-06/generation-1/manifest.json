@@ -1,0 +1,36 @@
+﻿{
+    "generationId":  "gen-1-2026-06",
+    "obligation":  "efd-icms-ipi",
+    "period":  "2026-06",
+    "profile":  "A",
+    "layout":  "EFD ICMS/IPI (Guia Pratico 3.2.2)",
+    "status":  "pva_pending",
+    "generatedAtUtc":  "2026-07-16T17:31:36Z",
+    "source":  {
+                   "sha256":  "6C4F6B9596CC0C0392EB349C13990D90695B6F3C5F042B6F6B8D16E92E379A83",
+                   "path":  "private-exports/probe-efd-fix/efd.txt"
+               },
+    "artifact":  {
+                     "encoding":  "detected from BOM / content",
+                     "registryRecordCount":  4923,
+                     "bom":  "none",
+                     "eol":  "CRLF",
+                     "fileName":  "efd-generated-1.txt",
+                     "lineCount":  5246,
+                     "byteSize":  488275,
+                     "sha256":  "6C4F6B9596CC0C0392EB349C13990D90695B6F3C5F042B6F6B8D16E92E379A83"
+                 },
+    "pva":  {
+                "resultStatus":  "pending_extraction",
+                "aboutVersion":  null,
+                "errors":  [
+
+                           ],
+                "expectedRun":  "Importar arquivo -\u003e Validar -\u003e coletar erros bloqueantes",
+                "warnings":  [
+
+                             ],
+                "tool":  "SpedEFD.exe (Programa da RFB)"
+            },
+    "notes":  "Evidencia imutavel da Geracao 1. O arquivo efd-generated-1.txt e a copia byte-a-byte do fonte; o SHA-256 fixa a integridade para auditoria do ciclo PVA."
+}

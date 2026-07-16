@@ -1,0 +1,56 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "generatedAt": "2026-07-16T17:19:35.737Z",
+  "routes": [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/app",
+    "/app/upload",
+    "/app/reconciliation",
+    "/app/closing",
+    "/app/batches",
+    "/app/companies",
+    "/app/billing",
+    "/app/settings"
+  ],
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800
+    },
+    "tablet": {
+      "width": 820,
+      "height": 1180
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "engines": [
+    "chromium",
+    "firefox",
+    "webkit"
+  ],
+  "states": [
+    "guest",
+    "error"
+  ],
+  "gatedRoutes": [
+    "/app/companies",
+    "/app/billing"
+  ],
+  "shotCount": 198,
+  "axeSummary": {
+    "total": 198,
+    "withViolations": 0,
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "errors": 0,
+    "pageErrors": 0
+  },
+  "issues": [],
+  "notes": "States: 'guest' = logged-out navigation; 'error' = not-found surface. Gated routes (/app/billing, /app/companies, /app/obligations/*) legitimately render the auth gate in this environment (no Supabase session). Captured against a running production build (npm run start)."
+}
