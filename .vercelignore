@@ -1,0 +1,10 @@
+# Vercel deployment ignores (keep build artifacts out of upload)
+node_modules
+.git
+artifacts
+docs
+scripts
+*.log
+TryLock.txt
+vercel.json
+.env*.local
