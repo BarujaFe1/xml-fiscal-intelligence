@@ -23,7 +23,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - Period recorte (commit 1e3e189): `filterDocumentsByPeriod(docs, start, end)` applied in callers; UI "Recorte do período".
 - E116 COD_REC manual (commit 6cc2a71): E116 emits `COD_REC`, `MES_REF`, `COD_OR` configurable; defaults COD_OR=000.
 - **C170 corrected to official 38 fields (commit 633dc22, pushed, deployed build dpl_4og9)**: records.ts + builders/index.ts aligned (inclui VL_BC_IPI/ALIQ_IPI, ALIQ_PIS_QUANT(29), ALIQ_COFINS_QUANT(35), COD_CTA(37), VL_ABAT_NT(38)). Tests efd-0000-layout (C170=38), efd-phase2 (C170=38), golden hash updated. 266 tests pass, tsc clean.
-- **C190 corrected to official 12 fields (commit 1c332f4)**: records.ts added VL_IPI(11) before COD_OBS(12); builder emits `moneyToEfd(agg.vlIpi)`. efd-0000-layout C190=12; golden hash updated to 6863ea44.... 266 tests pass, tsc clean.
+- **C190 corrected to official 12 fields (commit 1c332f4, pushed 251ffec, deployed production)**: records.ts added VL_IPI(11) before COD_OBS(12); builder emits `moneyToEfd(agg.vlIpi)`. efd-0000-layout C190=12; golden hash updated to 6863ea44.... 266 tests pass, tsc clean. Production deploy aliased to https://xml-fiscal-intelligence.vercel.app (200 OK).
 - **Local real-data verification**: parsed all 1.147 real XMLs, scoped to CNPJ 03585024000490 (141 docs), recorte 2026-06-01→07 (29 docs in period), generated via real pipeline. Result: 66 C170 lines ALL with exactly 38 fields (`{"38":66}`). Proves the deployed code emits correct C170.
 - Site https://xml-fiscal-intelligence.vercel.app responds 200.
 
