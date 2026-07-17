@@ -36,9 +36,10 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **COD_REC**: coop (SP) = **046-2** (Portaria CAT 147/2009, RPA); DATAMARS (RS) = 04601 (original do usuário). SP plugin populado com tabela oficial; sugestão default 046-2. Script default COD_REC=046-2.
 - **E500/E520 (apuração IPI) + C190 VL_RED_BC — commit ba213f1 (push + deploy prod)**: E500/E520 emitidos SÓ quando há operação com IPI no período (resolve MSG_NAO_EXISTE_APURACAO_IPI, erros (6).csv — coop não é contribuinte do IPI). **C190 VL_RED_BC = VL_OPR − VL_BC_ICMS quando CST termina em 20/70** (resolve MSG_CST_ICMS_RED_BC, erros (6).csv — ex.: CST 020, VL_RED_BC=45112,40). 266 testes passam, tsc limpo. Golden hash → 83e2b2b0....
 - **Site UI: "Todo o lote" + CRC do contabilista — commit a546a1f (push + deploy prod)**. Novo modo de recorte "Todo o lote" usa batch.year/batch.month (DT_INI/DT_FIN mesmo mês → evita erro de PVA por período arbitrário ex. 2000-2050). Novo campo "CRC do contabilista" no form; ao preencher nome+CPF+CRC, o registro **0100 é gerado** (resolve MSG_REGISTRO_OBRIGATORIO). 266 testes passam, tsc limpo. Hash coop 202606 inalterado (1fbdc565... — script já tinha CRC hardcoded).
+- **0100 exige E-MAIL do contabilista — commit 5fd997d (push + deploy prod)**. Causa raiz do erro (1).csv: o form do site NÃO tinha campo de e-mail → EMAIL do 0100 vazio → PVA acusa `MSG_REGISTRO_OBRIGATORIO` ("Registro filho obrigatório não foi informado"). Adicionado campo "E-mail do contabilista" ao form. 0100 agora só é gerado com **NOME + CPF + CRC + E-MAIL** (todos obrigatórios no PVA); readiness "Contabilista (0100)" agora é **blocking** (geração bloqueada até preencher os 4). DEMO_ESTABLISHMENT passa a incluir contabilista (demo gera 0100 válido). 266 testes passam, tsc limpo. Arquivo coop 202606 regerado: 0100 com 14 campos OK, EMAIL=contador@exemplo.com.br, 0 issues offline, hash 1fbdc565... inalterado.
 
 ### In Progress
-- Aguardando usuário: re-validar no PVA (importar lote COMPLETO no site, escolher "Todo o lote", preencher CRC do contabilista) e enviar novo erros(N).csv se houver.
+- Aguardando usuário: re-validar no PVA (importar lote COMPLETO no site, escolher "Todo o lote", preencher Nome+CPF+CRC+E-MAIL do contabilista) e enviar novo erros(N).csv se houver.
 - Security rotation (see Pending).
 
 ### Blocked
@@ -58,7 +59,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **C190 VL_RED_BC = VL_OPR − VL_BC_ICMS quando CST termina em 20/70** (obrigatório >0; MSG_CST_ICMS_RED_BC). Ex.: CST 020, VL_OPR=58000, VL_BC=12887,60 → VL_RED_BC=45112,40.
 - Erro persistiu após 1º deploy por JS obsoleto na aba (hard-refresh). Agora validação é via arquivo local + PVA do usuário.
 - **Período deve ser mês único**: DT_INI/DT_FIN do 0000 devem ser do mesmo mês/ano (MSG_MES_ESCRITURACAO se divergirem); DT_INI ≥ 01/01/2009 (MSG_DATA_MINIMA); E116 MES_REF deve ser ≤ mês DT_INI (MSG_REGRA_MES_REF_MENOR_DT_INI_0000). O modo "Todo o lote" garante DT_INI/DT_FIN no mês do arquivo importado.
-- **0100 é obrigatório no PVA (MSG_REGISTRO_OBRIGATORIO)** e só é gerado quando há NOME+CPF+CRC do contabilista. Campo CRC adicionado ao form do site (builders/index.ts:716: `if (accountantName && accountantCpf && accountantCrc)`).
+- **0100 é obrigatório no PVA (MSG_REGISTRO_OBRIGATORIO)** e só é gerado quando há NOME+CPF+CRC+E-MAIL do contabilista (os 4 campos são obrigatórios no PVA; E-MAIL era o campo faltante no form do site → erro (1).csv). builders/index.ts:716: `if (accountantName && accountantCpf && accountantCrc && accountantEmail)`. Readiness "Contabilista (0100)" é blocking (geração bloqueada até preencher os 4).
 - `serializeEfd` preserva todos os campos (não strip vazios) → builder field count é autoritativo.
 - Offline validator lê expected de getRecordDef (records.ts) → corrigir records.ts basta p/ validação.
 - PVA (GUI) não roda headless → validação definitiva é SpedEFD.exe do usuário; loop local valida offline primeiro.
@@ -70,7 +71,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 
 ## Critical Context
 - Site: https://xml-fiscal-intelligence.vercel.app (200 OK). Deploy prod via vercel CLI.
-- Branch: feat/automated-fiscal-reconciliation-ux-capture. Commits: 875a6e1, 1e3e189, 6cc2a71, 633dc22, 1c332f4 (251ffec), 3293942, c783463, cc3f813 (CST 2-díg REGRESSÃO), 0c17046, f3c6c15, ba213f1, 4ba866b (site≡script equivalence proof), 5811cda, a546a1f (site: "Todo o lote" + campo CRC contabilista, erros (7).csv fix, push+deploy).
+- Branch: feat/automated-fiscal-reconciliation-ux-capture. Commits: 875a6e1, 1e3e189, 6cc2a71, 633dc22, 1c332f4 (251ffec), 3293942, c783463, cc3f813 (CST 2-díg REGRESSÃO), 0c17046, f3c6c15, ba213f1, 4ba866b (site≡script equivalence proof), 5811cda, a546a1f (site: "Todo o lote" + campo CRC contabilista, erros (7).csv fix, push+deploy), 5fd997d (site: campo E-mail contabilista; 0100 exige NOME+CPF+CRC+E-MAIL; erro (1).csv fix, push+deploy).
 - **Secrets — DO NOT COMMIT. Revoke/rotate via dashboards.** Vercel token exposto: `vcp_38Zg…` (usado NOVAMENTE no deploy → revogar urgente). Supabase proj uaqydwvdmwrwlvznoztd; anon key `sb_publishable_tbqx8z8…` (público por design); service-role no .env.local (secret → rotacionar).
 - **Novos erros PVA (erros (3).csv, C:\Users\User1\Downloads\erros (3).csv)** — arquivo testado foi 202605 (coop 03585024000490) gerado no site:
   - E110 (linha 726): PVA espera 15 campos, arquivo tinha 16 → campo extra VL_SLD_CREDOR_ANT_FUT. CORRIGIDO em c783463.
@@ -95,6 +96,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
   - E;1;4-DT_INI;01012000;MSG_DATA_MINIMA (DT_INI ≥ 01/01/2009).
   - Causa raiz: período personalizado muito amplo (2000-2050) + 0100 ausente. **RESOLVIDO via "Todo o lote" (mês do arquivo) + campo CRC**. Site importou só 22 docs (não 141) → hash 33727818... ≠ validado 1fbdc565....
 - Site ≡ script confirmado (commit 4ba866b/5811cda): generateObligationLocal → mesmo buildEfdIcmsIpi; hash coop 1fbdc565... idêntico ao arquivo entregue.
+- **erro (1).csv (C:\Users\User1\Downloads\erro (1).csv)** — arquivo gerado no SITE (após "Todo o lote" + CRC): único erro restante `E;N/A;0100;MSG_REGISTRO_OBRIGATORIO` ("Registro filho obrigatório não foi informado"). Causa raiz: form do site não tinha campo de **e-mail** do contabilista → EMAIL do 0100 vazio. **RESOLVIDO em 5fd997d** (campo E-mail adicionado; 0100 exige NOME+CPF+CRC+E-MAIL; readiness blocking). Após preencher os 4 campos, 0100 fica completo e o erro some.
 - 1.147 real XMLs em docs/pva/2026-06/inputs. Gerador: scripts/generate-local-efd.ts (env CNPJ, START, END, INPUT_DIR, OUT_DIR, COD_REC=046-2 default).
 - Arquivo local gerado: docs/pva/2026-06/output/EFD_03585024000490_20260601_20260630.txt (344 linhas; C100+C190 only; E110=15 OK; 0002 ausente; E500 ausente; validação offline 0 issues).
 - Golden hash atual: 83e2b2b09b3f91994d6b177eda1f661b7a75ad7a39189aaf4d008e35cfb322c3.
@@ -109,7 +111,8 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - src/modules/obligations/efd-icms-ipi/serialization/index.ts — serializeEfd (preserva campos).
 - src/modules/obligations/efd-icms-ipi/from-batch.ts — filterDocumentsByPeriod.
 - src/modules/obligations/generate-local.ts — filterStoreByCnpj.
-- src/app/app/obligations/efd-icms-ipi/page.tsx — **UI site: recorte de período (modo "Todo o lote" → mês do arquivo), campo CRC do contabilista (gera 0100), gera via generateObligationLocal**.
+- src/app/app/obligations/efd-icms-ipi/page.tsx — **UI site: recorte de período (modo "Todo o lote" → mês do arquivo), campos Contabilista (Nome/CPF/CRC/E-mail) que geram 0100, gera via generateObligationLocal**.
+- src/modules/obligations/demo-fixtures.ts — DEMO_ESTABLISHMENT agora inclui contabilista (nome/CPF/CRC/e-mail) p/ demo gerar 0100 válido.
 - scripts/generate-local-efd.ts — gerador local loop (BatchStore tipado).
 - tests/unit/efd-golden.test.ts — golden hash 83e2b2b09b3f91994d6b177eda1f661b7a75ad7a39189aaf4d008e35cfb322c3, `not.toContain("0002")`, slice(0,3)=["0000","0001","0005"], **sample é terceiros (IND_EMIT=1) → C170, não C190; sem IPI → sem E500/E520**.
 - tests/unit/efd-0000-layout.test.ts — C170=38, C190=12, **E110=15**, slice(0,3)=["0000","0001","0005"].
