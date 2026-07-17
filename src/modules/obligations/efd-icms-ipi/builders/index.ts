@@ -156,6 +156,30 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
         "Blocos B (carga/transporte), G (CIAP/ativo), H (inventário) e K (produção/estoque) são opcionais. Neste rascunho saem vazios (IND_MOV=1) porque inventário/CIAP/controle não estão no escopo. Isso é válido para a maioria dos contribuintes.",
       fix: "Nada a fazer para um rascunho. Se a empresa for obrigada a informar inventário (H), CIAP (G) ou controle de produção (K), esses blocos terão de ser preenchidos em etapa posterior — fora deste gerador.",
     },
+    {
+      id: "tipo_item_0200",
+      label: "0200: TIPO_ITEM do item",
+      status: "review" as ReadinessStatus,
+      explanation:
+        "Cada item (0200) recebe TIPO_ITEM=00 (sem informação de tipo). O Guia exige que o contador confirme o tipo correto (00, 01, 02…) antes do uso em produção — o XML/NF-e não traz esse dado de forma unívoca.",
+      fix: "Confirme com o contador o TIPO_ITEM adequado para seus produtos. Para um rascunho de pré-validação o 00 é aceito pelo PVA, mas revise antes do envio oficial.",
+    },
+    {
+      id: "ind_frt_c100",
+      label: "C100: IND_FRT (frete)",
+      status: "review" as ReadinessStatus,
+      explanation:
+        "Quando o frete não vem informado na NF-e, o C100 recebe IND_FRT=9 (outros). Isso pode não refletir a operação real e afeta a apuração de ICMS sobre frete.",
+      fix: "Garanta que o frete/transporte esteja no XML importado. Se por conta do emitente (CIF), ajuste IND_FRT para 0; se por conta do destinatário (FOB), para 1. Revise caso a caso.",
+    },
+    {
+      id: "bloco1_1010",
+      label: "Bloco 1 (1010): obrigações acessórias",
+      status: "review" as ReadinessStatus,
+      explanation:
+        "O Bloco 1 (1001/1010) é gerado com TODAS as respostas 'N' (sem exportação, combustível, cartão, etc.). Se a empresa se enquadrar em alguma obrigação acessória, o PVA/Receita podem exigir 'S'.",
+      fix: "Revise o Bloco 1: se houver exportação (IND_EXP), combustível (IND_COMB), operadora de cartão (IND_CART), ativo imobilizado ou outro, marque 'S' no campo correspondente. Para a maioria dos contribuintes, 'N' está correto.",
+    },
   ];
 
   const blockingCount = items.filter((i) => i.status === "blocking").length;
