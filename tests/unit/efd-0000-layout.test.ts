@@ -25,7 +25,7 @@ const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   B990: 2,
   C001: 2,
   C100: 29,
-  C170: 34,
+  C170: 38,
   C190: 11,
   C990: 2,
   D001: 2,

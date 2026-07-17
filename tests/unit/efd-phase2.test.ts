@@ -10,7 +10,7 @@ import {
 
 /**
  * Trava o comportamento corrigido na Fase 2:
- *  - C170 tem exatamente 34 campos (sem ALIQ_ST/COD_ENQ/VL_ABAT_NT espúrios).
+ *  - C170 tem exatamente 38 campos (leiaute oficial 020, incluindo VL_BC_IPI/ALIQ_IPI/ALIQ*_QUANT/COD_CTA/VL_ABAT_NT).
  *  - 0002/E500/E520 (apuração IPI) só para IND_ATIV=1 (industrial), NÃO para 0.
  *  - 0150 emitido apenas para o CONTRAPARTE do C100 (sem o estabelecimento).
  */
@@ -63,13 +63,13 @@ function linesOf(out: Awaited<ReturnType<typeof runObligationPlugin>>): string[]
 }
 
 describe("EFD ICMS/IPI — correções de layout/cadastro (Fase 2)", () => {
-  it("C170 tem exatamente 34 campos (leiaute oficial 020)", async () => {
+  it("C170 tem exatamente 38 campos (leiaute oficial 020)", async () => {
     const out = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("1"));
     const c170 = linesOf(out).filter((l) => l.startsWith("|C170|"));
     expect(c170.length).toBeGreaterThan(0);
     for (const line of c170) {
       const count = line.split("|").length - 2; // descarta "" inicial/final
-      expect(count).toBe(34);
+      expect(count).toBe(38);
     }
     // IND_APUR na posição 19 (1-based), valor 0/1
     const first = c170[0].split("|");

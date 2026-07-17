@@ -557,19 +557,23 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
           "0", // 19 IND_APUR
           item.tax.ipi.cst || "", // 20 CST_IPI
           efdSanitize((item.tax.ipi as Record<string, string | undefined>).codEnq || "", 3), // 21 COD_ENQ
-          moneyToEfd(item.tax.ipi.vIpi), // 22 VL_IPI
+          moneyToEfd(item.tax.ipi.vBc), // 22 VL_BC_IPI
+          moneyToEfd(item.tax.ipi.pIpi), // 23 ALIQ_IPI
+          moneyToEfd(item.tax.ipi.vIpi), // 24 VL_IPI
           item.tax.pis.cst || "", // 25 CST_PIS
           moneyToEfd(item.tax.pis.vBc), // 26 VL_BC_PIS
           moneyToEfd(item.tax.pis.pAliq, 4), // 27 ALIQ_PIS
           "", // 28 QUANT_BC_PIS
-          moneyToEfd(item.tax.pis.vValor), // 29 VL_PIS
-          item.tax.cofins.cst || "", // 30 CST_COFINS
-          moneyToEfd(item.tax.cofins.vBc), // 31 VL_BC_COFINS
-          moneyToEfd(item.tax.cofins.pAliq, 4), // 32 ALIQ_COFINS
-          "", // 33 QUANT_BC_COFINS
-          moneyToEfd(item.tax.cofins.vValor), // 34 VL_COFINS
-          "", // 35 COD_CTA
-          "", // 36 VL_ABAT_NT
+          "", // 29 ALIQ_PIS_QUANT (alíquota em reais; vazia p/ CST percentual)
+          moneyToEfd(item.tax.pis.vValor), // 30 VL_PIS
+          item.tax.cofins.cst || "", // 31 CST_COFINS
+          moneyToEfd(item.tax.cofins.vBc), // 32 VL_BC_COFINS
+          moneyToEfd(item.tax.cofins.pAliq, 4), // 33 ALIQ_COFINS
+          "", // 34 QUANT_BC_COFINS
+          "", // 35 ALIQ_COFINS_QUANT (alíquota em reais; vazia p/ CST percentual)
+          moneyToEfd(item.tax.cofins.vValor), // 36 VL_COFINS
+          "", // 37 COD_CTA
+          "", // 38 VL_ABAT_NT
         ],
         lineage: [
           {

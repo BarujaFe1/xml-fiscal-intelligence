@@ -14,7 +14,7 @@ import {
  * sample unless an INTENDED fiscal fix changes it (then update this hash
  * only after reviewing the diff against the PVA-validated behavior).
  */
-const GOLDEN_HASH = "69d265f526a614c0e2d4f4aebef012bb896bc03f5efc3dfbc0f55c987b6f888d";
+const GOLDEN_HASH = "338d7f88b4b771b1bb3bf145b16cf057729528de75b59ddf2f96dea7ff127798";
 
 function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
   const xml = readFileSync(
