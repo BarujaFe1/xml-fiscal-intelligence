@@ -24,7 +24,7 @@ import {
   suggestInformantByCnpj,
   suggestInformantFromDocuments,
 } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
-import { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+import { buildObligationContextFromBatch, filterDocumentsByPeriod } from "@/modules/obligations/efd-icms-ipi/from-batch";
 import { detectEfdRequiredData } from "@/modules/obligations/efd-icms-ipi/builders";
 import { EFD_ICMS_IPI_LAYOUT_2026 } from "@/modules/obligations/efd-icms-ipi/constants";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
@@ -141,6 +141,51 @@ export default function ObligationsEfdPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [scopeCnpj, setScopeCnpj] = useState("");
 
+  // Recorte de período: permite gerar de um dia, semana, mês, semestre ou intervalo
+  // arbitrário a partir de um único lote importado (ex.: o ZIP mensal).
+  type PeriodMode = "mes" | "semana" | "dia" | "semestre" | "custom";
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("mes");
+  const [periodMonth, setPeriodMonth] = useState("2026-04");
+  const [periodRefDate, setPeriodRefDate] = useState("2026-04-15");
+  const [periodSemester, setPeriodSemester] = useState<"1" | "2">("1");
+  const [periodYear, setPeriodYear] = useState("2026");
+
+  useEffect(() => {
+    if (periodMode === "custom") return;
+    let start = "";
+    let end = "";
+    if (periodMode === "mes") {
+      const [y, m] = periodMonth.split("-").map(Number);
+      const last = new Date(y, m, 0);
+      start = `${y}-${String(m).padStart(2, "0")}-01`;
+      end = `${y}-${String(m).padStart(2, "0")}-${String(last.getDate()).padStart(2, "0")}`;
+    } else if (periodMode === "semestre") {
+      const y = Number(periodYear);
+      start = periodSemester === "1" ? `${y}-01-01` : `${y}-07-01`;
+      end = periodSemester === "1" ? `${y}-06-30` : `${y}-12-31`;
+    } else if (periodMode === "dia") {
+      start = periodRefDate;
+      end = periodRefDate;
+    } else if (periodMode === "semana") {
+      const dt = new Date(`${periodRefDate}T00:00:00`);
+      const dow = (dt.getDay() + 6) % 7; // 0 = segunda
+      const mon = new Date(dt);
+      mon.setDate(dt.getDate() - dow);
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      const fmt = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      start = fmt(mon);
+      end = fmt(sun);
+    }
+    if (!start || !end) return;
+    setForm((f) =>
+      f.periodStart === start && f.periodEnd === end
+        ? f
+        : { ...f, periodStart: start, periodEnd: end },
+    );
+  }, [periodMode, periodMonth, periodRefDate, periodSemester, periodYear]);
+
   useEffect(() => {
     idbListBatches().then((list) => {
       setBatches(list);
@@ -246,6 +291,12 @@ export default function ObligationsEfdPage() {
           periodStart: bounds.periodStart,
           periodEnd: bounds.periodEnd,
         }));
+        const y = Number(s.batch.year);
+        const m = Number(s.batch.month);
+        setPeriodMonth(`${y}-${String(m).padStart(2, "0")}`);
+        setPeriodYear(String(y));
+        setPeriodSemester(m <= 6 ? "1" : "2");
+        setPeriodMode("mes");
       }
     });
   }, [batchId]);
@@ -271,6 +322,7 @@ export default function ObligationsEfdPage() {
       : effectiveStore.documents;
     const ids = new Set(docs.map((d) => d.id));
     const items = want ? effectiveStore.items.filter((i) => ids.has(i.documentId)) : effectiveStore.items;
+    const periodFilter = filterDocumentsByPeriod(docs, form.periodStart, form.periodEnd);
     const ctx = buildObligationContextFromBatch({
       establishment: {
         workspaceId: effectiveStore.batch?.workspaceId || "ws_local",
@@ -300,9 +352,10 @@ export default function ObligationsEfdPage() {
         industrialClass: form.industrialClass,
         priorCreditBalance: form.priorCreditBalance,
       },
-      documents: docs,
+      documents: periodFilter.inPeriod,
       items,
     });
+    ctx.outOfPeriodCount = periodFilter.outOfPeriodCount;
     return detectEfdRequiredData(ctx);
   }, [effectiveStore, scopeCnpj, usingDemo, form]);
 
@@ -652,6 +705,102 @@ export default function ObligationsEfdPage() {
               effectiveStore ? suggestInformantByCnpj(effectiveStore.documents, cnpj) : null
             }
           />
+          <div className="md:col-span-2 space-y-3 rounded-xl border border-white/10 bg-slate-950/30 p-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1">
+                <Label>Recorte do período</Label>
+                <select
+                  className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                  value={periodMode}
+                  onChange={(e) => setPeriodMode(e.target.value as PeriodMode)}
+                >
+                  <option value="mes">Mês</option>
+                  <option value="semana">Semana</option>
+                  <option value="dia">Dia</option>
+                  <option value="semestre">Semestre</option>
+                  <option value="custom">De / até (personalizado)</option>
+                </select>
+              </div>
+              {periodMode === "mes" && (
+                <div className="space-y-1">
+                  <Label>Mês</Label>
+                  <input
+                    type="month"
+                    className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                    value={periodMonth}
+                    onChange={(e) => setPeriodMonth(e.target.value)}
+                  />
+                </div>
+              )}
+              {periodMode === "semestre" && (
+                <>
+                  <div className="space-y-1">
+                    <Label>Ano</Label>
+                    <input
+                      type="number"
+                      className="w-24 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                      value={periodYear}
+                      onChange={(e) => setPeriodYear(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Semestre</Label>
+                    <select
+                      className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                      value={periodSemester}
+                      onChange={(e) => setPeriodSemester(e.target.value as "1" | "2")}
+                    >
+                      <option value="1">1º (jan–jun)</option>
+                      <option value="2">2º (jul–dez)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+              {(periodMode === "dia" || periodMode === "semana") && (
+                <div className="space-y-1">
+                  <Label>{periodMode === "dia" ? "Dia" : "Semana (data de referência)"}</Label>
+                  <input
+                    type="date"
+                    className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                    value={periodRefDate}
+                    onChange={(e) => setPeriodRefDate(e.target.value)}
+                  />
+                </div>
+              )}
+              {periodMode === "custom" && (
+                <>
+                  <div className="space-y-1">
+                    <Label>De</Label>
+                    <input
+                      type="date"
+                      className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                      value={form.periodStart}
+                      onChange={(e) => setForm({ ...form, periodStart: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Até</Label>
+                    <input
+                      type="date"
+                      className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+                      value={form.periodEnd}
+                      onChange={(e) => setForm({ ...form, periodEnd: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+              <div className="space-y-1">
+                <Label>Período efetivo (0000)</Label>
+                <p className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-300">
+                  {form.periodStart} → {form.periodEnd}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Importe o lote uma vez (ex.: o ZIP mensal) e gere recortes arbitrários — só entram as
+              NF-e com data de emissão dentro do período escolhido.
+            </p>
+          </div>
           {(
             [
               ["companyName", "Razão social"],
@@ -663,8 +812,6 @@ export default function ObligationsEfdPage() {
               ["address", "Endereço (0005)"],
               ["addressNumber", "Número"],
               ["neighborhood", "Bairro"],
-              ["periodStart", "Período início (YYYY-MM-DD)"],
-              ["periodEnd", "Período fim"],
               ["accountantName", "Contabilista (opcional)"],
               ["accountantCpf", "CPF contabilista"],
             ] as const

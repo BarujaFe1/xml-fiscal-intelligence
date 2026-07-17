@@ -51,6 +51,8 @@ export interface ObligationContext {
   excludedDocumentCount?: number;
   /** NF-e sem status conhecido (XML sem protocolo de autorização). */
   unknownStatusCount?: number;
+  /** NF-e fora do recorte de período (issueDate < início ou > fim). */
+  outOfPeriodCount?: number;
 }
 
 export interface ObligationDocumentInput {

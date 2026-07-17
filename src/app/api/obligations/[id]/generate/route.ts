@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   buildObligationContextFromBatch,
+  filterDocumentsByPeriod,
   getObligationPlugin,
   isObligationId,
   EFD_ICMS_IPI_LAYOUT_2026,
@@ -65,6 +66,11 @@ export async function POST(
       return NextResponse.json({ error: "BatchStore sem documentos" }, { status: 400 });
     }
 
+    const periodFilter = filterDocumentsByPeriod(
+      body.store?.documents || [],
+      body.establishment?.periodStart,
+      body.establishment?.periodEnd,
+    );
     const context = buildObligationContextFromBatch({
       establishment: {
         workspaceId: body.workspaceId || body.store?.batch?.workspaceId || "ws_local",
@@ -73,9 +79,10 @@ export async function POST(
         layoutVersion: LAYOUTS[id] || EFD_ICMS_IPI_LAYOUT_2026,
         ...body.establishment,
       },
-      documents: body.store?.documents || [],
+      documents: periodFilter.inPeriod,
       items: body.store?.items || [],
     });
+    context.outOfPeriodCount = periodFilter.outOfPeriodCount;
     if (body.extras) context.extras = { ...context.extras, ...body.extras };
 
     const result = await runObligationPlugin(plugin, context);

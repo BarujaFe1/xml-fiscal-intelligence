@@ -2,7 +2,10 @@
  * Client-side obligation generation — avoids posting full BatchStore to the API
  * (Vercel/Next body limits cause non-JSON "Request Entity Too Large" → Unexpected token 'R').
  */
-import { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+import {
+  buildObligationContextFromBatch,
+  filterDocumentsByPeriod,
+} from "@/modules/obligations/efd-icms-ipi/from-batch";
 import {
   getObligationPlugin,
   isObligationId,
@@ -146,6 +149,12 @@ export async function generateObligationLocal(input: {
 
   const store =
     input.scopeCnpj && input.store ? filterStoreByCnpj(input.store, input.scopeCnpj) : input.store;
+  const periodStart = input.establishment?.periodStart;
+  const periodEnd = input.establishment?.periodEnd;
+  const periodFilter =
+    store?.documents && store.documents.length
+      ? filterDocumentsByPeriod(store.documents, periodStart, periodEnd)
+      : { inPeriod: store?.documents || [], outOfPeriodCount: 0 };
   const context = buildObligationContextFromBatch({
     establishment: {
       workspaceId: input.workspaceId || store?.batch.workspaceId || "ws_local",
@@ -154,9 +163,10 @@ export async function generateObligationLocal(input: {
       layoutVersion: LAYOUTS[id],
       ...input.establishment,
     },
-    documents: store?.documents || [],
+    documents: periodFilter.inPeriod,
     items: store?.items || [],
   });
+  context.outOfPeriodCount = periodFilter.outOfPeriodCount;
   if (input.extras) context.extras = { ...context.extras, ...input.extras };
 
   const result = await runObligationPlugin(plugin, context);

@@ -211,6 +211,30 @@ export function buildObligationContextFromBatch(input: {
   };
 }
 
+/**
+ * Recorta os documentos cuja data de emissão está DENTRO do período
+ * (periodStart..periodEnd, inclusivo). Usado na geração para que um único
+ * lote importado (ex.: ZIP mensal) possa gerar EFDs de uma semana, dia,
+ * mês, semestre ou intervalo arbitrário. Documentos sem data não são filtrados.
+ */
+export function filterDocumentsByPeriod(
+  documents: DocumentSummary[],
+  periodStart?: string,
+  periodEnd?: string,
+): { inPeriod: DocumentSummary[]; outOfPeriodCount: number } {
+  if (!periodStart || !periodEnd) return { inPeriod: documents, outOfPeriodCount: 0 };
+  let outOfPeriodCount = 0;
+  const inPeriod = documents.filter((d) => {
+    const issue = (d.issueDate || "").slice(0, 10);
+    if (issue && (issue < periodStart || issue > periodEnd)) {
+      outOfPeriodCount += 1;
+      return false;
+    }
+    return true;
+  });
+  return { inPeriod, outOfPeriodCount };
+}
+
 function flatStr(
   flat: Record<string, string | number | boolean | null> | undefined,
   suffixes: string[],
