@@ -135,6 +135,7 @@ export default function ObligationsEfdPage() {
     priorCreditBalance: "",
     cnae: "",
     cnaeDescription: "",
+    icmsCodRec: "",
   });
 
   const [companies, setCompanies] = useState<LocalCompany[]>([]);
@@ -351,6 +352,7 @@ export default function ObligationsEfdPage() {
         cnaeDescription: form.cnaeDescription,
         industrialClass: form.industrialClass,
         priorCreditBalance: form.priorCreditBalance,
+        icmsCodRec: form.icmsCodRec,
       },
       documents: periodFilter.inPeriod,
       items,
@@ -462,6 +464,7 @@ export default function ObligationsEfdPage() {
         priorCreditBalance: DEMO_ESTABLISHMENT.priorCreditBalance || "",
         cnae: DEMO_ESTABLISHMENT.cnae || "",
         cnaeDescription: DEMO_ESTABLISHMENT.cnaeDescription || "",
+        icmsCodRec: DEMO_ESTABLISHMENT.icmsCodRec || "",
       });
       setDemoStore(data.store);
       setBatchId(DEMO_BATCH_ID);
@@ -814,6 +817,7 @@ export default function ObligationsEfdPage() {
               ["neighborhood", "Bairro"],
               ["accountantName", "Contabilista (opcional)"],
               ["accountantCpf", "CPF contabilista"],
+              ["icmsCodRec", "COD_REC (E116) — código estadual do ICMS a recolher"],
             ] as const
           ).map(([key, label]) => (
             <div key={key} className="space-y-1">

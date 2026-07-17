@@ -185,6 +185,17 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       fix: "Informe o saldo credor anterior (campo 'saldo anterior') se a empresa tiver crédito acumulado. Ajustes de apuração também entram manualmente. Para um rascunho, fica zerado — confirme com o contador antes do envio oficial.",
     },
     {
+      id: "e116_cod_rec",
+      label: "E116 · COD_REC (código estadual do ICMS)",
+      status: (context.icmsCodRec ? "complete" : "review") as ReadinessStatus,
+      message: context.icmsCodRec
+        ? `COD_REC informado: ${context.icmsCodRec}.`
+        : "E116 (quando há ICMS a recolher) exige COD_REC — código da receita estadual (ex.: tabela SEFAZ-SP).",
+      explanation:
+        "O E116 lista o recolhimento de ICMS. O campo COD_REC é o código da receita do Estado (diferente por UF e dependente de tabela oficial da SEFAZ). Este gerador NÃO inventa esse código — se ficar em branco, o PVA pode rejeitar ou exigir ajuste.",
+      fix: "Preencha 'COD_REC (E116)' no formulário com o código estadual correto para a apuração (consulte a SEFAZ da UF). Deixe em branco apenas se não houver ICMS a recolher no período.",
+    },
+    {
       id: "bloco_hkg",
       label: "Blocos B/G/H/K",
       status: "complete" as ReadinessStatus,
