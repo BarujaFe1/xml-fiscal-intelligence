@@ -132,6 +132,27 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       fix: "Carregue o lote (ZIP/XML) com as NF-e do período na tela de importação antes de gerar.",
     },
     {
+      id: "document_status",
+      label: "Status das NF-e (canceladas/denegadas)",
+      status: ((context.excludedDocumentCount ?? 0) > 0 || (context.unknownStatusCount ?? 0) > 0
+        ? "review"
+        : "complete") as ReadinessStatus,
+      message:
+        (context.excludedDocumentCount ?? 0) > 0
+          ? `${context.excludedDocumentCount} NF-e excluída(s) por status (cancelada/denegada/inutilizada/rejeitada).`
+          : (context.unknownStatusCount ?? 0) > 0
+            ? `${context.unknownStatusCount} NF-e sem status conhecido (XML sem protocolo de autorização).`
+            : undefined,
+      explanation:
+        "NF-e cancelada, denegada, inutilizada ou rejeitada NÃO devem entrar no SPED — incluí-las gera inconsistência e rejeição no PVA. O gerador já as exclui automaticamente quando o status vem no XML (protocolo de autorização).",
+      fix:
+        (context.excludedDocumentCount ?? 0) > 0
+          ? "Nada a fazer: essas notas foram excluídas da geração. Confira no portal da SEFAZ se a exclusão está correta."
+          : (context.unknownStatusCount ?? 0) > 0
+            ? "Importe o XML completo (nfeProc, com o protocolo de autorização) para que o status seja conferido. Sem protocolo, o status não pode ser verificado."
+            : "Status conferido — só NF-e autorizadas entram no arquivo.",
+    },
+    {
       id: "tax_normalized",
       label: "Impostos normalizados (CST/BC/alíq)",
       status: (context.documents.every((d) =>
@@ -625,6 +646,11 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   ];
   if (!onlyDigits(context.codMun) || onlyDigits(context.codMun).length !== 7) {
     warnings.push("COD_MUN ausente/inválido no 0000 — obrigatório no Guia (7 dígitos IBGE).");
+  }
+  if ((context.excludedDocumentCount ?? 0) > 0) {
+    warnings.push(
+      `${context.excludedDocumentCount} NF-e excluída(s) por status (cancelada/denegada/inutilizada/rejeitada) — não entram no SPED.`,
+    );
   }
   if (!onlyDigits(context.cep) || !context.address || !context.neighborhood) {
     warnings.push("0005 incompleto (CEP/END/BAIRRO obrigatórios) — complete o cadastro do estabelecimento.");

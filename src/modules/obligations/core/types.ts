@@ -47,6 +47,10 @@ export interface ObligationContext {
   documents: ObligationDocumentInput[];
   priorCreditBalance?: string; // decimal string; required for E110 when applicable
   extras?: Record<string, unknown>;
+  /** NF-e excluídas da geração por status (cancelada/denegada/inutilizada/rejeitada). */
+  excludedDocumentCount?: number;
+  /** NF-e sem status conhecido (XML sem protocolo de autorização). */
+  unknownStatusCount?: number;
 }
 
 export interface ObligationDocumentInput {
