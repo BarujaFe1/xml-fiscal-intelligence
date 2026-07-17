@@ -82,14 +82,13 @@ export function resolveCodSit(d: ObligationContext["documents"][0]): string {
 
 /**
  * CST/CSOSN do ICMS para C170/C190.
- * Regime Normal (CRT=3): CST de 2 dígitos (00,10,20,30,40,41,50,51,60,70,90).
- * Simples Nacional (CRT=1/2): CSOSN de 3 dígitos (101,102,103,201,202,203,300,400,500,900).
- * O NFe traz CST (2 díg.) quando normal e CSOSN (3 díg.) quando SN — infere-se pelo tamanho.
+ * Campo CST_ICMS é N 003 (3 dígitos) no leiaute 020 — acomoda tanto CST
+ * (00,10,20,30,40,41,50,51,60,70,90) quanto CSOSN (101,102,103,201,202,203,300,400,500,900).
+ * Sempre retorna 3 dígitos (CST com zero à esquerda: 41 -> 041).
  */
 const CSOSN_VALUES = ["101", "102", "103", "201", "202", "203", "300", "400", "500", "900"];
 export function cstIcms(item: ObligationContext["documents"][0]["items"][0]): string {
   const raw = onlyDigits(item.tax.icms.cst || item.tax.icms.csosn || "");
   if (!raw) return "";
-  if (CSOSN_VALUES.includes(raw)) return raw; // SN: 3 dígitos
-  return raw.padStart(2, "0").slice(-2); // Normal: 2 dígitos
+  return raw.padStart(3, "0").slice(-3);
 }
