@@ -618,6 +618,16 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
         cst = mirrorEntradaCst(cst);
         const semCredito = ENTRADA_CFOP_CST_SEM_CREDITO[cfop];
         if (semCredito) cst = semCredito;
+        // CST tributada (000/020) mas item sem ICMS (BC/alíquota/ICMS zerados) é
+        // fonte inconsistente (CST tributada sem ICMS) — o PVA rejeita CST 00/20
+        // com alíquota zero. Como não há crédito a apropriar, reclassifica para
+        // 040 (isenção, sem crédito), mantendo o C170 válido e fiscalmente neutro.
+        if (cst === "000" || cst === "020") {
+          const z = (v: string) => !v || moneyToFixed(money(v)) === "0.00";
+          if (z(item.tax.icms.pIcms) && z(item.tax.icms.vBc) && z(item.tax.icms.vIcms)) {
+            cst = "040";
+          }
+        }
       }
       const aliq = moneyToFixed(item.tax.icms.pIcms);
 
