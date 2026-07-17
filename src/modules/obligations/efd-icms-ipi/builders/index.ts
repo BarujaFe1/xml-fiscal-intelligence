@@ -467,6 +467,37 @@ function mirrorEntradaCfop(cfop: string): string {
   return map[first] ? map[first] + cfop.slice(1) : cfop;
 }
 
+// Converte o CST_ICMS de SAÍDA (perspectiva do emitente, constante no XML de
+// terceiros) para a perspectiva do ADQUIRENTE (entrada), conforme o "enfoque do
+// declarante" do Guia Prático EFD-ICMS/IPI (Campo 10 do C170: "o campo deverá
+// ser preenchido com o CST sob o enfoque do declarante"). Para o regime normal,
+// os códigos da Tabela B são compartilhados entre entrada e saída na mesma
+// operação (00,20,40,41,50,51,90 permanecem iguais); apenas as operações com
+// substituição tributária (saída 010/030/070) tornam-se 060 (ICMS cobrado
+// anteriormente por ST) na entrada. CSOSN (Simples Nacional) não possui espelho
+// de entrada e é mantido intacto.
+function mirrorEntradaCst(cst: string): string {
+  if (!cst) return cst;
+  const map: Record<string, string> = {
+    "010": "060",
+    "030": "060",
+    "070": "060",
+  };
+  return map[cst] ?? cst;
+}
+
+// CFOPs de ENTRADA que representam movimentações sem incidência de ICMS na
+// aquisição (não são compras tributadas): retorno de depósito fechado, bonificação/
+// doação/brinde e simples faturamento. Nesses casos o adquirente, em geral, NÃO
+// tem direito ao crédito e o CST de SAÍDA informado no XML do emitente (ex.: 040/
+// 041) não se aplica à entrada — usa-se 090 (outras, sem crédito), com BC/alíquota/
+// ICMS zerados. Mapa ASSISTIDO: o contador deve confirmar por operação.
+const ENTRADA_CFOP_CST_SEM_CREDITO: Record<string, string> = {
+  "1906": "090", // retorno de mercadoria de depósito fechado/armazém geral
+  "1910": "090", // bonificação, doação ou brinde
+  "1922": "090", // simples faturamento (compra p/ recebimento futuro)
+};
+
 function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
   const out: ObligationRecord[] = [];
   const natMap = computeNatMap(ctx);
@@ -549,13 +580,22 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
     >();
 
     for (const item of d.items) {
-      const cst = cstIcms(item);
       const cfopRaw = onlyDigits(item.cfop || "").slice(0, 4);
       // CFOP no XML é da perspectiva do emitente (saída 5/6/7). Para NF-e de
       // terceiros (IND_EMIT=1, entrada IND_OPER=0) o C170 deve usar o CFOP
       // espelhado de entrada (1/2/3), sob pena de MSG_REFERENCIADO_* e
       // C190 obrigatório (PVA exige 1/2/3 para entradas).
       const cfop = indEmit === "1" ? mirrorEntradaCfop(cfopRaw) : cfopRaw;
+      // CST do XML de terceiros é da perspectiva do emitente (saída). Para a
+      // entrada (IND_EMIT=1) deve usar o "enfoque do declarante" (adquirente):
+      // espelha ST (010/030/070 -> 060) e, para CFOPs de movimentação sem
+      // crédito (depósito fechado/bonificação/simples faturamento), força 090.
+      let cst = cstIcms(item);
+      if (indEmit === "1") {
+        cst = mirrorEntradaCst(cst);
+        const semCredito = ENTRADA_CFOP_CST_SEM_CREDITO[cfop];
+        if (semCredito) cst = semCredito;
+      }
       const aliq = moneyToFixed(item.tax.icms.pIcms);
 
       if (isOwnIssueNfe) {
