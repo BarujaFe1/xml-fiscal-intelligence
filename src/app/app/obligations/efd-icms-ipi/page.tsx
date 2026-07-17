@@ -261,7 +261,7 @@ export default function ObligationsEfdPage() {
   // Prontidão calculada AO VIVO (antes de gerar) a partir do form + lote atual.
   const liveReadiness = useMemo(() => {
     if (!effectiveStore?.documents?.length) return null;
-    const want = usingDemo ? "" : (scopeCnpj || "").replace(/\D/g, "");
+    const want = usingDemo ? "" : (scopeCnpj || form.cnpj || "").replace(/\D/g, "");
     const docs = want
       ? effectiveStore.documents.filter(
           (d) =>
@@ -323,10 +323,11 @@ export default function ObligationsEfdPage() {
       neighborhood: informantHint.neighborhood || f.neighborhood,
       cep: informantHint.cep || f.cep,
     }));
-    setLastCompanyCnpj(informantHint.cnpj);
-    toast.success(
-      `Emitente do lote aplicado (${informantHint.count} NF-e · ${informantHint.distinctEmitters} CNPJ distintos)`,
-    );
+      setLastCompanyCnpj(informantHint.cnpj);
+      setScopeCnpj(informantHint.cnpj || "");
+      toast.success(
+        `Emitente do lote aplicado (${informantHint.count} NF-e · ${informantHint.distinctEmitters} CNPJ distintos) — geração agora restrita a este CNPJ`,
+      );
   }
 
   function applyCompanyDirectory(patch: CompanyDirectoryApply) {
@@ -436,7 +437,7 @@ export default function ObligationsEfdPage() {
         obligationId: "efd-icms-ipi",
         store: effectiveStore,
         establishment: form,
-        scopeCnpj: usingDemo ? undefined : scopeCnpj || undefined,
+        scopeCnpj: usingDemo ? undefined : (scopeCnpj || form.cnpj || undefined),
       });
       setResult(data);
       if (data.error && !data.content) {
@@ -616,8 +617,9 @@ export default function ObligationsEfdPage() {
               </p>
             ) : (
               <p className="text-xs text-slate-500">
-                Sem empresa selecionada, a geração usa todas as notas do lote com os dados
-                manuais. Para evitar erros de IE/CNPJ, cadastre a empresa em{" "}
+                Sem empresa selecionada, a geração restringe automaticamente às notas do CNPJ
+                informante (preenchido no formulário ou via «Usar emitente do lote»). Para
+                restringir a outra empresa, cadastre-a em{" "}
                 <Link href="/app/companies" className="text-sky-300 underline">Empresas</Link> e
                 selecione-a aqui.
               </p>

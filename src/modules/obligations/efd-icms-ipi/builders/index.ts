@@ -34,15 +34,22 @@ function statusEstablishment(context: ObligationContext): ReadinessStatus {
 function chaveInformanteStatus(ctx: ObligationContext): ReadinessStatus {
   const informante = efdCnpj(ctx.cnpj);
   if (!informante) return "review";
-  let own = 0;
-  let other = 0;
+  let ownIssue = 0; // NF-e próprias (emitente = informante)
+  let ownMismatch = 0; // próprias com CNPJ da chave divergente
+  let incoming = 0; // NF-e de terceiros (informante é destinatário) — esperado
   for (const d of ctx.documents) {
-    const chaveCnpj = cnpjFromAccessKey(d.accessKey) || efdCnpj(d.emitterDoc);
+    const emitter = efdCnpj(d.emitterDoc);
+    const chaveCnpj = cnpjFromAccessKey(d.accessKey) || emitter;
     if (!chaveCnpj) continue;
-    if (chaveCnpj === informante) own += 1;
-    else other += 1;
+    if (emitter === informante) {
+      ownIssue += 1;
+      if (chaveCnpj !== informante) ownMismatch += 1;
+    } else {
+      incoming += 1;
+    }
   }
-  if (own === 0 && other > 0) return "review";
+  if (ownIssue === 0 && incoming === 0) return "review"; // nenhuma NF-e do informante no lote
+  if (ownMismatch > 0) return "review"; // próprias com CNPJ divergente na chave → erro no PVA
   return "complete";
 }
 
@@ -108,7 +115,7 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       label: "CNPJ informante × chaves NF-e",
       status: chaveInformanteStatus(context),
       message:
-        "CNPJ do 0000 deve coincidir com o CNPJ da chave nas NF-e de emissão própria — use «Usar emitente do lote»",
+        "Geração é restrita ao CNPJ informante (formulário / empresa selecionada). NF-e próprias com CNPJ da chave divergente acusam erro no PVA.",
       remediation: "Alinhe o CNPJ/UF do estabelecimento ao emitente predominante do ZIP",
       explanation:
         "O CNPJ do 0000 deve ser o da empresa que emite as NF-e próprias do lote. Se o lote tiver NF-e de outro CNPJ (ou chaves com CNPJ diferente), o PVA acusa inconsistência de informante (erro de CNPJ/IE).",
