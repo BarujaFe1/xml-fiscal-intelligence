@@ -414,12 +414,18 @@ function build0200(ctx: ObligationContext): ObligationRecord[] {
   return [...map.values()];
 }
 
-/** Mapa natOp (descrição) → código Nxxx, na ordem dos documentos NF-e. Compartilhado por 0400 e C170. */
+/** Mapa natOp (descrição) → código Nxxx, na ordem dos documentos NF-e que geram C170.
+ *  Compartilhado por 0400 e C170. Só entra natureza referenciada por C170:
+ *  NF-e de terceiros (IND_EMIT=1) ou NF modelo 01. Emissão própria (C190) não
+ *  referencia COD_NAT, logo suas naturezas não devem ir para o 0400. */
 function computeNatMap(ctx: ObligationContext): Map<string, string> {
   const map = new Map<string, string>();
   let seq = 1;
   for (const d of ctx.documents) {
     if (!(d.documentType === "NFE" || d.model === "55")) continue;
+    const indEmit = resolveIndEmit(ctx, d);
+    const codMod = d.model || "55";
+    if (codMod === "55" && indEmit === "0") continue; // emissão própria usa C190 (sem COD_NAT)
     const desc = (d.natureOperation || "").trim();
     if (!desc || map.has(desc)) continue;
     map.set(desc, `N${String(seq).padStart(3, "0")}`);
@@ -450,6 +456,15 @@ function build0400(ctx: ObligationContext): ObligationRecord[] {
     });
   }
   return out;
+}
+
+// Espelha CFOP de saída (perspectiva do emitente: 5/6/7) para entrada
+// (perspectiva do adquirente: 1/2/3), usado em NF-e de terceiros (entrada).
+function mirrorEntradaCfop(cfop: string): string {
+  if (!cfop) return cfop;
+  const map: Record<string, string> = { "5": "1", "6": "2", "7": "3" };
+  const first = cfop[0];
+  return map[first] ? map[first] + cfop.slice(1) : cfop;
 }
 
 function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
@@ -535,7 +550,12 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
 
     for (const item of d.items) {
       const cst = cstIcms(item);
-      const cfop = onlyDigits(item.cfop || "").slice(0, 4);
+      const cfopRaw = onlyDigits(item.cfop || "").slice(0, 4);
+      // CFOP no XML é da perspectiva do emitente (saída 5/6/7). Para NF-e de
+      // terceiros (IND_EMIT=1, entrada IND_OPER=0) o C170 deve usar o CFOP
+      // espelhado de entrada (1/2/3), sob pena de MSG_REFERENCIADO_* e
+      // C190 obrigatório (PVA exige 1/2/3 para entradas).
+      const cfop = indEmit === "1" ? mirrorEntradaCfop(cfopRaw) : cfopRaw;
       const aliq = moneyToFixed(item.tax.icms.pIcms);
 
       if (isOwnIssueNfe) {
