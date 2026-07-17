@@ -7,7 +7,8 @@ import {
   filterDocumentsByPeriod,
   runObligationPlugin,
 } from "@/modules/obligations";
-import { filterStoreByCnpj, type BatchStore } from "@/modules/obligations/generate-local";
+import { filterStoreByCnpj } from "@/modules/obligations/generate-local";
+import type { BatchStore } from "@/types";
 import { validateEfdOffline } from "@/modules/obligations/efd-icms-ipi/layouts/020/offline-validator";
 import { getRecordDef } from "@/modules/obligations/efd-icms-ipi/layouts/020/records";
 import { EFD_ICMS_IPI_LAYOUT_2026 } from "@/modules/obligations/efd-icms-ipi/plugin";
@@ -61,6 +62,9 @@ async function main() {
     batch: { workspaceId: "ws", id: "local" } as any,
     documents,
     items,
+    fields: [],
+    errors: [],
+    exports: [],
   };
   const scoped = filterStoreByCnpj(store, cnpj);
   const pf = filterDocumentsByPeriod(scoped.documents, start, end);

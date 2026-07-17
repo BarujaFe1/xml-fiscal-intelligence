@@ -3,7 +3,7 @@ import { money, moneyToEfd, Money } from "@/lib/money/decimal";
 import { dateEfd, efdSanitize, onlyDigits } from "@/modules/obligations/efd-icms-ipi/common";
 
 /**
- * E110 (16 campos). Débitos/créditos = soma VL_ICMS dos C190 conforme CFOP
+ * E110 (15 campos). Débitos/créditos = soma VL_ICMS dos C190 conforme CFOP
  * (entrada 1/2/3/5605 = crédito; saída 5/6/7 = débito). PVA valida por CFOP,
  * não por IND_OPER. Saldo anterior só se `priorCreditBalance` informado.
  */
@@ -51,7 +51,6 @@ export function buildE110FromC190(
       sldApurado,
       sldTransp,
       z, // DEB_ESP — débitos especiais (extemporâneos/ajustes); 0
-      z, // VL_SLD_CREDOR_ANT_FUT
     ],
   };
 }

@@ -32,7 +32,7 @@ const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   D990: 2,
   E001: 2,
   E100: 3,
-  E110: 16,
+  E110: 15,
   E116: 10,
   E990: 2,
   G001: 2,
@@ -154,7 +154,7 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
       .split(/\r?\n/)
       .filter(Boolean)
       .map((l) => l.replace(/^\|/, "").split("|")[0]);
-    expect(types.slice(0, 4)).toEqual(["0000", "0001", "0002", "0005"]);
+    expect(types.slice(0, 3)).toEqual(["0000", "0001", "0005"]);
     const idx0 = types.indexOf("0990");
     const idxB = types.indexOf("B001");
     const idxC = types.indexOf("C001");

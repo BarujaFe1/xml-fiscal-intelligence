@@ -683,8 +683,9 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
 
   // Ordem Bloco 0: 0000 → 0001 → 0002? → 0005 → 0100? → 0150 → 0190 → 0200 → 0400 → 0990
   const bloco0: ObligationRecord[] = [build0000(context), { type: "0001", fields: ["0001", "0"] }];
-  if (context.activityCode === "1") {
-    // 0002 obrigatório para IND_ATIV=1 (industrial) — filho do 0001 (Tabela 4.5.5).
+  if (context.activityCode === "0") {
+    // 0002 — Classificação do estabelecimento industrial (Tabela 4.5.5).
+    // Guia Prático: obrigatório SOMENTE quando IND_ATIV (0000) = "0" (industrial).
     // Leiaute 020 (NT 2025.001): REG + CLAS_ESTAB_IND (2 dígitos).
     bloco0.push({
       type: "0002",

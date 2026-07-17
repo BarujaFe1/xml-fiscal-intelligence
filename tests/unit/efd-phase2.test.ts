@@ -76,18 +76,14 @@ describe("EFD ICMS/IPI — correções de layout/cadastro (Fase 2)", () => {
     expect(first[19]).toMatch(/^[01]$/);
   });
 
-  it("0002/E500/E520 só para IND_ATIV=1 (industrial), ausentes p/ 0", async () => {
-    const nonInd = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("0"));
-    const t0 = linesOf(nonInd).map((l) => l.replace(/^\|/, "").split("|")[0]);
-    expect(t0).not.toContain("0002");
-    expect(t0).not.toContain("E500");
-    expect(t0).not.toContain("E520");
+  it("0002 só para IND_ATIV=0 (industrial); E500/E520 conforme apuração", async () => {
+    const industrial = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("0"));
+    const t0 = linesOf(industrial).map((l) => l.replace(/^\|/, "").split("|")[0]);
+    expect(t0).toContain("0002");
 
-    const ind = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("1"));
-    const t1 = linesOf(ind).map((l) => l.replace(/^\|/, "").split("|")[0]);
-    expect(t1).toContain("0002");
-    expect(t1).toContain("E500");
-    expect(t1).toContain("E520");
+    const comercial = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("1"));
+    const t1 = linesOf(comercial).map((l) => l.replace(/^\|/, "").split("|")[0]);
+    expect(t1).not.toContain("0002");
     // ordem do bloco E
     const order = ["E001", "E100", "E110", "E500", "E520", "E990"].map((t) =>
       t1.indexOf(t),

@@ -14,7 +14,7 @@ import {
  * sample unless an INTENDED fiscal fix changes it (then update this hash
  * only after reviewing the diff against the PVA-validated behavior).
  */
-const GOLDEN_HASH = "6863ea441ba9bcb598ada7dc98e7aabaf4b5e1e14c8a082684698012a3f19bee";
+const GOLDEN_HASH = "e487925e0ae7b5d968013c9eb2ddd94a4c84bab55ffc44bdfd2aa2ac3391fa5c";
 
 function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
   const xml = readFileSync(
@@ -66,7 +66,7 @@ describe("EFD ICMS/IPI golden (synthetic demo)", () => {
     const types = lines.map((l) => l.replace(/^\|/, "").split("|")[0]);
 
     // structural invariants the refactor must preserve (golden is industrial: 0002 after 0001)
-    expect(types.slice(0, 4)).toEqual(["0000", "0001", "0002", "0005"]);
+    expect(types.slice(0, 3)).toEqual(["0000", "0001", "0005"]);
     expect(types).toContain("C100");
     expect(types).toContain("C170");
     expect(types).toContain("C190");
@@ -80,7 +80,7 @@ describe("EFD ICMS/IPI golden (synthetic demo)", () => {
       }
     }
     // industrial sample (IND_ATIV=1) MUST emit 0002 + E500/E520 (apuração IPI)
-    expect(types).toContain("0002");
+    expect(types).not.toContain("0002");
     expect(types).toContain("E500");
     expect(types).toContain("E520");
 
