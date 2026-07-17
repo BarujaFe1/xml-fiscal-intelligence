@@ -24,6 +24,9 @@ import {
   suggestInformantByCnpj,
   suggestInformantFromDocuments,
 } from "@/modules/obligations/efd-icms-ipi/suggest-informant";
+import { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+import { detectEfdRequiredData } from "@/modules/obligations/efd-icms-ipi/builders";
+import { EFD_ICMS_IPI_LAYOUT_2026 } from "@/modules/obligations/efd-icms-ipi/constants";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 import {
   CompanyDirectoryPanel,
@@ -39,6 +42,37 @@ import {
 } from "@/lib/store/local-cadastro";
 import type { Batch, BatchStore } from "@/types";
 
+type ReadinessItemView = {
+  id: string;
+  label: string;
+  status: string;
+  message?: string;
+  explanation?: string;
+  fix?: string;
+};
+
+function ReadinessItemRow({ item }: { item: ReadinessItemView }) {
+  const tone =
+    item.status === "blocking" ? "error" : item.status === "complete" ? "success" : "warning";
+  const needsFix = item.status !== "complete";
+  return (
+    <div className="space-y-1 rounded-xl border border-white/10 bg-slate-950/40 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={tone}>{item.status}</Badge>
+        <span className="font-medium text-slate-100">{item.label}</span>
+      </div>
+      {item.message && <p className="text-xs text-slate-400">{item.message}</p>}
+      {item.explanation && <p className="text-sm leading-snug text-slate-300">{item.explanation}</p>}
+      {needsFix && item.fix && (
+        <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/40 p-2">
+          <p className="text-xs font-semibold text-emerald-300">Como resolver</p>
+          <p className="text-sm leading-snug text-emerald-100/90">{item.fix}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ObligationsEfdPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [batchId, setBatchId] = useState("");
@@ -50,7 +84,7 @@ export default function ObligationsEfdPage() {
     content?: string;
     contentHash?: string;
     manifest?: Record<string, unknown>;
-    readiness?: { items: Array<{ id: string; label: string; status: string; message?: string }>; canGenerate: boolean };
+    readiness?: { items: Array<{ id: string; label: string; status: string; message?: string; explanation?: string; fix?: string }>; canGenerate: boolean };
     validation?: { ok: boolean; issues: Array<{ severity: string; message: string }> };
     lineageSample?: Array<Record<string, unknown>>;
     disclaimer?: string;
@@ -223,6 +257,54 @@ export default function ObligationsEfdPage() {
     () => (effectiveStore ? suggestInformantFromDocuments(effectiveStore.documents) : null),
     [effectiveStore],
   );
+
+  // Prontidão calculada AO VIVO (antes de gerar) a partir do form + lote atual.
+  const liveReadiness = useMemo(() => {
+    if (!effectiveStore?.documents?.length) return null;
+    const want = usingDemo ? "" : (scopeCnpj || "").replace(/\D/g, "");
+    const docs = want
+      ? effectiveStore.documents.filter(
+          (d) =>
+            (d.emitterDoc || "").replace(/\D/g, "") === want ||
+            (d.receiverDoc || "").replace(/\D/g, "") === want,
+        )
+      : effectiveStore.documents;
+    const ids = new Set(docs.map((d) => d.id));
+    const items = want ? effectiveStore.items.filter((i) => ids.has(i.documentId)) : effectiveStore.items;
+    const ctx = buildObligationContextFromBatch({
+      establishment: {
+        workspaceId: effectiveStore.batch?.workspaceId || "ws_local",
+        companyId: "co_local",
+        establishmentId: "est_local",
+        layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
+        cnpj: form.cnpj,
+        ie: form.ie,
+        uf: form.uf,
+        companyName: form.companyName,
+        profile: form.profile,
+        activityCode: form.activityCode,
+        purpose: form.purpose,
+        periodStart: form.periodStart,
+        periodEnd: form.periodEnd,
+        codMun: form.codMun,
+        tradeName: form.tradeName,
+        cep: form.cep,
+        address: form.address,
+        addressNumber: form.addressNumber,
+        neighborhood: form.neighborhood,
+        accountantName: form.accountantName,
+        accountantCpf: form.accountantCpf,
+        accountantEmail: form.accountantEmail,
+        cnae: form.cnae,
+        cnaeDescription: form.cnaeDescription,
+        industrialClass: form.industrialClass,
+        priorCreditBalance: form.priorCreditBalance,
+      },
+      documents: docs,
+      items,
+    });
+    return detectEfdRequiredData(ctx);
+  }, [effectiveStore, scopeCnpj, usingDemo, form]);
 
   function applyInformantFromBatch() {
     if (!informantHint) {
@@ -636,31 +718,35 @@ export default function ObligationsEfdPage() {
         )}
       </div>
 
+      {liveReadiness && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Verificação antes de gerar</CardTitle>
+            <CardDescription>
+              {liveReadiness.canGenerate
+                ? "Tudo certo para gerar — confira abaixo cada item."
+                : `${liveReadiness.blockingCount} pendência(s) bloqueiam a geração. Veja como resolver.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {liveReadiness.items.map((i) => (
+              <ReadinessItemRow key={i.id} item={i} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {result?.readiness && (
         <Card>
           <CardHeader>
-            <CardTitle>Prontidão</CardTitle>
+            <CardTitle>Prontidão (após gerar)</CardTitle>
             <CardDescription>
               {result.readiness.canGenerate ? "Sem bloqueios estruturais" : "Geração bloqueada"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {result.readiness.items.map((i) => (
-              <div key={i.id} className="flex flex-wrap items-center gap-2 text-sm">
-                <Badge
-                  tone={
-                    i.status === "blocking"
-                      ? "error"
-                      : i.status === "complete"
-                        ? "success"
-                        : "warning"
-                  }
-                >
-                  {i.status}
-                </Badge>
-                <span>{i.label}</span>
-                {i.message && <span className="text-slate-500">{i.message}</span>}
-              </div>
+              <ReadinessItemRow key={i.id} item={i} />
             ))}
           </CardContent>
         </Card>

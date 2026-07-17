@@ -54,28 +54,43 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       status: statusEstablishment(context),
       message: !context.ie ? "IE ausente — revise se obrigatória na UF" : undefined,
       remediation: "Cadastre IE e COD_MUN no estabelecimento",
+      explanation:
+        "O Registro 0000 identifica quem entrega o SPED. CNPJ, UF e IE devem ser exatamente os da empresa informante. Sem IE (quando a UF exige) ou com COD_MUN/endereço incompletos, o PVA reclama. O 0005 (dados de contato) também é obrigatório no Guia.",
+      fix: "Preencha CNPJ (14 dígitos), UF (sigla) e IE. Informe também COD_MUN (código IBGE de 7 dígitos) no 0000 e CEP/Endereço/Bairro no 0005. Se a UF realmente não exige IE, pode ficar em branco — mas confira no cadastro da empresa (aba Empresas).",
     },
     {
       id: "period",
       label: "Período DT_INI/DT_FIN",
       status: (context.periodStart && context.periodEnd ? "complete" : "blocking") as ReadinessStatus,
+      explanation:
+        "Define o mês/ano do arquivo (Registro 0000, campos DT_INI/DT_FIN). Tem de abranger todas as NF-e do período. Data fora do prazo ou inconsistente faz o PVA recusar o arquivo.",
+      fix: "Informe a data inicial e final do período (ex.: 01/06/2026 a 30/06/2026). Use o mesmo período do lote carregado.",
     },
     {
       id: "profile",
       label: "Perfil A/B/C",
       status: (context.profile ? "complete" : "blocking") as ReadinessStatus,
       remediation: "Informe o perfil SPED — não presumimos",
+      explanation:
+        "IND_PERFIL do 0000. Perfil A = industrial/comércio com apuração própria; B = atacadista; C = prestador de serviço sem ICMS. Define a obrigatoriedade de blocos. Não presumimos — você informa.",
+      fix: "Selecione A, B ou C conforme o regime da empresa (ver quadro no Guia Prático 3.2.2). Na dúvida, pergunte ao contador.",
     },
     {
       id: "activity",
       label: "IND_ATIV",
       status: (context.activityCode !== undefined ? "complete" : "blocking") as ReadinessStatus,
       remediation: "Informe o indicador de atividade",
+      explanation:
+        "IND_ATIV do 0000 (0 = outro, 1 = industrial). Se for 1, o sistema gera o Registro 0002 (classe industrial) e a apuração de IPI (E500/E520).",
+      fix: "Informe 0 ou 1. Industrial = 1 (gera 0002 + E500/E520); caso contrário, 0.",
     },
     {
       id: "purpose",
       label: "Finalidade do arquivo",
       status: (context.purpose !== undefined ? "complete" : "blocking") as ReadinessStatus,
+      explanation:
+        "COD_FIN do 0000 (0 = remessa regular, 1 = retificadora). É obrigatório: sem ele o arquivo nem monta. A retificadora exige também o número do recibo do arquivo original substituído.",
+      fix: "Escolha 0 (entrega normal) ou 1 (retificação). Para retificação, anote o recibo do arquivo que está sendo substituído.",
     },
     {
       id: "accountant",
@@ -84,6 +99,9 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
         ? "complete"
         : "review") as ReadinessStatus,
       message: "0100 só é gerado com NOME+CPF+CRC (CRC obrigatório no Guia)",
+      explanation:
+        "O Registro 0100 traz os dados do contabilista responsável. O CRC é obrigatório no Guia — sem NOME + CPF + CRC o 0100 não é gerado e o PVA aponta ausência do responsável.",
+      fix: "Cadastre o contabilista com NOME, CPF e CRC (conselho de contabilidade). O e-mail também é obrigatório no PVA. Sem CRC, o 0100 é propositalmente omitido — informe o CRC para gerá-lo.",
     },
     {
       id: "chave_informante",
@@ -92,6 +110,9 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       message:
         "CNPJ do 0000 deve coincidir com o CNPJ da chave nas NF-e de emissão própria — use «Usar emitente do lote»",
       remediation: "Alinhe o CNPJ/UF do estabelecimento ao emitente predominante do ZIP",
+      explanation:
+        "O CNPJ do 0000 deve ser o da empresa que emite as NF-e próprias do lote. Se o lote tiver NF-e de outro CNPJ (ou chaves com CNPJ diferente), o PVA acusa inconsistência de informante (erro de CNPJ/IE).",
+      fix: "Clique em 'Usar emitente do lote' para preencher CNPJ/UF/IE com o emitente predominante. Mais seguro ainda: selecione a empresa cadastrada no topo e gere só as notas desse CNPJ (escopo automático por CNPJ).",
     },
     {
       id: "documents",
@@ -99,6 +120,9 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       status: (context.documents.some((d) => d.documentType === "NFE" || d.model === "55")
         ? "complete"
         : "blocking") as ReadinessStatus,
+      explanation:
+        "O SPED precisa de ao menos uma NF-e (modelo 55) no período. Sem documentos, não há C100/C170 e o arquivo fica vazio/inválido no PVA.",
+      fix: "Carregue o lote (ZIP/XML) com as NF-e do período na tela de importação antes de gerar.",
     },
     {
       id: "tax_normalized",
@@ -109,6 +133,9 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
         ? "complete"
         : "blocking") as ReadinessStatus,
       remediation: "Normalize imposto da NF-e antes de gerar C170",
+      explanation:
+        "Cada item de NF-e precisa de CST/CSOSN de ICMS para gerar C170/C190. Se faltar, o PVA reclama de registro filho obrigatório ausente ou CST inválido.",
+      fix: "Normalize os impostos das NF-e (extraia CST/BC/alíquota do XML) antes de gerar. O processo de importação já faz isso; se algo ficou de fora, reimporte o lote.",
     },
     {
       id: "e110",
@@ -116,12 +143,18 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       status: (context.priorCreditBalance !== undefined ? "manual" : "review") as ReadinessStatus,
       message:
         "E110 não é soma silenciosa de XML. Informe saldo anterior ou marque N/A com justificativa no futuro.",
+      explanation:
+        "O E110 apura o ICMS do período. Débitos e créditos são calculados a partir dos C190 (que vêm das NF-e). MAS o saldo de períodos anteriores (VL_SLD_CREDOR_ANT) e os ajustes NÃO vêm do XML — têm de ser informados manualmente. Se ficarem zerados e não forem, o valor a recolher sai errado.",
+      fix: "Informe o saldo credor anterior (campo 'saldo anterior') se a empresa tiver crédito acumulado. Ajustes de apuração também entram manualmente. Para um rascunho, fica zerado — confirme com o contador antes do envio oficial.",
     },
     {
       id: "bloco_hkg",
       label: "Blocos B/G/H/K",
       status: "complete" as ReadinessStatus,
       message: "Gerados vazios (IND_MOV=1) conforme Guia — inventário/CIAP/controle fora do rascunho.",
+      explanation:
+        "Blocos B (carga/transporte), G (CIAP/ativo), H (inventário) e K (produção/estoque) são opcionais. Neste rascunho saem vazios (IND_MOV=1) porque inventário/CIAP/controle não estão no escopo. Isso é válido para a maioria dos contribuintes.",
+      fix: "Nada a fazer para um rascunho. Se a empresa for obrigada a informar inventário (H), CIAP (G) ou controle de produção (K), esses blocos terão de ser preenchidos em etapa posterior — fora deste gerador.",
     },
   ];
 

@@ -137,6 +137,10 @@ export interface ReadinessItem {
   status: ReadinessStatus;
   message?: string;
   remediation?: string;
+  /** Explicação humana: o que é e por que importa (em PT-BR). */
+  explanation?: string;
+  /** Como resolver, em linguagem clara (em PT-BR). */
+  fix?: string;
 }
 
 export interface RequiredDataResult {
