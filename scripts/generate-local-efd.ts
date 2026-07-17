@@ -70,6 +70,10 @@ async function main() {
   const pf = filterDocumentsByPeriod(scoped.documents, start, end);
   console.log("scoped:", scoped.documents.length, "| in-period:", pf.inPeriod.length);
 
+  if (!scoped.documents.length) {
+    console.log("Nenhum documento para o CNPJ informado neste periodo/input.");
+    return;
+  }
   const sampleDoc = (pf.inPeriod[0] || scoped.documents[0]) as any;
   const isEmitter = digits(sampleDoc.emitterDoc) === digits(cnpj);
   const estab: any = {

@@ -30,6 +30,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **Golden hash atualizado** → `e487925e0ae7b5d968013c9eb2ddd94a4c84bab55ffc44bdfd2aa2ac3391fa5c` (E110=15 + 0002 ausente no demo synthetic). 266 tests pass, tsc clean.
 - **Local generation loop (scripts/generate-local-efd.ts)**: após fix, coop 03585024000490 mês 2026-06 (141 docs): E110=15 OK, **validação offline 0 issues**, **0002 ausente** (comercial). Arquivo em docs/pva/2026-06/output/EFD_03585024000490_20260601_20260630.txt (781 linhas). tsc clean (BatchStore tipado corretamente no script).
 - Deploy prod via Vercel (token exposto) → aliased https://xml-fiscal-intelligence.vercel.app (200 OK). Commit c783463 pushado (3293942..c783463).
+- **CST_ICMS 2 dígitos (commit seguinte a c783463)**: `cstIcms3`→`cstIcms` (common.ts); C170/C190 agora com CST 2 dígitos (41,40,20,90...). Golden hash → ed626c99.... 266 testes passam, tsc limpo. 202605/202606 regerados (0 issues).
 
 ### In Progress
 - Aguardando usuário: re-validar no PVA (importar o .txt local de 202606 OU gerar 202605 no site com hard-refresh `Ctrl+Shift+R`) e enviar novo erros(N).csv se houver.
@@ -44,6 +45,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **C190 official = 12 campos**: REG, CST_ICMS, CFOP, ALIQ_ICMS, VL_OPR, VL_BC_ICMS, VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, VL_IPI(11), COD_OBS(12).
 - **E110 PVA v6.1.0 = 15 campos**: REG, VL_TOT_DEBITOS, VL_AJ_DEBITOS, VL_TOT_AJ_DEBITOS, VL_ESTORNOS_CRED, VL_TOT_CREDITOS, VL_AJ_CREDITOS, VL_TOT_AJ_CREDITOS, VL_ESTORNOS_DEB, VL_SLD_CREDOR_ANT, VL_SLD_APURADO, VL_TOT_DED, VL_ICMS_RECOLHER, VL_SLD_CREDOR_TRANSPORTAR, DEB_ESP. Campo VL_SLD_CREDOR_ANT_FUT (16º) NÃO existe no PVA → removido.
 - **0002 só quando IND_ATIV (0000) = "0"** (industrial/equiparado). Coop IND_ATIV=1 (comercial/outros) → 0002 NÃO deve aparecer. Condição em builders/index.ts estava invertida (emitia p/ "1").
+- **CST_ICMS = 2 dígitos (regime normal CRT=3)**. `cstIcms3` (common.ts) padinha para 3 dígitos (`041`) → PVA rejeita (Tamanho inválido). Corrigido: `cstIcms` retorna 2 dígitos p/ CST normal (00-90) e 3 dígitos p/ CSOSN (SN: 101,102,103,201,202,203,300,400,500,900). NFe da coop usa CST (60,04,01,41,20,90) → 2 dígitos. Verificado: C190 agora `|C190|41|5906|...`.
 - E500/E520: PVA NÃO reclamou (presentes no arquivo da coop comercial) → mantido como está (não alterado).
 - Erro persistiu após 1º deploy por JS obsoleto na aba (hard-refresh). Agora validação é via arquivo local + PVA do usuário.
 - `serializeEfd` preserva todos os campos (não strip vazios) → builder field count é autoritativo.
@@ -64,10 +66,11 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
   - E110 (linha 726): PVA espera 15 campos, arquivo tinha 16 → campo extra VL_SLD_CREDOR_ANT_FUT. CORRIGIDO em c783463.
   - 0002 (linha 3): MSG_REGISTRO_NAO_DEVE_SER_INFORMADO → coop comercial (IND_ATIV=1) não deve ter 0002. CORRIGIDO em c783463.
   - PVA NÃO reclamou de E500/E520 (presentes) → mantido.
+- **erros.csv (Documentos, C:\Users\User1\Downloads\erros.csv, 16/07)** — NÃO é código atual. É geração ANTIGA (C170=34 campos c/ deslocamento PIS/COFINS, E110=16, C190 CST_ICMS=0/CFOP=000). A própria PVA confirma esperar 38 C170 (Valor Calculado=38). Reproduzido: os 2 C170 de erro são os produtos INDICADOR DE PESAGEM S3 / BASTÃO LEITOR SRS2i do CNPJ **00397330000677 (DATAMARS BRASIL TECNOLOGIA AGROPECUARIA LTDA, RS, IE 1770255840)**, período **202606**. Código atual (cc3f813) gera esses mesmos produtos com C170=38, CST_ICMS=00 (2 díg), CFOP=6102 (4 díg), VL_BC_PIS na posição correta. Arquivo limpo entregue em C:\Users\User1\Downloads\EFD_00397330000677_20260601_20260630.txt (78 lin, 2 C170, 0 issues). Também gerados EFD_03585024000490_202605/202606 (coop) na pasta Downloads. Site ao vivo verificado via /api/obligations/demo → C170 38 campos, CST 2 díg.
 - COD_REC usuário: 04601 (ICMS – Operações Próprias – RPA), UF SP.
 - 1.147 real XMLs em docs/pva/2026-06/inputs. Gerador: scripts/generate-local-efd.ts (env CNPJ, START, END, INPUT_DIR, OUT_DIR, COD_REC=04601).
 - Arquivo local gerado: docs/pva/2026-06/output/EFD_03585024000490_20260601_20260630.txt (781 linhas; E110=15 OK; 0002 ausente; validação offline 0 issues).
-- Golden hash atual: e487925e0ae7b5d968013c9eb2ddd94a4c84bab55ffc44bdfd2aa2ac3391fa5c.
+- Golden hash atual: ed626c99376ba2c8c41fea326f821c4a68423b437805abfa19d556fe35035376.
 - Lint: 6 erros pré-existentes src/app/app/*/page.tsx (fora escopo).
 - 0000 builder (builders/index.ts:237): IE populado, CPF vazio p/ CNPJ, COD_MUN presente. Header OK.
 
