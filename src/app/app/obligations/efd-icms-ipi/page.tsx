@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,8 +32,10 @@ import {
 import { getLastCompanyCnpj, setLastCompanyCnpj } from "@/lib/store/last-company";
 import {
   getCompanyByCnpj,
-  localCompanyToFiscalPatch,
+  listCompanies,
   listEstablishments,
+  localCompanyToFiscalPatch,
+  type LocalCompany,
 } from "@/lib/store/local-cadastro";
 import type { Batch, BatchStore } from "@/types";
 
@@ -100,11 +103,18 @@ export default function ObligationsEfdPage() {
     cnaeDescription: "",
   });
 
+  const [companies, setCompanies] = useState<LocalCompany[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [scopeCnpj, setScopeCnpj] = useState("");
+
   useEffect(() => {
     idbListBatches().then((list) => {
       setBatches(list);
       if (list[0]) setBatchId(list[0].id);
     });
+    void listCompanies()
+      .then((list) => setCompanies(list.filter((c) => c.active !== false)))
+      .catch(() => {});
     void import("@/modules/obligations/efd-icms-ipi/pva/workflow").then(({ loadLocalPvaRuns }) => {
       const runs = loadLocalPvaRuns();
       setPvaRuns(
@@ -256,6 +266,45 @@ export default function ObligationsEfdPage() {
     if (patch.cnpj) setLastCompanyCnpj(patch.cnpj);
   }
 
+  async function applyRegisteredCompany(companyId: string) {
+    if (!companyId) {
+      setSelectedCompanyId("");
+      setScopeCnpj("");
+      return;
+    }
+    const co = companies.find((c) => c.id === companyId);
+    if (!co) return;
+    const ests = await listEstablishments();
+    const est = ests.find((e) => e.companyId === co.id);
+    const patch = localCompanyToFiscalPatch(co, est);
+    setForm((f) => ({
+      ...f,
+      cnpj: patch.cnpj || f.cnpj,
+      companyName: patch.companyName || f.companyName,
+      ie: patch.ie || f.ie,
+      uf: patch.uf || f.uf,
+      codMun: patch.codMun || f.codMun,
+      cep: patch.cep || f.cep,
+      address: patch.address || f.address,
+      addressNumber: patch.addressNumber || f.addressNumber,
+      neighborhood: patch.neighborhood || f.neighborhood,
+      tradeName: patch.tradeName || f.tradeName,
+      accountantName: patch.accountantName || f.accountantName,
+      accountantCpf: patch.accountantCpf || f.accountantCpf,
+      accountantEmail: patch.accountantEmail || f.accountantEmail,
+      activityCode: patch.activityCode || f.activityCode,
+      profile: (patch.profile as "A" | "B" | "C") || f.profile,
+      purpose: (patch.purpose as "0" | "1") || f.purpose,
+      industrialClass: patch.industrialClass || f.industrialClass,
+      priorCreditBalance: patch.priorCreditBalance || f.priorCreditBalance,
+      cnae: patch.cnae || f.cnae,
+      cnaeDescription: patch.cnaeDescription || f.cnaeDescription,
+    }));
+    setSelectedCompanyId(companyId);
+    setScopeCnpj(co.cnpj || "");
+    if (co.cnpj) setLastCompanyCnpj(co.cnpj);
+  }
+
   async function fillDemo() {
     setDemoBusy(true);
     setResult(null);
@@ -305,6 +354,7 @@ export default function ObligationsEfdPage() {
         obligationId: "efd-icms-ipi",
         store: effectiveStore,
         establishment: form,
+        scopeCnpj: usingDemo ? undefined : scopeCnpj || undefined,
       });
       setResult(data);
       if (data.error && !data.content) {
@@ -463,6 +513,34 @@ export default function ObligationsEfdPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
+          <div className="md:col-span-2 space-y-1">
+            <Label>Empresa cadastrada (gera só as notas deste CNPJ)</Label>
+            <select
+              className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
+              value={selectedCompanyId}
+              onChange={(e) => void applyRegisteredCompany(e.target.value)}
+            >
+              <option value="">— nenhuma: usar dados manuais / lote inteiro —</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} {c.cnpj ? `· ${c.cnpj}` : ""} {c.uf ? `· ${c.uf}` : ""}
+                </option>
+              ))}
+            </select>
+            {scopeCnpj ? (
+              <p className="text-xs text-emerald-300/90">
+                Geração restrita ao CNPJ {scopeCnpj} — apenas NF-e onde ele é emitente ou
+                destinatário. O 0000 usará os dados desta empresa.
+              </p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Sem empresa selecionada, a geração usa todas as notas do lote com os dados
+                manuais. Para evitar erros de IE/CNPJ, cadastre a empresa em{" "}
+                <Link href="/app/companies" className="text-sky-300 underline">Empresas</Link> e
+                selecione-a aqui.
+              </p>
+            )}
+          </div>
           {informantHint ? (
             <div className="md:col-span-2">
               <Button type="button" variant="secondary" onClick={applyInformantFromBatch}>

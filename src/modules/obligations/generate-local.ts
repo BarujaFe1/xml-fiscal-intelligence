@@ -31,6 +31,27 @@ const emptyReadiness = (): RequiredDataResult => ({
   blockingCount: 1,
 });
 
+function onlyDigits(v?: string | null): string {
+  return (v || "").replace(/\D/g, "");
+}
+
+/**
+ * Restringe um BatchStore às notas de um único CNPJ (informante), seja como
+ * emitente (saídas/próprias) ou destinatário (entradas/terceiros). Evita que a
+ * geração misture CNPJs e gere C100 com CNPJ/IE divergentes do 0000 (causa dos
+ * erros de IE/CNPJ no PVA).
+ */
+export function filterStoreByCnpj(store: BatchStore, cnpjRaw: string): BatchStore {
+  const want = onlyDigits(cnpjRaw);
+  if (!want) return store;
+  const docs = store.documents.filter(
+    (d) => onlyDigits(d.emitterDoc) === want || onlyDigits(d.receiverDoc) === want,
+  );
+  const ids = new Set(docs.map((d) => d.id));
+  const items = store.items.filter((i) => ids.has(i.documentId));
+  return { ...store, documents: docs, items };
+}
+
 export type LocalEstablishmentInput = {
   cnpj: string;
   ie?: string;
@@ -85,6 +106,8 @@ export async function generateObligationLocal(input: {
   establishment: LocalEstablishmentInput;
   workspaceId?: string;
   extras?: Record<string, unknown>;
+  /** Restringe a geração às notas de um único CNPJ (emitente ou destinatário). */
+  scopeCnpj?: string;
 }): Promise<LocalGenerateResult> {
   if (!isObligationId(input.obligationId)) {
     return {
@@ -121,7 +144,8 @@ export async function generateObligationLocal(input: {
     };
   }
 
-  const store = input.store;
+  const store =
+    input.scopeCnpj && input.store ? filterStoreByCnpj(input.store, input.scopeCnpj) : input.store;
   const context = buildObligationContextFromBatch({
     establishment: {
       workspaceId: input.workspaceId || store?.batch.workspaceId || "ws_local",
