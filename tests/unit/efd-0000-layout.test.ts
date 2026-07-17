@@ -141,11 +141,12 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     expect(efdSanitize("a|b|c", 5)).toBe("a/b/c");
   });
 
-  it("emite C170 para NF-e com chave (filho obrigatório do C100)", async () => {
+  it("NF-e de terceiros emite C170 (detalhe); emissão própria emite C190", async () => {
     const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
     const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
+    // Amostra demo é NF-e de terceiros (emitente != informante) → C170, sem C190.
     expect(lines.some((l) => l.startsWith("|C170|"))).toBe(true);
-    expect(lines.some((l) => l.startsWith("|C190|"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("|C190|"))).toBe(false);
   });
 
   it("inclui 0005 e blocos B/G/H/K vazios na ordem do Guia", async () => {

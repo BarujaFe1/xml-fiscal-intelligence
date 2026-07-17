@@ -84,9 +84,9 @@ describe("EFD Phase 2 commons", () => {
     expect(audit.ok).toBe(true);
   });
 
-  it("SP UF plugin does not invent COD_REC", () => {
-    expect(getEfdUfPlugin("SP").suggestIcmsCodRec?.({ periodEnd: "2026-06-30" })).toBeUndefined();
-    expect(getEfdUfPlugin("SP").icmsCodRecTable).toEqual([]);
+  it("SP UF plugin suggests official RPA COD_REC (046-2) from Portaria CAT 147/2009", () => {
+    expect(getEfdUfPlugin("SP").suggestIcmsCodRec?.({ periodEnd: "2026-06-30" })).toBe("046-2");
+    expect(getEfdUfPlugin("SP").icmsCodRecTable.some((e) => e.code === "046-2")).toBe(true);
   });
 
   it("homologation grade requires contentHash", () => {

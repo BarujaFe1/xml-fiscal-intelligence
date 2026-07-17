@@ -521,6 +521,13 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       children: [],
     };
 
+    const codMod = d.model || "55";
+    // SPED/Guia 3.2.2 + PVA v6.1.0 (MSG_NFE_EMITIDA_15001_V1):
+    // NF-e de emissão própria (IND_EMIT=0) → C100 + C190 (consolidado). C170 é
+    // proibido sem os filhos C176/C177/C180/C181. NF-e de terceiros (IND_EMIT=1)
+    // ou NF modelo 01 → C100 + C170 (detalhe por item), sem C190.
+    const isOwnIssueNfe = codMod === "55" && indEmit === "0";
+
     const c190Map = new Map<
       string,
       { cst: string; cfop: string; aliq: string; vlOpr: string; vlBc: string; vlIcms: string; vlIpi: string }
@@ -530,8 +537,28 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       const cst = cstIcms(item);
       const cfop = onlyDigits(item.cfop || "").slice(0, 4);
       const aliq = moneyToFixed(item.tax.icms.pIcms);
-      // C170 detalha o item e é filho obrigatório do C100 para NF-e (Guia 3.2.2).
-      // Ausência gera "Registro filho obrigatório" e deixa 0200/0400 órfãos no PVA.
+
+      if (isOwnIssueNfe) {
+        // Emissão própria NF-e: consolidar itens em C190 (por CST/CFOP/ALIQ).
+        const key = `${cst}|${cfop}|${aliq}`;
+        const agg = c190Map.get(key) || {
+          cst,
+          cfop,
+          aliq,
+          vlOpr: "0",
+          vlBc: "0",
+          vlIcms: "0",
+          vlIpi: "0",
+        };
+        agg.vlOpr = moneyToFixed(moneyAdd(agg.vlOpr, item.totalValue));
+        agg.vlBc = moneyToFixed(moneyAdd(agg.vlBc, item.tax.icms.vBc));
+        agg.vlIcms = moneyToFixed(moneyAdd(agg.vlIcms, item.tax.icms.vIcms));
+        agg.vlIpi = moneyToFixed(moneyAdd(agg.vlIpi, item.tax.ipi.vIpi));
+        c190Map.set(key, agg);
+        continue;
+      }
+
+      // Terceiros NF-e (IND_EMIT=1) ou NF modelo 01: C170 por item.
       const itemCode = item.code || `ITEM${item.itemNumber}`;
       const c170: ObligationRecord = {
         type: "C170",
@@ -588,55 +615,41 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
         ],
       };
       c100.children!.push(c170);
-
-      const key = `${cst}|${cfop}|${aliq}`;
-      const agg = c190Map.get(key) || {
-        cst,
-        cfop,
-        aliq,
-        vlOpr: "0",
-        vlBc: "0",
-        vlIcms: "0",
-        vlIpi: "0",
-      };
-      agg.vlOpr = moneyToFixed(moneyAdd(agg.vlOpr, item.totalValue));
-      agg.vlBc = moneyToFixed(moneyAdd(agg.vlBc, item.tax.icms.vBc));
-      agg.vlIcms = moneyToFixed(moneyAdd(agg.vlIcms, item.tax.icms.vIcms));
-      agg.vlIpi = moneyToFixed(moneyAdd(agg.vlIpi, item.tax.ipi.vIpi));
-      c190Map.set(key, agg);
     }
 
-    for (const agg of c190Map.values()) {
-      // C190 (leiaute 020): REG, CST_ICMS, CFOP, ALIQ_ICMS, VL_OPR, VL_BC_ICMS,
-      // VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, VL_IPI, COD_OBS
-      c100.children!.push({
-        type: "C190",
-        fields: [
-          "C190",
-          agg.cst,
-          agg.cfop,
-          moneyToEfd(agg.aliq),
-          moneyToEfd(agg.vlOpr),
-          moneyToEfd(agg.vlBc),
-          moneyToEfd(agg.vlIcms),
-          "0", // VL_BC_ICMS_ST
-          "0", // VL_ICMS_ST
-          "0", // VL_RED_BC
-          moneyToEfd(agg.vlIpi), // VL_IPI
-          "", // COD_OBS
-        ],
-        lineage: [
-          {
-            record: "C190",
-            field: "VL_OPR",
-            value: agg.vlOpr,
-            sourceType: "derived",
-            sourceRef: d.id,
-            transformation: "sum(C170.VL_ITEM) by CST/CFOP/ALIQ",
-            ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C190`,
-          },
-        ],
-      });
+    if (isOwnIssueNfe) {
+      for (const agg of c190Map.values()) {
+        // C190 (leiaute 020): REG, CST_ICMS, CFOP, ALIQ_ICMS, VL_OPR, VL_BC_ICMS,
+        // VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, VL_IPI, COD_OBS
+        c100.children!.push({
+          type: "C190",
+          fields: [
+            "C190",
+            agg.cst,
+            agg.cfop,
+            moneyToEfd(agg.aliq),
+            moneyToEfd(agg.vlOpr),
+            moneyToEfd(agg.vlBc),
+            moneyToEfd(agg.vlIcms),
+            "0", // VL_BC_ICMS_ST
+            "0", // VL_ICMS_ST
+            "0", // VL_RED_BC
+            moneyToEfd(agg.vlIpi), // VL_IPI
+            "", // COD_OBS
+          ],
+          lineage: [
+            {
+              record: "C190",
+              field: "VL_OPR",
+              value: agg.vlOpr,
+              sourceType: "derived",
+              sourceRef: d.id,
+              transformation: "sum(C170.VL_ITEM) by CST/CFOP/ALIQ",
+              ruleId: `${EFD_ICMS_IPI_LAYOUT_2026}_C190`,
+            },
+          ],
+        });
+      }
     }
 
     out.push(c100);
@@ -663,9 +676,9 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
 
   const warnings: string[] = [
     `COD_VER=${efdIcmsIpiCodVer(context.periodEnd)} derivado do ano de DT_FIN (conferir tabela do Ato COTEPE no PVA).`,
-    "TIPO_ITEM=00 em 0200 exige confirmação do contador para uso em produção.",
+    "NF-e emissão própria (IND_EMIT=0) usa C100 + C190; NF-e terceiros/modelo 01 usam C100 + C170.",
     "IND_FRT=9 quando frete não informado — revise.",
-    "C170 detalhado por item (filho obrigatório do C100 para NF-e no Guia 3.2.2) — referencia 0200/0400.",
+    "0200/0400/0190 gerados somente quando há C170 (NF-e terceiros ou NF modelo 01).",
     "Blocos B/G/H/K gerados vazios (IND_MOV=1) — inventário/CIAP/controle não preenchidos.",
     "Arquivo destinado à pré-validação interna e importação no PVA oficial.",
   ];
@@ -721,25 +734,32 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     );
   }
 
-  bloco0.push(...build0150(context));
-  const units = new Set(
-    context.documents.flatMap((d) => d.items.map((i) => i.unit || "UN")).filter(Boolean),
-  );
-  for (const u of units) {
-    const unid = efdUnid(u);
-    bloco0.push({ type: "0190", fields: ["0190", unid, unid] });
-  }
-  bloco0.push(...build0200(context));
-  const nat0400 = build0400(context);
-  if (nat0400.length) {
-    bloco0.push(...nat0400);
-  } else {
-    warnings.push("0400 omitido — nenhuma natureza da operação (natOp) nos documentos.");
-  }
-  bloco0.push({ type: "0990", fields: ["0990", String(bloco0.length + 1)] });
-
   const cFamily = buildC100Family(context);
   const cFlat = flattenRecords(cFamily);
+  const hasC170 = cFlat.some((r) => r.type === "C170");
+
+  bloco0.push(...build0150(context));
+  if (hasC170) {
+    const units = new Set(
+      context.documents.flatMap((d) => d.items.map((i) => i.unit || "UN")).filter(Boolean),
+    );
+    for (const u of units) {
+      const unid = efdUnid(u);
+      bloco0.push({ type: "0190", fields: ["0190", unid, unid] });
+    }
+    bloco0.push(...build0200(context));
+    const nat0400 = build0400(context);
+    if (nat0400.length) {
+      bloco0.push(...nat0400);
+    } else {
+      warnings.push("0400 omitido — nenhuma natureza da operação (natOp) nos documentos.");
+    }
+  } else {
+    warnings.push(
+      "0190/0200/0400 omitidos — emissão própria de NF-e usa C190 (sem detalhe C170 por item).",
+    );
+  }
+  bloco0.push({ type: "0990", fields: ["0990", String(bloco0.length + 1)] });
   const blocoC: ObligationRecord[] = [
     { type: "C001", fields: ["C001", cFlat.length ? "0" : "1"] },
     ...cFlat,

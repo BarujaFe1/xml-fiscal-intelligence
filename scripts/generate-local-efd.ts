@@ -26,7 +26,7 @@ async function main() {
   const end = process.env.END || "2026-06-30";
   const outDir =
     process.env.OUT_DIR || path.join(process.cwd(), "docs", "pva", "2026-06", "output");
-  const codRec = process.env.COD_REC || "04601";
+  const codRec = process.env.COD_REC || "046-2";
 
   const files = readdirSync(inputDir).filter((f) => f.toLowerCase().endsWith(".xml"));
   const documents: any[] = [];

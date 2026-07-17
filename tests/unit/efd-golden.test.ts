@@ -14,7 +14,7 @@ import {
  * sample unless an INTENDED fiscal fix changes it (then update this hash
  * only after reviewing the diff against the PVA-validated behavior).
  */
-const GOLDEN_HASH = "e487925e0ae7b5d968013c9eb2ddd94a4c84bab55ffc44bdfd2aa2ac3391fa5c";
+const GOLDEN_HASH = "0c865eea5126ae057f0d4e0854bb4a61ae5af1cee60b03ff06ec5f1fa6e4e1ee";
 
 function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
   const xml = readFileSync(
@@ -68,8 +68,9 @@ describe("EFD ICMS/IPI golden (synthetic demo)", () => {
     // structural invariants the refactor must preserve (golden is industrial: 0002 after 0001)
     expect(types.slice(0, 3)).toEqual(["0000", "0001", "0005"]);
     expect(types).toContain("C100");
+    // Amostra demo é NF-e de terceiros (IND_EMIT=1) → C170 (detalhe), sem C190.
     expect(types).toContain("C170");
-    expect(types).toContain("C190");
+    expect(types).not.toContain("C190");
     // Bloco E order: E001 < E100 < E110 < E500 < E520 < E990
     const order = ["E001", "E100", "E110", "E500", "E520", "E990"].map((t) =>
       types.indexOf(t),

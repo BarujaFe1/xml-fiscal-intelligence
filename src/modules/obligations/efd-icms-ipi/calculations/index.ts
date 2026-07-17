@@ -14,9 +14,17 @@ export function buildE110FromC190(
   let debits = money("0");
   let credits = money("0");
   for (const r of cFlat) {
-    if (r.type !== "C190") continue;
-    const cfop = r.fields[2] || ""; // CFOP (C190: REG, CST_ICMS, CFOP, ...)
-    const vlIcms = r.fields[6] || "0"; // VL_ICMS
+    let cfop = "";
+    let vlIcms = "0";
+    if (r.type === "C190") {
+      cfop = r.fields[2] || ""; // C190: REG, CST_ICMS, CFOP, ...
+      vlIcms = r.fields[6] || "0"; // VL_ICMS
+    } else if (r.type === "C170") {
+      cfop = r.fields[10] || ""; // C170: ..., CST_ICMS, CFOP, ...
+      vlIcms = r.fields[14] || "0"; // VL_ICMS
+    } else {
+      continue;
+    }
     const isCredito =
       (cfop.startsWith("1") && cfop !== "1605") ||
       cfop.startsWith("2") ||
