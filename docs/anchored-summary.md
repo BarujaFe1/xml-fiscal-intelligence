@@ -1,7 +1,7 @@
 # Anchored Summary — xml-fiscal-intelligence
 
 ## Goal
-Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconciliation UX, and supporting infra (Supabase + Vercel). Deliver generation of EFD ICMS/IPI that validates clean in the official PVA: scoped by company CNPJ, excluding cancelled NF-e, arbitrary period recorte, manual COD_REC, and correct official layouts (C170 = 38 campos, C190 = 12 campos, E110 = 15 campos, 0002 somente IND_ATIV=0, CST_ICMS = N 003 (3 dígitos), leiaute 020).
+Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconciliation UX, and supporting infra (Supabase + Vercel). Deliver generation of EFD ICMS/IPI that validates clean in the official PVA: scoped by company CNPJ, excluding cancelled NF-e, arbitrary period recorte, manual COD_REC, correct official layouts (C170 = 38 campos, C190 = 12 campos, E110 = 15 campos, 0002 somente IND_ATIV=0, CST_ICMS = N 003 (3 dígitos), leiaute 020). Plus: site UI must offer "Todo o lote" period mode (uses the imported file's month) and a CRC do contabilista field so the mandatory 0100 register is generated.
 
 ## Constraints & Preferences
 - PVA real v6.1.0 is GUI-only (no CLI) → validation done manually by user via exported .csv reports.
@@ -35,10 +35,10 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **C170/C190 split por IND_EMIT — commit f3c6c15 (push + deploy prod)**: NF-e emissão própria (IND_EMIT=0) → C100+C190 (consolidado, sem C170); NF-e terceiros (IND_EMIT=1)/modelo 01 → C100+C170. **CORRIGE erros (5).csv** MSG_NFE_EMITIDA_15001_V1 (C170 proibido sem C176/C177/C180/C181). 0190/0200/0400 agora condicionais a C170 (evita órfãos). E110 agrega C170 também (créditos terceiros). Golden hash → 0c865eea.... 266 testes passam, tsc limpo.
 - **COD_REC**: coop (SP) = **046-2** (Portaria CAT 147/2009, RPA); DATAMARS (RS) = 04601 (original do usuário). SP plugin populado com tabela oficial; sugestão default 046-2. Script default COD_REC=046-2.
 - **E500/E520 (apuração IPI) + C190 VL_RED_BC — commit ba213f1 (push + deploy prod)**: E500/E520 emitidos SÓ quando há operação com IPI no período (resolve MSG_NAO_EXISTE_APURACAO_IPI, erros (6).csv — coop não é contribuinte do IPI). **C190 VL_RED_BC = VL_OPR − VL_BC_ICMS quando CST termina em 20/70** (resolve MSG_CST_ICMS_RED_BC, erros (6).csv — ex.: CST 020, VL_RED_BC=45112,40). 266 testes passam, tsc limpo. Golden hash → 83e2b2b0....
+- **Site UI: "Todo o lote" + CRC do contabilista — commit a546a1f (push + deploy prod)**. Novo modo de recorte "Todo o lote" usa batch.year/batch.month (DT_INI/DT_FIN mesmo mês → evita erro de PVA por período arbitrário ex. 2000-2050). Novo campo "CRC do contabilista" no form; ao preencher nome+CPF+CRC, o registro **0100 é gerado** (resolve MSG_REGISTRO_OBRIGATORIO). 266 testes passam, tsc limpo. Hash coop 202606 inalterado (1fbdc565... — script já tinha CRC hardcoded).
 
 ### In Progress
-- **erros (6).csv RESOLVIDO** (commit ba213f1, deploy prod): E500 removido p/ coop (sem IPI); C190 CST 020 com VL_RED_BC preenchido. Arquivo coop 202606 regerado em C:\Users\User1\Downloads (344 lin, 0 E500, 143 C190 c/ VL_RED_BC). DATAMARS 202606 mantém E500 (tem IPI).
-- Aguardando usuário: re-validar no PVA (importar EFD_03585024000490_20260601_20260630.txt de Downloads no SpedEFD) e enviar novo erros(N).csv se houver.
+- Aguardando usuário: re-validar no PVA (importar lote COMPLETO no site, escolher "Todo o lote", preencher CRC do contabilista) e enviar novo erros(N).csv se houver.
 - Security rotation (see Pending).
 
 ### Blocked
@@ -57,6 +57,8 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - **E500/E520 (apuração IPI) só quando há IPI no período.** E500/E520 são totalizadores derivados de VL_IPI dos C170/C190; empresa não contribuinte do IPI (ex.: cooperativa) NÃO os apresenta (MSG_NAO_EXISTE_APURACAO_IPI). Não depende de IND_ATIV.
 - **C190 VL_RED_BC = VL_OPR − VL_BC_ICMS quando CST termina em 20/70** (obrigatório >0; MSG_CST_ICMS_RED_BC). Ex.: CST 020, VL_OPR=58000, VL_BC=12887,60 → VL_RED_BC=45112,40.
 - Erro persistiu após 1º deploy por JS obsoleto na aba (hard-refresh). Agora validação é via arquivo local + PVA do usuário.
+- **Período deve ser mês único**: DT_INI/DT_FIN do 0000 devem ser do mesmo mês/ano (MSG_MES_ESCRITURACAO se divergirem); DT_INI ≥ 01/01/2009 (MSG_DATA_MINIMA); E116 MES_REF deve ser ≤ mês DT_INI (MSG_REGRA_MES_REF_MENOR_DT_INI_0000). O modo "Todo o lote" garante DT_INI/DT_FIN no mês do arquivo importado.
+- **0100 é obrigatório no PVA (MSG_REGISTRO_OBRIGATORIO)** e só é gerado quando há NOME+CPF+CRC do contabilista. Campo CRC adicionado ao form do site (builders/index.ts:716: `if (accountantName && accountantCpf && accountantCrc)`).
 - `serializeEfd` preserva todos os campos (não strip vazios) → builder field count é autoritativo.
 - Offline validator lê expected de getRecordDef (records.ts) → corrigir records.ts basta p/ validação.
 - PVA (GUI) não roda headless → validação definitiva é SpedEFD.exe do usuário; loop local valida offline primeiro.
@@ -68,7 +70,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 
 ## Critical Context
 - Site: https://xml-fiscal-intelligence.vercel.app (200 OK). Deploy prod via vercel CLI.
-- Branch: feat/automated-fiscal-reconciliation-ux-capture. Commits: 875a6e1, 1e3e189, 6cc2a71, 633dc22, 1c332f4 (251ffec), 3293942, c783463 (push 3293942..c783463, deploy aliased), cc3f813 (CST 2-díg REGRESSÃO), 0c17046 (CST 3-díg, erros (4).csv fix, push+deploy), f3c6c15 (C170/C190 split IND_EMIT, COD_REC SP=046-2, erros (5).csv fix, push+deploy), ba213f1 (E500 só c/ IPI, C190 VL_RED_BC p/ CST 020/070, erros (6).csv fix, push+deploy).
+- Branch: feat/automated-fiscal-reconciliation-ux-capture. Commits: 875a6e1, 1e3e189, 6cc2a71, 633dc22, 1c332f4 (251ffec), 3293942, c783463, cc3f813 (CST 2-díg REGRESSÃO), 0c17046, f3c6c15, ba213f1, 4ba866b (site≡script equivalence proof), 5811cda, a546a1f (site: "Todo o lote" + campo CRC contabilista, erros (7).csv fix, push+deploy).
 - **Secrets — DO NOT COMMIT. Revoke/rotate via dashboards.** Vercel token exposto: `vcp_38Zg…` (usado NOVAMENTE no deploy → revogar urgente). Supabase proj uaqydwvdmwrwlvznoztd; anon key `sb_publishable_tbqx8z8…` (público por design); service-role no .env.local (secret → rotacionar).
 - **Novos erros PVA (erros (3).csv, C:\Users\User1\Downloads\erros (3).csv)** — arquivo testado foi 202605 (coop 03585024000490) gerado no site:
   - E110 (linha 726): PVA espera 15 campos, arquivo tinha 16 → campo extra VL_SLD_CREDOR_ANT_FUT. CORRIGIDO em c783463.
@@ -86,6 +88,13 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
   - Coop: 141 docs todos 2026-06 (sem docs de mai/202605 no input local). Arquivo regerado EFD_03585024000490_20260601_20260630.txt (Downloads, 344 lin, 0 E500, 143 C190 c/ VL_RED_BC).
   - **GARANTIA site ≡ script**: o site gera via `generateObligationLocal` (page.tsx:491) → mesmo `buildEfdIcmsIpi`. Equivalence-check provou: `generateObligationLocal` com os XMLs do coop + config idêntica → contentHash `1fbdc56562bda038e4505a35cb5d3027084f5ea787c9ebba1f9b6016332270b5` (idêntico ao arquivo entregue). Saída idêntica p/ entradas idênticas. COD_REC no form (preenchido ou auto-sugerido p/ SP=046-2).
 - COD_REC: coop (SP) = **046-2** (RPA, Portaria CAT 147/2009; PVA exige hífen/dígito). DATAMARS (RS) = 04601 (original usuário; RS tem tabela própria). Script default COD_REC=046-2 (SP); passar 04601 p/ RS.
+- **erros (7).csv (C:\Users\User1\Downloads\erros (7).csv)** — arquivo gerado no SITE com 22 docs e período custom 2000-2050 (não é bug do gerador):
+  - E;N/A;0100;MSG_REGISTRO_OBRIGATORIO (0100 não gerado — form do site não tinha campo CRC). **RESOLVIDO em a546a1f** (campo CRC adicionado; 0100 gerado com nome+CPF+CRC).
+  - E;1;5-DT_FIN;30062050;MSG_MES_ESCRITURACAO (DT_INI/DT_FIN devem ser mesmo mês/ano).
+  - E;31;10-MES_REF;062050;MSG_REGRA_MES_REF_MENOR_DT_INI_0000 (E116 MES_REF ≤ mês DT_INI).
+  - E;1;4-DT_INI;01012000;MSG_DATA_MINIMA (DT_INI ≥ 01/01/2009).
+  - Causa raiz: período personalizado muito amplo (2000-2050) + 0100 ausente. **RESOLVIDO via "Todo o lote" (mês do arquivo) + campo CRC**. Site importou só 22 docs (não 141) → hash 33727818... ≠ validado 1fbdc565....
+- Site ≡ script confirmado (commit 4ba866b/5811cda): generateObligationLocal → mesmo buildEfdIcmsIpi; hash coop 1fbdc565... idêntico ao arquivo entregue.
 - 1.147 real XMLs em docs/pva/2026-06/inputs. Gerador: scripts/generate-local-efd.ts (env CNPJ, START, END, INPUT_DIR, OUT_DIR, COD_REC=046-2 default).
 - Arquivo local gerado: docs/pva/2026-06/output/EFD_03585024000490_20260601_20260630.txt (344 linhas; C100+C190 only; E110=15 OK; 0002 ausente; E500 ausente; validação offline 0 issues).
 - Golden hash atual: 83e2b2b09b3f91994d6b177eda1f661b7a75ad7a39189aaf4d008e35cfb322c3.
@@ -100,6 +109,7 @@ Build/operate the XML Fiscal Intelligence app: NFe/EFD processing, fiscal reconc
 - src/modules/obligations/efd-icms-ipi/serialization/index.ts — serializeEfd (preserva campos).
 - src/modules/obligations/efd-icms-ipi/from-batch.ts — filterDocumentsByPeriod.
 - src/modules/obligations/generate-local.ts — filterStoreByCnpj.
+- src/app/app/obligations/efd-icms-ipi/page.tsx — **UI site: recorte de período (modo "Todo o lote" → mês do arquivo), campo CRC do contabilista (gera 0100), gera via generateObligationLocal**.
 - scripts/generate-local-efd.ts — gerador local loop (BatchStore tipado).
 - tests/unit/efd-golden.test.ts — golden hash 83e2b2b09b3f91994d6b177eda1f661b7a75ad7a39189aaf4d008e35cfb322c3, `not.toContain("0002")`, slice(0,3)=["0000","0001","0005"], **sample é terceiros (IND_EMIT=1) → C170, não C190; sem IPI → sem E500/E520**.
 - tests/unit/efd-0000-layout.test.ts — C170=38, C190=12, **E110=15**, slice(0,3)=["0000","0001","0005"].
