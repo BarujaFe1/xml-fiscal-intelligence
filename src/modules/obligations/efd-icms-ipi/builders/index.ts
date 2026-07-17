@@ -608,7 +608,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
 
     for (const agg of c190Map.values()) {
       // C190 (leiaute 020): REG, CST_ICMS, CFOP, ALIQ_ICMS, VL_OPR, VL_BC_ICMS,
-      // VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, COD_OBS
+      // VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, VL_IPI, COD_OBS
       c100.children!.push({
         type: "C190",
         fields: [
@@ -622,6 +622,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
           "0", // VL_BC_ICMS_ST
           "0", // VL_ICMS_ST
           "0", // VL_RED_BC
+          moneyToEfd(agg.vlIpi), // VL_IPI
           "", // COD_OBS
         ],
         lineage: [
