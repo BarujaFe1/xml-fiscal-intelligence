@@ -102,13 +102,13 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
     {
       id: "accountant",
       label: "Contabilista (0100)",
-      status: (context.accountantName && context.accountantCpf && context.accountantCrc
+      status: (context.accountantName && context.accountantCpf && context.accountantCrc && context.accountantEmail
         ? "complete"
-        : "review") as ReadinessStatus,
-      message: "0100 só é gerado com NOME+CPF+CRC (CRC obrigatório no Guia)",
+        : "blocking") as ReadinessStatus,
+      message: "0100 exige NOME + CPF + CRC + E-MAIL do contabilista (todos obrigatórios no PVA)",
       explanation:
-        "O Registro 0100 traz os dados do contabilista responsável. O CRC é obrigatório no Guia — sem NOME + CPF + CRC o 0100 não é gerado e o PVA aponta ausência do responsável.",
-      fix: "Cadastre o contabilista com NOME, CPF e CRC (conselho de contabilidade). O e-mail também é obrigatório no PVA. Sem CRC, o 0100 é propositalmente omitido — informe o CRC para gerá-lo.",
+        "O Registro 0100 (dados do contabilista responsável) é obrigatório no PVA. Todos os campos NOME, CPF, CRC e E-MAIL devem ser informados — sem eles o PVA acusa 'Registro filho obrigatório não foi informado'.",
+      fix: "Preencha Nome, CPF, CRC (conselho de contabilidade) e E-mail do contabilista. O 0100 só é gerado quando os quatro campos estão preenchidos.",
     },
     {
       id: "chave_informante",
@@ -713,7 +713,7 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   }
   bloco0.push(build0005(context));
 
-  if (context.accountantName && context.accountantCpf && context.accountantCrc) {
+  if (context.accountantName && context.accountantCpf && context.accountantCrc && context.accountantEmail) {
     // 0100: REG NOME CPF CRC CNPJ CEP END NUM COMPL BAIRRO FONE FAX EMAIL COD_MUN (14)
     bloco0.push({
       type: "0100",

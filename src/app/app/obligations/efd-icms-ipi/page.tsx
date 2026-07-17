@@ -856,9 +856,10 @@ export default function ObligationsEfdPage() {
               ["address", "Endereço (0005)"],
               ["addressNumber", "Número"],
               ["neighborhood", "Bairro"],
-              ["accountantName", "Contabilista (opcional)"],
-              ["accountantCpf", "CPF contabilista"],
-              ["accountantCrc", "CRC do contabilista (gera registro 0100)"],
+              ["accountantName", "Contabilista — Nome (obrigatório p/ 0100)"],
+              ["accountantCpf", "CPF contabilista (obrigatório p/ 0100)"],
+              ["accountantCrc", "CRC do contabilista (obrigatório p/ 0100)"],
+              ["accountantEmail", "E-mail do contabilista (obrigatório p/ 0100)"],
               ["icmsCodRec", "COD_REC (E116) — código estadual do ICMS a recolher"],
             ] as const
           ).map(([key, label]) => (

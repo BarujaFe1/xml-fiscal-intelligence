@@ -41,6 +41,8 @@ function sampleContext() {
       periodEnd: "2026-03-31",
       accountantName: "Contador Demo",
       accountantCpf: "39053344705",
+      accountantCrc: "SP123456/O",
+      accountantEmail: "contador@exemplo.com.br",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
     },
     documents: [parsed.document],

@@ -69,6 +69,8 @@ describe("generateObligationLocal", () => {
         periodEnd: "2026-03-31",
         accountantName: "Contador",
         accountantCpf: "39053344705",
+        accountantCrc: "SP123456/O",
+        accountantEmail: "contador@exemplo.com.br",
       },
     });
     expect(out.error).toBeUndefined();

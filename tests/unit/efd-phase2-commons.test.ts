@@ -45,6 +45,7 @@ function sampleContext() {
       accountantName: "Contador Demo",
       accountantCpf: "39053344705",
       accountantCrc: "SP-123456/O-0",
+      accountantEmail: "contador@exemplo.com.br",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
     },
     documents: [parsed.document],
