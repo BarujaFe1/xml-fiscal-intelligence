@@ -79,6 +79,8 @@ export default function ObligationsEfdPage() {
   const [store, setStore] = useState<BatchStore | null>(null);
   const [demoStore, setDemoStore] = useState<BatchStore | null>(null);
   const [demoBusy, setDemoBusy] = useState(false);
+  const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
+  const effectiveStore = usingDemo ? demoStore : store;
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     content?: string;
@@ -131,6 +133,7 @@ export default function ObligationsEfdPage() {
     accountantName: "",
     accountantCpf: "",
     accountantEmail: "",
+    accountantCrc: "",
     industrialClass: "",
     priorCreditBalance: "",
     cnae: "",
@@ -142,9 +145,10 @@ export default function ObligationsEfdPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [scopeCnpj, setScopeCnpj] = useState("");
 
-  // Recorte de período: permite gerar de um dia, semana, mês, semestre ou intervalo
-  // arbitrário a partir de um único lote importado (ex.: o ZIP mensal).
-  type PeriodMode = "mes" | "semana" | "dia" | "semestre" | "custom";
+  // Recorte de período: permite gerar de um dia, semana, mês, semestre, o lote
+  // inteiro (mês do arquivo importado) ou intervalo arbitrário a partir de um
+  // único lote importado (ex.: o ZIP mensal).
+  type PeriodMode = "mes" | "semana" | "dia" | "semestre" | "lote" | "custom";
   const [periodMode, setPeriodMode] = useState<PeriodMode>("mes");
   const [periodMonth, setPeriodMonth] = useState("2026-04");
   const [periodRefDate, setPeriodRefDate] = useState("2026-04-15");
@@ -167,6 +171,28 @@ export default function ObligationsEfdPage() {
     } else if (periodMode === "dia") {
       start = periodRefDate;
       end = periodRefDate;
+    } else if (periodMode === "lote") {
+      // "Todo o lote": usa o mês/ano do arquivo importado (batch.year/batch.month),
+      // sem recortar por data. Garante DT_INI/DT_FIN no mesmo mês (exigência do PVA)
+      // e inclui todas as NF-e do lote. Fallback: mês da primeira NF-e do lote.
+      const by = Number(effectiveStore?.batch.year);
+      const bm = Number(effectiveStore?.batch.month);
+      if (by && bm) {
+        const bounds = periodBoundsFromYearMonth(by, bm);
+        start = bounds.periodStart;
+        end = bounds.periodEnd;
+      } else {
+        const dates = (effectiveStore?.documents || [])
+          .map((d) => (d.issueDate || "").slice(0, 10))
+          .filter(Boolean)
+          .sort();
+        if (dates[0]) {
+          const [y, m] = dates[0].split("-").map(Number);
+          const last = new Date(y, m, 0);
+          start = `${y}-${String(m).padStart(2, "0")}-01`;
+          end = `${y}-${String(m).padStart(2, "0")}-${String(last.getDate()).padStart(2, "0")}`;
+        }
+      }
     } else if (periodMode === "semana") {
       const dt = new Date(`${periodRefDate}T00:00:00`);
       const dow = (dt.getDay() + 6) % 7; // 0 = segunda
@@ -185,7 +211,7 @@ export default function ObligationsEfdPage() {
         ? f
         : { ...f, periodStart: start, periodEnd: end },
     );
-  }, [periodMode, periodMonth, periodRefDate, periodSemester, periodYear]);
+  }, [periodMode, periodMonth, periodRefDate, periodSemester, periodYear, effectiveStore]);
 
   useEffect(() => {
     idbListBatches().then((list) => {
@@ -231,6 +257,7 @@ export default function ObligationsEfdPage() {
           accountantName: patch.accountantName || f.accountantName,
           accountantCpf: patch.accountantCpf || f.accountantCpf,
           accountantEmail: patch.accountantEmail || f.accountantEmail,
+          accountantCrc: patch.accountantCrc || f.accountantCrc,
           activityCode: patch.activityCode || f.activityCode,
           profile: (patch.profile as "A" | "B" | "C") || f.profile,
           purpose: (patch.purpose as "0" | "1") || f.purpose,
@@ -302,8 +329,6 @@ export default function ObligationsEfdPage() {
     });
   }, [batchId]);
 
-  const usingDemo = batchId === DEMO_BATCH_ID && !!demoStore;
-  const effectiveStore = usingDemo ? demoStore : store;
   const docCount = useMemo(() => effectiveStore?.documents.length || 0, [effectiveStore]);
   const informantHint = useMemo(
     () => (effectiveStore ? suggestInformantFromDocuments(effectiveStore.documents) : null),
@@ -348,6 +373,7 @@ export default function ObligationsEfdPage() {
         accountantName: form.accountantName,
         accountantCpf: form.accountantCpf,
         accountantEmail: form.accountantEmail,
+        accountantCrc: form.accountantCrc,
         cnae: form.cnae,
         cnaeDescription: form.cnaeDescription,
         industrialClass: form.industrialClass,
@@ -400,6 +426,8 @@ export default function ObligationsEfdPage() {
       tradeName: patch.tradeName || f.tradeName,
       accountantName: patch.accountantName || f.accountantName,
       accountantCpf: patch.accountantCpf || f.accountantCpf,
+      accountantEmail: patch.accountantEmail || f.accountantEmail,
+      accountantCrc: patch.accountantCrc || f.accountantCrc,
     }));
     if (patch.cnpj) setLastCompanyCnpj(patch.cnpj);
   }
@@ -430,6 +458,7 @@ export default function ObligationsEfdPage() {
       accountantName: patch.accountantName || f.accountantName,
       accountantCpf: patch.accountantCpf || f.accountantCpf,
       accountantEmail: patch.accountantEmail || f.accountantEmail,
+      accountantCrc: patch.accountantCrc || f.accountantCrc,
       activityCode: patch.activityCode || f.activityCode,
       profile: (patch.profile as "A" | "B" | "C") || f.profile,
       purpose: (patch.purpose as "0" | "1") || f.purpose,
@@ -460,6 +489,7 @@ export default function ObligationsEfdPage() {
         accountantName: DEMO_ESTABLISHMENT.accountantName || "",
         accountantCpf: DEMO_ESTABLISHMENT.accountantCpf || "",
         accountantEmail: DEMO_ESTABLISHMENT.accountantEmail || "",
+        accountantCrc: DEMO_ESTABLISHMENT.accountantCrc || "",
         industrialClass: DEMO_ESTABLISHMENT.industrialClass || "",
         priorCreditBalance: DEMO_ESTABLISHMENT.priorCreditBalance || "",
         cnae: DEMO_ESTABLISHMENT.cnae || "",
@@ -721,6 +751,7 @@ export default function ObligationsEfdPage() {
                   <option value="semana">Semana</option>
                   <option value="dia">Dia</option>
                   <option value="semestre">Semestre</option>
+                  <option value="lote">Todo o lote (mês do arquivo)</option>
                   <option value="custom">De / até (personalizado)</option>
                 </select>
               </div>
@@ -792,6 +823,16 @@ export default function ObligationsEfdPage() {
                   </div>
                 </>
               )}
+              {periodMode === "lote" && (
+                <div className="space-y-1">
+                  <Label>Mês do arquivo</Label>
+                  <p className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-300">
+                    {effectiveStore?.batch.year && effectiveStore?.batch.month
+                      ? `${String(effectiveStore.batch.month).padStart(2, "0")}/${effectiveStore.batch.year}`
+                      : "usando a data da primeira NF-e do lote"}
+                  </p>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label>Período efetivo (0000)</Label>
                 <p className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-300">
@@ -817,6 +858,7 @@ export default function ObligationsEfdPage() {
               ["neighborhood", "Bairro"],
               ["accountantName", "Contabilista (opcional)"],
               ["accountantCpf", "CPF contabilista"],
+              ["accountantCrc", "CRC do contabilista (gera registro 0100)"],
               ["icmsCodRec", "COD_REC (E116) — código estadual do ICMS a recolher"],
             ] as const
           ).map(([key, label]) => (
