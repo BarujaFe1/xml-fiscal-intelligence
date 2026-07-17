@@ -86,7 +86,7 @@ export function resolveCodSit(d: ObligationContext["documents"][0]): string {
  * (00,10,20,30,40,41,50,51,60,70,90) quanto CSOSN (101,102,103,201,202,203,300,400,500,900).
  * Sempre retorna 3 dígitos (CST com zero à esquerda: 41 -> 041).
  */
-const CSOSN_VALUES = ["101", "102", "103", "201", "202", "203", "300", "400", "500", "900"];
+export const CSOSN_VALUES = ["101", "102", "103", "201", "202", "203", "300", "400", "500", "900"];
 export function cstIcms(item: ObligationContext["documents"][0]["items"][0]): string {
   const raw = onlyDigits(item.tax.icms.cst || item.tax.icms.csosn || "");
   if (!raw) return "";

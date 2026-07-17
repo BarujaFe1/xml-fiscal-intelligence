@@ -20,6 +20,7 @@ import {
   resolveIndEmit,
   resolveCodSit,
   cstIcms,
+  CSOSN_VALUES,
 } from "@/modules/obligations/efd-icms-ipi/common";
 import { buildE110FromC190, buildE116IfNeeded } from "@/modules/obligations/efd-icms-ipi/calculations";
 import { getEfdUfPlugin } from "@/modules/obligations/efd-icms-ipi/uf/registry";
@@ -486,6 +487,25 @@ function mirrorEntradaCst(cst: string): string {
   return map[cst] ?? cst;
 }
 
+// CSOSN (Simples Nacional, usado na SAÍDA pelo emitente terceiro) convertido para
+// CST (Tabela B) na ENTRADA, pois o C170/C190 de entrada exige CST sob o "enfoque
+// do declarante" (Guia Prático: optante do Simples na escrituração de ENTRADA informa
+// o CST_ICMS). Tabela padrão CSOSN->CST para adquirente regime normal:
+// isenção/não tributado (101/102/103/201/202/203/300) -> 040; ST (400/500) -> 060;
+// outras (900) -> 090. Mapa ASSISTIDO: o contador deve confirmar por operação.
+const CSOSN_TO_CST: Record<string, string> = {
+  "101": "040",
+  "102": "040",
+  "103": "040",
+  "201": "040",
+  "202": "040",
+  "203": "040",
+  "300": "040",
+  "400": "060",
+  "500": "060",
+  "900": "090",
+};
+
 // CFOPs de ENTRADA que representam movimentações sem incidência de ICMS na
 // aquisição (não são compras tributadas): retorno de depósito fechado, bonificação/
 // doação/brinde e simples faturamento. Nesses casos o adquirente, em geral, NÃO
@@ -592,6 +612,9 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       // crédito (depósito fechado/bonificação/simples faturamento), força 090.
       let cst = cstIcms(item);
       if (indEmit === "1") {
+        // NF-e de terceiros pode trazer CSOSN (emitente do Simples). Na entrada o
+        // C170 exige CST (Tabela B) — converte CSOSN->CST antes do espelhamento.
+        if (CSOSN_VALUES.includes(cst)) cst = CSOSN_TO_CST[cst] || cst;
         cst = mirrorEntradaCst(cst);
         const semCredito = ENTRADA_CFOP_CST_SEM_CREDITO[cfop];
         if (semCredito) cst = semCredito;
