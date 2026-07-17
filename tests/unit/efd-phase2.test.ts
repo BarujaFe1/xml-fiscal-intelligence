@@ -11,7 +11,7 @@ import {
 /**
  * Trava o comportamento corrigido na Fase 2:
  *  - C170 tem exatamente 38 campos (leiaute oficial 020, incluindo VL_BC_IPI/ALIQ_IPI/ALIQ*_QUANT/COD_CTA/VL_ABAT_NT).
- *  - 0002/E500/E520 (apuração IPI) só para IND_ATIV=1 (industrial), NÃO para 0.
+ *  - 0002 só para IND_ATIV=0 (industrial). E500/E520 (apuração IPI) só quando há operação com IPI.
  *  - 0150 emitido apenas para o CONTRAPARTE do C100 (sem o estabelecimento).
  */
 
@@ -76,7 +76,7 @@ describe("EFD ICMS/IPI — correções de layout/cadastro (Fase 2)", () => {
     expect(first[19]).toMatch(/^[01]$/);
   });
 
-  it("0002 só para IND_ATIV=0 (industrial); E500/E520 conforme apuração", async () => {
+  it("0002 só para IND_ATIV=0 (industrial); E500/E520 só com IPI", async () => {
     const industrial = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("0"));
     const t0 = linesOf(industrial).map((l) => l.replace(/^\|/, "").split("|")[0]);
     expect(t0).toContain("0002");
@@ -84,10 +84,8 @@ describe("EFD ICMS/IPI — correções de layout/cadastro (Fase 2)", () => {
     const comercial = await runObligationPlugin(efdIcmsIpiPlugin, makeContext("1"));
     const t1 = linesOf(comercial).map((l) => l.replace(/^\|/, "").split("|")[0]);
     expect(t1).not.toContain("0002");
-    // ordem do bloco E
-    const order = ["E001", "E100", "E110", "E500", "E520", "E990"].map((t) =>
-      t1.indexOf(t),
-    );
+    // ordem do bloco E (E500/E520 ausentes: amostra sem IPI)
+    const order = ["E001", "E100", "E110", "E990"].map((t) => t1.indexOf(t));
     for (let i = 0; i < order.length - 1; i++) {
       if (order[i] !== -1 && order[i + 1] !== -1) {
         expect(order[i]).toBeLessThan(order[i + 1]);

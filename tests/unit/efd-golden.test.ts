@@ -14,7 +14,7 @@ import {
  * sample unless an INTENDED fiscal fix changes it (then update this hash
  * only after reviewing the diff against the PVA-validated behavior).
  */
-const GOLDEN_HASH = "0c865eea5126ae057f0d4e0854bb4a61ae5af1cee60b03ff06ec5f1fa6e4e1ee";
+const GOLDEN_HASH = "83e2b2b09b3f91994d6b177eda1f661b7a75ad7a39189aaf4d008e35cfb322c3";
 
 function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
   const xml = readFileSync(
@@ -71,19 +71,17 @@ describe("EFD ICMS/IPI golden (synthetic demo)", () => {
     // Amostra demo é NF-e de terceiros (IND_EMIT=1) → C170 (detalhe), sem C190.
     expect(types).toContain("C170");
     expect(types).not.toContain("C190");
-    // Bloco E order: E001 < E100 < E110 < E500 < E520 < E990
-    const order = ["E001", "E100", "E110", "E500", "E520", "E990"].map((t) =>
-      types.indexOf(t),
-    );
+    // Bloco E order: E001 < E100 < E110 < E990 (E500/E520 só se houver IPI no período)
+    const order = ["E001", "E100", "E110", "E990"].map((t) => types.indexOf(t));
     for (let i = 0; i < order.length - 1; i++) {
       if (order[i] !== -1 && order[i + 1] !== -1) {
         expect(order[i]).toBeLessThan(order[i + 1]);
       }
     }
-    // industrial sample (IND_ATIV=1) MUST emit 0002 + E500/E520 (apuração IPI)
+    // Amostra demo (vIPI=0, não contribuinte do IPI) NÃO emite E500/E520
     expect(types).not.toContain("0002");
-    expect(types).toContain("E500");
-    expect(types).toContain("E520");
+    expect(types).not.toContain("E500");
+    expect(types).not.toContain("E520");
 
     expect(out.serialized?.contentHash).toBe(GOLDEN_HASH);
   });

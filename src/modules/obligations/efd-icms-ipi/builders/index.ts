@@ -88,8 +88,8 @@ export function detectEfdRequiredData(context: ObligationContext): RequiredDataR
       status: (context.activityCode !== undefined ? "complete" : "blocking") as ReadinessStatus,
       remediation: "Informe o indicador de atividade",
       explanation:
-        "IND_ATIV do 0000 (0 = outro, 1 = industrial). Se for 1, o sistema gera o Registro 0002 (classe industrial) e a apuração de IPI (E500/E520).",
-      fix: "Informe 0 ou 1. Industrial = 1 (gera 0002 + E500/E520); caso contrário, 0.",
+        "IND_ATIV do 0000 (0 = outro, 1 = industrial). IND_ATIV=0 gera o Registro 0002 (classe industrial). A apuração de IPI (E500/E520) é emitida automaticamente apenas quando há operação com IPI no período — empresa não contribuinte do IPI (ex.: cooperativa) não a apresenta.",
+      fix: "Informe 0 ou 1 conforme a atividade (0 = outros; 1 = industrial/equiparado).",
     },
     {
       id: "purpose",
@@ -621,6 +621,12 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
       for (const agg of c190Map.values()) {
         // C190 (leiaute 020): REG, CST_ICMS, CFOP, ALIQ_ICMS, VL_OPR, VL_BC_ICMS,
         // VL_ICMS, VL_BC_ICMS_ST, VL_ICMS_ST, VL_RED_BC, VL_IPI, COD_OBS
+        // VL_RED_BC: p/ CST de redução de base (20/70) = VL_OPR − VL_BC_ICMS (>0 obrigatório).
+        const cstSuffix = agg.cst.slice(-2);
+        const isRedBase = cstSuffix === "20" || cstSuffix === "70";
+        const vlRedBc = isRedBase
+          ? moneyToEfd(new Money(money(agg.vlOpr).scaled - money(agg.vlBc).scaled))
+          : "0";
         c100.children!.push({
           type: "C190",
           fields: [
@@ -633,7 +639,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
             moneyToEfd(agg.vlIcms),
             "0", // VL_BC_ICMS_ST
             "0", // VL_ICMS_ST
-            "0", // VL_RED_BC
+            vlRedBc, // VL_RED_BC
             moneyToEfd(agg.vlIpi), // VL_IPI
             "", // COD_OBS
           ],
@@ -793,8 +799,13 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
     e110.children = [e116];
     blocoE.push(e116);
   }
-  if (context.activityCode === "1") {
-    // Contribuinte de IPI (IND_ATIV=1, industrial) deve apresentar E500 + E520 (apuração IPI).
+  // E500/E520 = totalização da apuração do IPI, derivada dos valores de VL_IPI dos
+  // C170/C190. Só se apresenta se houver OPERAÇÃO de IPI no período. Empresa que não
+  // é contribuinte do IPI (ex.: cooperativa) NÃO deve apresentar E500 (MSG_NAO_EXISTE_APURACAO_IPI).
+  const hasIpi = context.documents.some((d) =>
+    d.items.some((i) => money(i.tax.ipi.vIpi).scaled > 0),
+  );
+  if (hasIpi) {
     // E110 (ICMS) deve vir ANTES de E500 (IPI) na hierarquia do bloco E.
     // serializeEfd escreve só registros de topo; empurramos E500 e E520 direto.
     blocoE.push({
@@ -818,9 +829,9 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
       `E116 gerado sem COD_REC — informe código estadual (UF ${context.uf || "??"}; tabela plugin vazia até fonte oficial).`,
     );
   }
-  if (context.activityCode === "1") {
+  if (!hasIpi) {
     warnings.push(
-      "IND_ATIV=1 (industrial) — 0002 + E500/E520 gerados (apuração IPI zerada; ajuste se houver crédito/débito real).",
+      "E500/E520 de IPI omitidos — nenhuma operação com IPI no período (empresa não contribuinte do IPI ou sem IPI apurável).",
     );
   }
 
