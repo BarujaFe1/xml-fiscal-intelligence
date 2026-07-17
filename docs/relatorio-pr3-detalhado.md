@@ -1,4 +1,4 @@
-# Relatório Detalhado — XML Fiscal Intelligence (PR3 + estado atual)
+﻿# Relatório Detalhado — XML Fiscal Intelligence (PR3 + estado atual)
 
 > Gerado em 16/07/2026. Idioma: pt-br.
 > Projeto: gerador EFD ICMS/IPI (SPED Fiscal) leiaute **020**, validado offline e pronto para deploy (com ressalva de autenticação — ver fim).
@@ -51,7 +51,7 @@ C:\Users\User1\Projects\xml-fiscal-intelligence
 ### PR3 — Fase 3 (refactor do `plugin.ts`)
 `plugin.ts` (~1050 linhas) dividido em módulos coesos, preservando **todos os exports públicos**:
 - `constants.ts` — `EFD_ICMS_IPI_LAYOUT_2026`, `EFD_SOURCE_ID`, `efdIcmsIpiCodVer`.
-- `common.ts` — helpers (`efdSanitize`, `onlyDigits`, `dateEfd`, `participantCode`, `resolveIndEmit`, `cstIcms3`, etc.).
+- `common.ts` — helpers (`efdSanitize`, `onlyDigits`, `dateEfd`, `participantCode`, `resolveIndEmit`, `cstIcms`, etc.).
 - `builders/index.ts` — `build0000/0005/0150/0200/0400/C100Family`, `detectEfdRequiredData`, `buildEfdIcmsIpi`.
 - `calculations/index.ts` — `buildE110FromC190`, `buildE116IfNeeded`.
 - `serialization/index.ts` — `serializeEfd`, `createEfdManifest`.
@@ -92,7 +92,7 @@ C:\Users\User1\Projects\xml-fiscal-intelligence
 C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\obligations\efd-icms-ipi\
   plugin.ts                      (thin: validateEfdBuild + efdIcmsIpiPlugin + re-exports)
   constants.ts                   (EFD_ICMS_IPI_LAYOUT_2026, EFD_SOURCE_ID, efdIcmsIpiCodVer)
-  common.ts                      (efdSanitize, onlyDigits, dateEfd, participantCode, resolveIndEmit, cstIcms3...)
+  common.ts                      (efdSanitize, onlyDigits, dateEfd, participantCode, resolveIndEmit, cstIcms...)
   builders\index.ts              (build0000/0005/0150/0200/0400/C100Family, detectEfdRequiredData, buildEfdIcmsIpi)
   calculations\index.ts          (buildE110FromC190, buildE116IfNeeded)
   serialization\index.ts         (serializeEfd, createEfdManifest)

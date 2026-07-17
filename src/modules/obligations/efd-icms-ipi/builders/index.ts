@@ -19,7 +19,7 @@ import {
   participantCode,
   resolveIndEmit,
   resolveCodSit,
-  cstIcms3,
+  cstIcms,
 } from "@/modules/obligations/efd-icms-ipi/common";
 import { buildE110FromC190, buildE116IfNeeded } from "@/modules/obligations/efd-icms-ipi/calculations";
 import { getEfdUfPlugin } from "@/modules/obligations/efd-icms-ipi/uf/registry";
@@ -527,7 +527,7 @@ function buildC100Family(ctx: ObligationContext): ObligationRecord[] {
     >();
 
     for (const item of d.items) {
-      const cst = cstIcms3(item);
+      const cst = cstIcms(item);
       const cfop = onlyDigits(item.cfop || "").slice(0, 4);
       const aliq = moneyToFixed(item.tax.icms.pIcms);
       // C170 detalha o item e é filho obrigatório do C100 para NF-e (Guia 3.2.2).
