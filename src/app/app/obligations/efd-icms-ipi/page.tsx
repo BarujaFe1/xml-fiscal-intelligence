@@ -845,7 +845,18 @@ export default function ObligationsEfdPage() {
               NF-e com data de emissão dentro do período escolhido.
             </p>
           </div>
-          {(
+          {(() => {
+            // Só campos que efetivamente BLOQUEIAM a geração recebem asterisco
+            // (ancorado em detectEfdRequiredData: profile/activity/purpose/contabilista).
+            // Razão/CNPJ vêm da empresa; IE/UF/COD_MUN/CEP/Endereço/Bairro/COD_REC são
+            // avisos de preenchimento (não bloqueiam), logo sem asterisco.
+            const BLOCKING_KEYS = new Set([
+              "accountantName",
+              "accountantCpf",
+              "accountantCrc",
+              "accountantEmail",
+            ]);
+            return (
             [
               ["companyName", "Razão social"],
               ["cnpj", "CNPJ"],
@@ -856,23 +867,31 @@ export default function ObligationsEfdPage() {
               ["address", "Endereço (0005)"],
               ["addressNumber", "Número"],
               ["neighborhood", "Bairro"],
-              ["accountantName", "Contabilista — Nome (obrigatório p/ 0100)"],
-              ["accountantCpf", "CPF contabilista (obrigatório p/ 0100)"],
-              ["accountantCrc", "CRC do contabilista (obrigatório p/ 0100)"],
-              ["accountantEmail", "E-mail do contabilista (obrigatório p/ 0100)"],
+              ["accountantName", "Contabilista — Nome"],
+              ["accountantCpf", "CPF contabilista"],
+              ["accountantCrc", "CRC do contabilista"],
+              ["accountantEmail", "E-mail do contabilista"],
               ["icmsCodRec", "COD_REC (E116) — código estadual do ICMS a recolher"],
             ] as const
-          ).map(([key, label]) => (
-            <div key={key} className="space-y-1">
-              <Label>{label}</Label>
-              <Input
-                value={form[key]}
-                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-              />
-            </div>
-          ))}
+            ).map(([key, label]) => (
+              <div key={key} className="space-y-1">
+                <Label>
+                  {label}
+                  {BLOCKING_KEYS.has(key) && (
+                    <span className="text-rose-400" aria-hidden> *</span>
+                  )}
+                </Label>
+                <Input
+                  value={form[key]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                />
+              </div>
+            ));
+          })()}
           <div className="space-y-1">
-            <Label>Perfil</Label>
+            <Label>
+              Perfil<span className="text-rose-400" aria-hidden> *</span>
+            </Label>
             <select
               className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
               value={form.profile}
@@ -884,14 +903,18 @@ export default function ObligationsEfdPage() {
             </select>
           </div>
           <div className="space-y-1">
-            <Label>IND_ATIV</Label>
+            <Label>
+              IND_ATIV<span className="text-rose-400" aria-hidden> *</span>
+            </Label>
             <Input
               value={form.activityCode}
               onChange={(e) => setForm({ ...form, activityCode: e.target.value })}
             />
           </div>
           <div className="space-y-1">
-            <Label>Finalidade (0 original / 1 substituto)</Label>
+            <Label>
+              Finalidade (0 original / 1 substituto)<span className="text-rose-400" aria-hidden> *</span>
+            </Label>
             <Input
               value={form.purpose}
               onChange={(e) => setForm({ ...form, purpose: e.target.value as "0" | "1" })}

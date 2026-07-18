@@ -5,6 +5,7 @@ import type {
   ReadinessStatus,
   LineageEntry,
   ObligationBuildResult,
+  ObligationDocumentInput,
 } from "@/modules/obligations/core/types";
 import { money, moneyAdd, moneyToEfd, moneyToFixed, Money } from "@/lib/money/decimal";
 import { EFD_ICMS_IPI_LAYOUT_2026, efdIcmsIpiCodVer } from "@/modules/obligations/efd-icms-ipi/constants";
@@ -376,6 +377,13 @@ function build0150(ctx: ObligationContext): ObligationRecord[] {
 function build0200(ctx: ObligationContext): ObligationRecord[] {
   const map = new Map<string, ObligationRecord>();
   for (const d of ctx.documents) {
+    if (!(d.documentType === "NFE" || d.model === "55")) continue;
+    // 0200 só é referenciado pelo C170 (NF-e de terceiros IND_EMIT=1 ou NF
+    // modelo 01). Emissão própria NF-e (IND_EMIT=0) consolida em C190, que não
+    // referencia COD_ITEM — logo seus itens NÃO devem gerar 0200, sob pena de
+    // 0200 órfão (EFD_ORPHAN_0200) no PVA. Espelha o filtro de build0400.
+    const indEmit = resolveIndEmit(ctx, d);
+    if (d.model === "55" && indEmit === "0") continue;
     for (const item of d.items) {
       const code = item.code || `ITEM${item.itemNumber}`;
       if (map.has(code)) continue;
@@ -477,6 +485,12 @@ function mirrorEntradaCfop(cfop: string): string {
 // substituição tributária (saída 010/030/070) tornam-se 060 (ICMS cobrado
 // anteriormente por ST) na entrada. CSOSN (Simples Nacional) não possui espelho
 // de entrada e é mantido intacto.
+// NF-e de emissão própria (IND_EMIT=0, mod55) consolida em C190 e NÃO gera C170,
+// logo seus itens/unidades/naturezas não devem alimentar 0200/0190/0400.
+function isOwnIssueDoc(ctx: ObligationContext, d: ObligationDocumentInput): boolean {
+  return (d.model || "55") === "55" && resolveIndEmit(ctx, d) === "0";
+}
+
 function mirrorEntradaCst(cst: string): string {
   if (!cst) return cst;
   const map: Record<string, string> = {
@@ -840,7 +854,10 @@ export async function buildEfdIcmsIpi(context: ObligationContext): Promise<Oblig
   bloco0.push(...build0150(context));
   if (hasC170) {
     const units = new Set(
-      context.documents.flatMap((d) => d.items.map((i) => i.unit || "UN")).filter(Boolean),
+      context.documents
+        .filter((d) => !(d.documentType === "NFE" || d.model === "55") || !isOwnIssueDoc(context, d))
+        .flatMap((d) => d.items.map((i) => i.unit || "UN"))
+        .filter(Boolean),
     );
     for (const u of units) {
       const unid = efdUnid(u);

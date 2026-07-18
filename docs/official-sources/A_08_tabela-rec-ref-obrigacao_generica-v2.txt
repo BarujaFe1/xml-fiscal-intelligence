@@ -1,0 +1,17 @@
+versão=2 COD_REC, DESC_COD, DT_INI, DT_FIM
+100013|ICMS Comunicação|01012013|
+100021|ICMS Energia Elétrica|01012013|
+100030|ICMS Transporte|01012013|
+100048|ICMS Substituição Tributária por Apuração|01012013|
+100056|ICMS Importação|01012013|
+100064|ICMS Autuação Fiscal|01012013|
+100072|ICMS Parcelamento|01012013|
+100080|ICMS Recolhimentos Especiais|01012013|
+100099|ICMS Subst. Tributária por Operação|01012013|
+100102|ICMS Consumidor Final não contribuinte outra UF por Operação|01012016|
+100110|ICMS Consumidor Final não contribuinte outra UF por Apuração|01012016|
+100129|ICMS Fundo Estadual de Combate à Pobreza por Operação|01012016|
+100137|ICMS Fundo Estadual de Combate à Pobreza por Apuração|01012016|
+150010|ICMS Dívida Ativa|01012013|
+500011|Multa p/ infração à obrigação acessória|01012013|
+600016|Taxa|01012013|

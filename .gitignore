@@ -74,6 +74,9 @@ next-env.d.ts
 .vscode
 *.swp
 
+# personal prompt artifacts (apresentação, pesquisa) — não são código do projeto
+prompts-*.md
+
 # real per-company EFD outputs (CNPJ-named) — never commit real fiscal data
 docs/pva/**/efd-*.txt
 **/companies-summary.csv

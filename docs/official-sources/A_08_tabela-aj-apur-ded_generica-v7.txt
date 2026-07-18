@@ -1,0 +1,32 @@
+versão=7 COD_AJUR, DESC_AJUR, DT_INI, DT_FIM
+UF009999|Outros débitos para ajuste de apuração ICMS para|01012009|
+UF109999|Outros débitos para ajuste de apuração ICMS ST para|01012009|
+UF019999|Estorno de créditos para ajuste de apuração ICMS para|01012009|
+UF119999|Estorno de créditos para ajuste de apuração ICMS ST para|01012009|
+UF029999|Outros créditos para ajuste de apuração ICMS para|01012009|
+UF129999|Outros créditos para ajuste de apuração ICMS ST para|01012009|
+UF039999|Estorno de débitos para ajuste de apuração ICMS para|01012009|
+UF139999|Estorno de débitos para ajuste de apuração ICMS ST para|01012009|
+UF049999|Deduções do imposto apurado na apuração ICMS para|01012009|
+UF149999|Deduções do imposto apurado na apuração ICMS ST para|01012009|
+UF059999|Débito especial de ICMS para|01012009|
+UF159999|Débito especial de ICMS ST para|01012009|
+UF099999|Controle do ICMS extra-apuração para|01012013|
+UF209999|Outros débitos para ajuste de apuração ICMS Difal/FCP para a UF|01012016|31122016
+UF219999|Estorno de créditos para ajuste de apuração ICMS Difal/FCP para a UF|01012016|31122016
+UF229999|Outros créditos para ajuste de apuração ICMS Difal/FCP para a UF|01012016|31122016
+UF239999|Estorno de débitos para ajuste de apuração ICMS Difal/FCP para a UF|01012016|31122016
+UF249999|Deduções do imposto apurado na apuração ICMS Difal/FCP para a UF|01012016|31122016
+UF259999|Débito especial de ICMS Difal/FCP para a UF|01012016|31122016
+UF209999|Outros débitos para ajuste de apuração ICMS Difal para a UF|01012017|
+UF219999|Estorno de créditos para ajuste de apuração ICMS Difal para a UF|01012017|
+UF229999|Outros créditos para ajuste de apuração ICMS Difal para a UF|01012017|
+UF239999|Estorno de débitos para ajuste de apuração ICMS Difal para a UF|01012017|
+UF249999|Deduções do imposto apurado na apuração ICMS Difal para a UF|01012017|
+UF259999|Débito especial de ICMS Difal para a UF|01012017|
+UF309999|Outros débitos para ajuste de apuração ICMS FCP para a UF XX|01012017|
+UF319999|Estorno de créditos para ajuste de apuração ICMS FCP para a UF XX|01012017|
+UF329999|Outros créditos para ajuste de apuração ICMS FCP para a UF XX|01012017|
+UF339999|Estorno de débitos para ajuste de apuração ICMS FCP para a UF XX|01012017|
+UF349999|Deduções do imposto apurado na apuração ICMS FCP para a UF XX|01012017|
+UF359999|Débito especial de ICMS FCP para a UF XX|01012017|
