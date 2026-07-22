@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_MESSAGE =
-  "Estes dados estão armazenados apenas neste navegador. Limpar os dados do navegador, trocar de dispositivo ou usar outro perfil poderá tornar os lotes indisponíveis.";
+  "Os dados deste período ficam neste dispositivo até você ativar a sincronização. Limpar os dados do navegador, trocar de dispositivo ou usar outro perfil poderá tornar os lotes indisponíveis.";
 
 export function LocalPersistenceBanner({
   className,

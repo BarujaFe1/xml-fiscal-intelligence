@@ -1,0 +1,4466 @@
+[
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/login",
+    "url": "/login",
+    "finalUrl": "http://127.0.0.1:3000/login",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/login",
+    "url": "/login/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login/__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/signup",
+    "url": "/signup",
+    "finalUrl": "http://127.0.0.1:3000/signup",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/signup",
+    "url": "/signup/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/signup/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/forgot-password",
+    "url": "/forgot-password",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/forgot-password",
+    "url": "/forgot-password/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/forgot-password/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": true,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app",
+    "url": "/app",
+    "finalUrl": "http://127.0.0.1:3000/app",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app",
+    "url": "/app/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/upload",
+    "url": "/app/upload",
+    "finalUrl": "http://127.0.0.1:3000/app/upload",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/upload",
+    "url": "/app/upload/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/upload/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/reconciliation",
+    "url": "/app/reconciliation/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/reconciliation/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/closing",
+    "url": "/app/closing",
+    "finalUrl": "http://127.0.0.1:3000/app/closing",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/closing",
+    "url": "/app/closing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/closing/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/batches",
+    "url": "/app/batches",
+    "finalUrl": "http://127.0.0.1:3000/app/batches",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/batches",
+    "url": "/app/batches/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/batches/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/companies",
+    "url": "/app/companies",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/companies",
+    "url": "/app/companies/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fcompanies%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/billing",
+    "url": "/app/billing",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/billing",
+    "url": "/app/billing/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/login?next=%2Fapp%2Fbilling%2F__notfound__",
+    "landedLogin": true,
+    "expectedLogin": true,
+    "gated": true,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "tablet",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "guest",
+    "route": "/app/settings",
+    "url": "/app/settings",
+    "finalUrl": "http://127.0.0.1:3000/app/settings",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 200,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "mobile",
+    "state": "error",
+    "route": "/app/settings",
+    "url": "/app/settings/__notfound__",
+    "finalUrl": "http://127.0.0.1:3000/app/settings/__notfound__",
+    "landedLogin": false,
+    "expectedLogin": false,
+    "gated": false,
+    "httpStatus": 404,
+    "axe": {
+      "critical": [],
+      "serious": [],
+      "moderate": [],
+      "minor": []
+    },
+    "violationCount": 0,
+    "axeError": null,
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  }
+]

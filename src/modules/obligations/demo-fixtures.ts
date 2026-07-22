@@ -21,9 +21,11 @@ export const DEMO_ESTABLISHMENT: LocalEstablishmentInput = {
   neighborhood: "BELA VISTA",
   phone: "1133334444",
   email: "demo@empresa.exemplo",
-  // Sem CRC → 0100 não é gerado (evita erro de campo obrigatório no PVA)
-  accountantName: undefined,
-  accountantCpf: undefined,
+  // 0100 é obrigatório no PVA: NOME + CPF + CRC + E-MAIL do contabilista.
+  accountantName: "CONTADOR DEMO RESPONSAVEL",
+  accountantCpf: "52998224725",
+  accountantCrc: "SP123456/O",
+  accountantEmail: "contador@empresa.exemplo",
 };
 
 export const DEMO_BATCH_ID = "__demo_sample__";

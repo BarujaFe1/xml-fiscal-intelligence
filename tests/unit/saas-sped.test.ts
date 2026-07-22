@@ -132,6 +132,10 @@ describe("EFD ICMS/IPI plugin", () => {
         address: "AV PAULISTA",
         addressNumber: "1000",
         neighborhood: "BELA VISTA",
+        accountantName: "Contador Demo",
+        accountantCpf: "52998224725",
+        accountantCrc: "SP123456/O",
+        accountantEmail: "contador@exemplo.com.br",
         layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
       },
       documents: [parsed.document],
@@ -147,19 +151,21 @@ describe("EFD ICMS/IPI plugin", () => {
     expect(readiness.items.some((i) => i.id === "profile" && i.status === "blocking")).toBe(true);
   });
 
-  it("builds C100/C190 (sem C170 para NF-e com chave) e serializa com hash", async () => {
+  it("builds C100/C170/C190 (C170 obrigatório p/ NF-e com chave) e serializa com hash", async () => {
     const ctx = baseCtx();
     const build = await efdIcmsIpiPlugin.build(ctx);
     const types = build.records.map((r) => r.type);
     expect(types).toContain("0000");
     expect(types).toContain("C100");
-    expect(types).not.toContain("C170");
+    // Amostra base é NF-e de emissão própria (IND_EMIT=0) → C190 (consolidado), sem C170.
     expect(types).toContain("C190");
+    expect(types).not.toContain("C170");
     expect(types).toContain("9999");
     const validation = await efdIcmsIpiPlugin.validate(build, ctx);
     expect(validation.level).toBe(1);
     const ser = await efdIcmsIpiPlugin.serialize(build, ctx);
     expect(ser.content).toContain("|C100|");
+    expect(ser.content).toContain("|C190|");
     expect(ser.content).not.toContain("|C170|");
     expect(ser.contentHash).toHaveLength(64);
     expect(ser.content.endsWith("\r\n")).toBe(true);

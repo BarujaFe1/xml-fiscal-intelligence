@@ -1,0 +1,64 @@
+﻿
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/Users/User1/Projects/xml-fiscal-intelligence[39m
+
+ [31mÔØ»[39m tests/unit/pva-report-parser.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m parses a block-style PVA error with structured fields[39m[32m 9[2mms[22m[39m
+     [32mÔ£ô[39m parses an inline single-line error[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m parses the 'E001 - Bloco 0 - Registro 0000' shape and the block letter[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m keeps warnings and unrecognized lines without dropping them[39m[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns empty for blank input[32m 0[2mms[22m[39m
+     [32mÔ£ô[39m inferPvaStatus reflects errors/warnings[32m 0[2mms[22m[39m
+node.exe : 
+No C:\Program Files\nodejs\npx.ps1:29 caractere:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39m[1m[41m Failed Tests 2 [49m[22m[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39m
+
+[41m[1m FAIL [22m[49m tests/unit/pva-report-parser.test.ts[2m > [22mparsePvaReportText[2m > [22mparses a 
+block-style PVA error with structured fields
+[31m[1mAssertionError[22m: expected '202606 Mensagem: O per├¡odo informado ÔÇª' to be '202606' // Object.is 
+equality[39m
+
+Expected: [32m"202606"[39m
+Received: [31m"202606[7m Mensagem: O per├¡odo informado ├® incompat├¡vel com a data de escritura├º├úo.[27m"[39m
+
+[36m [2mÔØ»[22m tests/unit/pva-report-parser.test.ts:[2m21:29[22m[39m
+    [90m 19|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mline)[33m.[39m[34mtoBe[39m([32m"1"[39m)[33m;[39m
+    [90m 20|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mrule)[33m.[39m[34mtoBe[39m([32m"E001"[39m)[33m;[39m
+    [90m 21|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mvalue)[33m.[39m[34mtoBe[39m([32m"202606"[39m)[33m;[39m
+    [90m   |[39m                             [31m^[39m
+    [90m 22|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mmessage)[33m.[39m[34mtoMatch[39m([36m/per├¡odo 
+informado/i[39m)[33m;[39m
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m tests/unit/pva-report-parser.test.ts[2m > [22mparsePvaReportText[2m > [22mkeeps warnings 
+and unrecognized lines without dropping them
+[31m[1mAssertionError[22m: expected 1 to be greater than or equal to 2[39m
+[36m [2mÔØ»[22m tests/unit/pva-report-parser.test.ts:[2m53:27[22m[39m
+    [90m 51|[39m Linha aleat├│ria sem padr├úo conhecido`[39m[33m;[39m
+    [90m 52|[39m     [35mconst[39m issues [33m=[39m [34mparsePvaReportText[39m(report)[33m;[39m
+    [90m 53|[39m     
+[34mexpect[39m(issues[33m.[39mlength)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m2[39m)[33m;[39m
+    [90m   |[39m                           [31m^[39m
+    [90m 54|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mseverity)[33m.[39m[34mtoBe[39m([32m"warning"[39m)[33m;[39m
+    [90m 55|[39m     
+[34mexpect[39m(issues[[34m0[39m][33m.[39mrecordType)[33m.[39m[34mtoBe[39m([32m"C100"[39m)[33m;[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 14:44:08
+[2m   Duration [22m 277ms[2m (transform 40ms, setup 0ms, import 59ms, tests 14ms, environment 0ms)[22m
+

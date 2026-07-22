@@ -1,0 +1,171 @@
+﻿node.exe : Vercel CLI 54.21.1 (Node.js 22.14.0)
+No C:\Program Files\nodejs\npx.ps1:29 caractere:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Vercel CLI 54.21.1 (Node.js 22.14.0):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Retrieving projectÔÇª
+Deploying barujafe1s-projects/xml-fiscal-intelligence
+Uploading [--------------------] (0.0B/317.6KB)
+Uploading [=====---------------] (91.3KB/317.6KB)
+Uploading [==========----------] (171.3KB/317.6KB)
+Uploading [===============-----] (251.3KB/317.6KB)
+Uploading [====================] (317.6KB/317.6KB)
+  Inspect         https://vercel.com/barujafe1s-projects/xml-fiscal-intelligence/AJiEHzteCZCXYUNMvoBVNzRFqTv6
+  Production      https://xml-fiscal-intelligence-jdk4z9zst-barujafe1s-projects.vercel.app
+BuildingÔÇª
+BuildingÔÇª
+Running build in Washington, D.C., USA (East) ÔÇô iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Downloading 552 deployment files...
+Restored build cache from previous deployment (Gs2TcxwTNurRZU8JLuT5SXUACo9q)
+Running "vercel build"
+Vercel CLI 56.2.0
+Installing dependencies...
+up to date in 1s
+193 packages are looking for funding
+run `npm fund` for details
+Detected Next.js version: 16.2.10
+Running "npm run build"
+> xml-fiscal-intelligence@0.1.0 build
+> next build
+Applying modifyConfig from Vercel
+Ôû▓ Next.js 16.2.10 (Turbopack)
+- Experiments (use with caution):
+┬À serverActions
+Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./next.config.ts
+Encountered unexpected file in NFT list
+A file was traced that indicates that the whole project was traced unintentionally. Somewhere in the import trace 
+below, there are:
+- filesystem operations (like path.join, path.resolve or fs.readFile), or
+- very dynamic requires (like require('./' + foo)).
+To resolve this, you can
+- remove them if possible, or
+- only use them in development, or
+- make sure they are statically scoped to some subfolder: path.join(process.cwd(), 'data', bar), or
+- add ignore comments: path.join(/*turbopackIgnore: true*/ process.cwd(), bar)
+Import trace:
+App Route:
+./next.config.ts
+./src/lib/storage/provider.ts
+./src/app/api/obligations/efd-icms-ipi/generate/route.ts
+Ô£ô Compiled successfully in 35.0s
+Running TypeScript ...
+Finished TypeScript in 16.7s ...
+Collecting page data using 1 worker ...
+Generating static pages using 1 worker (0/62) ...
+Generating static pages using 1 worker (15/62)
+Generating static pages using 1 worker (30/62)
+Generating static pages using 1 worker (46/62)
+Ô£ô Generating static pages using 1 worker (62/62) in 1287ms
+Finalizing page optimization ...
+Running onBuildComplete from Vercel
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/batches
+Ôö£ ãÆ /api/batches/[id]
+Ôö£ ãÆ /api/batches/[id]/documents/[documentId]
+Ôö£ ãÆ /api/batches/[id]/export
+Ôö£ ãÆ /api/batches/import
+Ôö£ ãÆ /api/batches/migrate
+Ôö£ ãÆ /api/batches/migrate/snapshot
+Ôö£ ãÆ /api/billing/checkout
+Ôö£ ãÆ /api/billing/subscription
+Ôö£ ãÆ /api/billing/webhook
+Ôö£ ãÆ /api/closing
+Ôö£ ãÆ /api/companies/sync
+Ôö£ ãÆ /api/health
+Ôö£ ãÆ /api/obligations/[id]/generate
+Ôö£ ãÆ /api/obligations/demo
+Ôö£ ãÆ /api/obligations/demo/sample
+Ôö£ ãÆ /api/obligations/efd-icms-ipi/generate
+Ôö£ ãÆ /api/obligations/efd-icms-ipi/pva
+Ôö£ ãÆ /api/ready
+Ôö£ ãÆ /api/reinf/submit
+Ôö£ ãÆ /api/search
+Ôö£ ãÆ /api/storage/local
+Ôö£ ãÆ /api/v1/commercial-matrix
+Ôö£ ãÆ /api/v1/evidence
+Ôö£ ãÆ /api/v1/obligations
+Ôö£ ãÆ /api/v1/openapi.json
+Ôö£ ãÆ /api/v1/status
+Ôö£ Ôùï /app
+Ôö£ Ôùï /app/admin
+Ôö£ Ôùï /app/ai
+Ôö£ Ôùï /app/assurance
+Ôö£ Ôùï /app/audit
+Ôö£ Ôùï /app/batches
+Ôö£ ãÆ /app/batches/[id]
+Ôö£ ãÆ /app/batches/[id]/audit
+Ôö£ ãÆ /app/batches/[id]/compare
+Ôö£ ãÆ /app/batches/[id]/documents
+Ôö£ ãÆ /app/batches/[id]/documents/[documentId]
+Ôö£ ãÆ /app/batches/[id]/exports
+Ôö£ ãÆ /app/batches/[id]/fields
+Ôö£ ãÆ /app/batches/[id]/items
+Ôö£ ãÆ /app/batches/[id]/parties
+Ôö£ ãÆ /app/batches/[id]/quality
+Ôö£ ãÆ /app/batches/[id]/relationships
+Ôö£ ãÆ /app/batches/[id]/sped
+Ôö£ Ôùï /app/billing
+Ôö£ Ôùï /app/closing
+Ôö£ Ôùï /app/companies
+Ôö£ Ôùï /app/compliance
+Ôö£ Ôùï /app/continuous-ops
+Ôö£ Ôùï /app/contrib
+Ôö£ Ôùï /app/ecf
+Ôö£ Ôùï /app/ecosystem
+Ôö£ Ôùï /app/enterprise
+Ôö£ Ôùï /app/governance
+Ôö£ Ôùï /app/growth
+Ôö£ Ôùï /app/homologation
+Ôö£ Ôùï /app/ledger
+Ôö£ Ôùï /app/m
+Ôö£ Ôùï /app/masters
+Ôö£ Ôùï /app/migrate
+Ôö£ Ôùï /app/obligations
+Ôö£ Ôùï /app/obligations/demo
+Ôö£ Ôùï /app/obligations/ecd
+Ôö£ Ôùï /app/obligations/ecf
+Ôö£ Ôùï /app/obligations/efd-contribuicoes
+Ôö£ Ôùï /app/obligations/efd-icms-ipi
+Ôö£ Ôùï /app/obligations/efd-icms-ipi/pva
+Ôö£ Ôùï /app/obligations/reinf
+Ôö£ Ôùï /app/ops
+Ôö£ Ôùï /app/reconciliation
+Ôö£ Ôùï /app/reinf
+Ôö£ Ôùï /app/relationships
+Ôö£ Ôùï /app/rtc
+Ôö£ Ôùï /app/scale
+Ôö£ Ôùï /app/search
+Ôö£ Ôùï /app/settings
+Ôö£ Ôùï /app/sped
+Ôö£ Ôùï /app/upload
+Ôö£ Ôùï /app/validators-lab
+Ôö£ ãÆ /auth/callback
+Ôö£ Ôùï /forgot-password
+Ôö£ Ôùï /login
+Ôö£ Ôùï /privacidade
+Ôö£ Ôùï /reset-password
+Ôö£ Ôùï /signup
+Ôöö Ôùï /termos
+ãÆ Proxy (Middleware)
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+Build Completed in /vercel/output [59s]
+Deploying outputs...
+Warning: Provided `memory` setting in `vercel.json` is ignored on Active CPU billing. You can safely remove this 
+setting from your configuration. Learn more: https://vercel.com/docs/fluid-compute/pricing
+Deployment completed
+Creating build cache...
+[2K[1A[2K[G  Production      https://xml-fiscal-intelligence-jdk4z9zst-barujafe1s-projects.vercel.app
+CompletingÔÇª
+Ôû▓ Aliased         https://xml-fiscal-intelligence.vercel.app
+
+Ô£ô Ready in 2m
+https://xml-fiscal-intelligence-jdk4z9zst-barujafe1s-projects.vercel.app

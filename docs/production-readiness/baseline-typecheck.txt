@@ -1,0 +1,8 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 typecheck
+> tsc --noEmit
+
+
+> xml-fiscal-intelligence@0.1.0 typecheck
+> tsc --noEmit
+

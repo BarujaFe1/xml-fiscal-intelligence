@@ -3,6 +3,8 @@
  * Schema is schemaless — new optional fields appear on upsert; old records still load.
  */
 
+import type { EstablishmentFiscalInput } from "@/modules/obligations/efd-icms-ipi/from-batch";
+
 const DB = "xfi_cadastro_v1";
 const DB_VERSION = 2;
 const CO = "companies";
@@ -30,7 +32,22 @@ export type LocalCompany = {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  /** IND_ATIV (EFD 0000): "0"=não industrial, "1"=industrial. */
+  activityCode?: string;
+  /** Perfil SPED A/B/C (EFD 0000). */
+  profile?: "A" | "B" | "C";
+  /** Finalidade COD_FIN (EFD 0000): "0"=normal, "1"=retificadora. */
+  purpose?: "0" | "1";
+  /** CLAS_ESTAB_IND (EFD 0002) — só p/ IND_ATIV=1. */
+  industrialClass?: string;
+  /** Saldo credor anterior informado manualmente (EFD E110). */
+  priorCreditBalance?: string;
+  cnae?: string;
+  cnaeDescription?: string;
   source?: CompanySource;
+  /** Soft-delete flag — inativação mantém o histórico local. */
+  active?: boolean;
   createdAt: string;
   updatedAt?: string;
 };
@@ -68,6 +85,14 @@ export type CompanyFiscalPatch = {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  activityCode?: string;
+  profile?: "A" | "B" | "C";
+  purpose?: "0" | "1";
+  industrialClass?: string;
+  priorCreditBalance?: string;
+  cnae?: string;
+  cnaeDescription?: string;
 };
 
 function onlyDigits(v?: string) {
@@ -103,6 +128,14 @@ export function mergeCompanyFields(
     "accountantName",
     "accountantCpf",
     "accountantCrc",
+    "accountantEmail",
+    "activityCode",
+    "profile",
+    "purpose",
+    "industrialClass",
+    "priorCreditBalance",
+    "cnae",
+    "cnaeDescription",
     "source",
   ] as const;
   for (const k of keys) {
@@ -148,6 +181,69 @@ export function localCompanyToFiscalPatch(
     accountantName: c.accountantName,
     accountantCpf: c.accountantCpf,
     accountantCrc: c.accountantCrc,
+    accountantEmail: c.accountantEmail,
+    activityCode: c.activityCode,
+    profile: c.profile,
+    purpose: c.purpose,
+    industrialClass: c.industrialClass,
+    priorCreditBalance: c.priorCreditBalance,
+    cnae: c.cnae,
+    cnaeDescription: c.cnaeDescription,
+  };
+}
+
+export type CadastroPeriod = {
+  periodStart: string;
+  periodEnd: string;
+  layoutVersion: string;
+};
+
+/**
+ * Monta o input fiscal do EFD a partir do cadastro local (sem inventar dados).
+ * Permite que `buildObligationContextFromBatch` leia cadastro real em vez de fixture.
+ */
+export function cadastroToEstablishmentFiscalInput(
+  c: LocalCompany,
+  est?: LocalEstablishment | null,
+  period: CadastroPeriod = {
+    periodStart: "",
+    periodEnd: "",
+    layoutVersion: "EFD_ICMS_IPI_2026_DRAFT",
+  },
+): EstablishmentFiscalInput {
+  const f = localCompanyToFiscalPatch(c, est);
+  return {
+    workspaceId: c.id,
+    companyId: c.id,
+    establishmentId: est?.id ?? c.id,
+    cnpj: f.cnpj ?? "",
+    ie: f.ie,
+    uf: f.uf || est?.uf || "SP",
+    companyName: f.companyName || c.name,
+    profile: f.profile ?? "A",
+    activityCode: f.activityCode ?? "0",
+    purpose: f.purpose ?? "0",
+    periodStart: period.periodStart,
+    periodEnd: period.periodEnd,
+    codMun: f.codMun,
+    tradeName: f.tradeName,
+    cep: f.cep,
+    address: f.address,
+    addressNumber: f.addressNumber,
+    addressCompl: f.addressCompl,
+    neighborhood: f.neighborhood,
+    phone: f.phone,
+    email: f.email,
+    accountantName: f.accountantName,
+    accountantCpf: f.accountantCpf,
+    accountantCrc: f.accountantCrc,
+    accountantEmail: f.accountantEmail,
+    cnae: f.cnae,
+    cnaeDescription: f.cnaeDescription,
+    industrialClass: f.industrialClass,
+    icmsCodRec: undefined,
+    priorCreditBalance: f.priorCreditBalance,
+    layoutVersion: period.layoutVersion,
   };
 }
 

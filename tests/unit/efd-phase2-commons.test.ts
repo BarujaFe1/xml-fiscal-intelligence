@@ -45,6 +45,7 @@ function sampleContext() {
       accountantName: "Contador Demo",
       accountantCpf: "39053344705",
       accountantCrc: "SP-123456/O-0",
+      accountantEmail: "contador@exemplo.com.br",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
     },
     documents: [parsed.document],
@@ -84,9 +85,9 @@ describe("EFD Phase 2 commons", () => {
     expect(audit.ok).toBe(true);
   });
 
-  it("SP UF plugin does not invent COD_REC", () => {
-    expect(getEfdUfPlugin("SP").suggestIcmsCodRec?.({ periodEnd: "2026-06-30" })).toBeUndefined();
-    expect(getEfdUfPlugin("SP").icmsCodRecTable).toEqual([]);
+  it("SP UF plugin suggests official RPA COD_REC (046-2) from Portaria CAT 147/2009", () => {
+    expect(getEfdUfPlugin("SP").suggestIcmsCodRec?.({ periodEnd: "2026-06-30" })).toBe("046-2");
+    expect(getEfdUfPlugin("SP").icmsCodRecTable.some((e) => e.code === "046-2")).toBe(true);
   });
 
   it("homologation grade requires contentHash", () => {

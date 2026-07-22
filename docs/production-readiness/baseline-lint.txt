@@ -1,0 +1,169 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 lint
+> eslint
+
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\e2e\visual\visual.spec.ts
+  45:90  warning  'baseURL' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\scripts\screenshots-all.mjs
+   28:36  warning  'existsSync' is defined but never used                                         @typescript-eslint/no-unused-vars
+   28:48  warning  'readFileSync' is defined but never used                                       @typescript-eslint/no-unused-vars
+  173:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  176:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  198:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  230:3   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  235:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  248:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  371:3   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  376:3   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  381:3   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\scripts\seed-demo.mjs
+  340:3  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\closing\page.tsx
+  32:17  warning  'setEstId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\continuous-ops\page.tsx
+  32:3  warning  'createNtInboxItem' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\contrib\page.tsx
+  75:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\contrib\page.tsx:75:10
+  73 |
+  74 |   useEffect(() => {
+> 75 |     void refresh();
+     |          ^^^^^^^ Avoid calling setState() directly within an effect
+  76 |   }, [refresh]);
+  77 |
+  78 |   async function addPair() {  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\ecf\page.tsx
+  76:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\ecf\page.tsx:76:10
+  74 |
+  75 |   useEffect(() => {
+> 76 |     void refresh();
+     |          ^^^^^^^ Avoid calling setState() directly within an effect
+  77 |   }, [refresh]);
+  78 |
+  79 |   const orphans = useMemo(() => listOrphanAccounts(accounts, maps), [accounts, maps]);  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\homologation\page.tsx
+  96:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\homologation\page.tsx:96:5
+  94 |   useEffect(() => {
+  95 |     // S├│ no client ÔÇö Date.now/random no render quebrava hydration (#418)
+> 96 |     setRotationHint(proposeApiKeyRotation().suggestedEnvValuePlaceholder.slice(0, 24));
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  97 |   }, []);
+  98 |
+  99 |   async function createDraft() {  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\ledger\page.tsx
+  69:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\ledger\page.tsx:69:10
+  67 |
+  68 |   useEffect(() => {
+> 69 |     void refresh();
+     |          ^^^^^^^ Avoid calling setState() directly within an effect
+  70 |   }, [refresh]);
+  71 |
+  72 |   async function importChart() {  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\ops\page.tsx
+  13:3  warning  'listEvidence' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\rtc\page.tsx
+  55:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\rtc\page.tsx:55:10
+  53 |
+  54 |   useEffect(() => {
+> 55 |     void refresh();
+     |          ^^^^^^^ Avoid calling setState() directly within an effect
+  56 |   }, [refresh]);
+  57 |
+  58 |   const profile = resolveRtcPeriodSplit(periodKey);  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\scale\page.tsx
+  89:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\app\app\scale\page.tsx:89:5
+  87 |
+  88 |   useEffect(() => {
+> 89 |     setSecretsMode(resolveSecretsManagerMode());
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  90 |     setBillingLiveFlag(billingEnterpriseEnabled());
+  91 |     void (async () => {
+  92 |       const ws =  react-hooks/set-state-in-effect
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\components\layout\app-sidebar.tsx
+  22:3  warning  'HardDrive' is defined but never used  @typescript-eslint/no-unused-vars
+  23:3  warning  'Globe' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\lib\store\scale.ts
+  95:23  warning  '_id' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\accounting\books.ts
+  2:29  warning  'JournalEntry' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\continuous-ops\erp\adapter.ts
+  8:8  warning  'ErpImportPreview' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\obligations\registry.ts
+   9:3  warning  'OBLIGATION_LABELS' is defined but never used  @typescript-eslint/no-unused-vars
+  10:3  warning  'OBLIGATION_BLURBS' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\repositories\indexeddb-batch-repository.ts
+  14:16  warning  '_workspaceId' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\User1\Projects\xml-fiscal-intelligence\src\modules\repositories\supabase-batch-repository.ts
+   4:22  warning  'BatchStore' is defined but never used    @typescript-eslint/no-unused-vars
+  22:20  warning  '_workspaceId' is defined but never used  @typescript-eslint/no-unused-vars
+  22:34  warning  '_batchId' is defined but never used      @typescript-eslint/no-unused-vars
+
+Ô£û 33 problems (6 errors, 27 warnings)
+  0 errors and 10 warnings potentially fixable with the `--fix` option.
+

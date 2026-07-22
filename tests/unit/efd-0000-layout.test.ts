@@ -11,7 +11,7 @@ import {
 } from "@/modules/obligations";
 import { periodBoundsFromYearMonth } from "@/modules/obligations/period";
 
-/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI 3.2.3. */
+/** Contagem oficial de campos (incluindo REG) — Guia Prático EFD ICMS/IPI 3.2.2 / leiaute 020. */
 const EXPECTED_FIELD_COUNTS: Record<string, number> = {
   "0000": 15,
   "0001": 2,
@@ -81,6 +81,10 @@ function sampleContext(periodStart = "2026-06-01", periodEnd = "2026-06-30") {
       address: "AV PAULISTA",
       addressNumber: "1000",
       neighborhood: "BELA VISTA",
+      accountantName: "Contador Demo",
+      accountantCpf: "52998224725",
+      accountantCrc: "SP123456/O",
+      accountantEmail: "contador@exemplo.com.br",
       layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
     },
     documents: [parsed.document],
@@ -141,11 +145,12 @@ describe("EFD ICMS/IPI field counts vs Guia Prático", () => {
     expect(efdSanitize("a|b|c", 5)).toBe("a/b/c");
   });
 
-  it("omite C170 para NF-e com chave (facultativo)", async () => {
+  it("NF-e de terceiros emite C170 (detalhe); emissão própria emite C190", async () => {
     const out = await runObligationPlugin(efdIcmsIpiPlugin, sampleContext());
     const lines = (out.serialized?.content || "").split(/\r?\n/).filter(Boolean);
-    expect(lines.some((l) => l.startsWith("|C170|"))).toBe(false);
-    expect(lines.some((l) => l.startsWith("|C190|"))).toBe(true);
+    // Amostra demo é NF-e de terceiros (emitente != informante) → C170, sem C190.
+    expect(lines.some((l) => l.startsWith("|C170|"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("|C190|"))).toBe(false);
   });
 
   it("inclui 0005 e blocos B/G/H/K vazios na ordem do Guia", async () => {

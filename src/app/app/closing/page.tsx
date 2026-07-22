@@ -121,16 +121,16 @@ export default function ClosingCockpitPage() {
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1">
-            <Label>Empresa</Label>
-            <Input value={companyLabel} onChange={(e) => setCompanyLabel(e.target.value)} />
+            <Label htmlFor="closing-company">Empresa</Label>
+            <Input id="closing-company" value={companyLabel} onChange={(e) => setCompanyLabel(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label>Estabelecimento</Label>
-            <Input value={estLabel} onChange={(e) => setEstLabel(e.target.value)} />
+            <Label htmlFor="closing-establishment">Estabelecimento</Label>
+            <Input id="closing-establishment" value={estLabel} onChange={(e) => setEstLabel(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label>Competência (YYYY-MM ou YYYY)</Label>
-            <Input value={periodKey} onChange={(e) => setPeriodKey(e.target.value)} />
+            <Label htmlFor="closing-period">Competência (YYYY-MM ou YYYY)</Label>
+            <Input id="closing-period" value={periodKey} onChange={(e) => setPeriodKey(e.target.value)} />
           </div>
           <div className="flex items-end">
             <Button type="button" disabled={busy} onClick={() => void createCard()}>

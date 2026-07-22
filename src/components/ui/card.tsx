@@ -32,11 +32,14 @@ export function CardHeader({
 export function CardTitle({
   className,
   children,
+  level = 2,
 }: {
   className?: string;
   children: React.ReactNode;
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
 }) {
-  return <h3 className={cn("text-base font-semibold tracking-tight text-slate-50", className)}>{children}</h3>;
+  const Tag = `h${level}` as const;
+  return <Tag className={cn("text-base font-semibold tracking-tight text-slate-50", className)}>{children}</Tag>;
 }
 
 export function CardDescription({

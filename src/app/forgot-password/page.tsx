@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!configured) {
-      toast.message("Recuperação indisponível — configure Supabase Auth.");
+      toast.message("Recuperação indisponível — configure a autenticação.");
       return;
     }
     setLoading(true);
@@ -38,14 +38,14 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950">
-      <Card className="w-full max-w-md bg-slate-900/60">
+    <main className="min-h-screen flex items-center justify-center p-6 bg-slate-950">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Recuperar senha</CardTitle>
+          <CardTitle level={1}>Recuperar senha</CardTitle>
           <CardDescription>
             {configured
-              ? "Enviaremos um link seguro por e-mail (Supabase Auth)."
-              : "Supabase não configurado — recuperação desabilitada."}
+              ? "Enviaremos um link seguro para o seu e-mail."
+              : "Recuperação indisponível no momento."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,10 +60,10 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
                 />
               </div>
               <Button type="submit" disabled={loading || !configured} className="w-full">
@@ -78,6 +78,6 @@ export default function ForgotPasswordPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

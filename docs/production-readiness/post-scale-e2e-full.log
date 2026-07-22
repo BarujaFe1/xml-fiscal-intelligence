@@ -1,0 +1,39 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 test:e2e
+> playwright test
+
+
+Running 30 tests using 3 workers
+
+  Ô£ô   1 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ /login has no critical axe violations (920ms)
+  Ô£ô   2 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ / has no critical axe violations (1.0s)
+  Ô£ô   3 [chromium] ÔÇ║ e2e\a11y.spec.ts:6:9 ÔÇ║ a11y smoke ÔÇ║ /app has no critical axe violations (1.1s)
+  Ô£ô   4 [chromium] ÔÇ║ e2e\smoke.spec.ts:4:7 ÔÇ║ smoke SaaS honesty ÔÇ║ landing is honest and links to demo/signup (303ms)
+  Ô£ô   5 [chromium] ÔÇ║ e2e\smoke.spec.ts:13:7 ÔÇ║ smoke SaaS honesty ÔÇ║ app overview shows local persistence posture (404ms)
+  Ô£ô   8 [chromium] ÔÇ║ e2e\smoke.spec.ts:41:7 ÔÇ║ smoke SaaS honesty ÔÇ║ health endpoint responds (41ms)
+  Ô£ô   6 [chromium] ÔÇ║ e2e\smoke.spec.ts:19:7 ÔÇ║ smoke SaaS honesty ÔÇ║ billing gated by auth when Supabase configured; demo path is honest (339ms)
+  Ô£ô   7 [chromium] ÔÇ║ e2e\smoke.spec.ts:31:7 ÔÇ║ smoke SaaS honesty ÔÇ║ EFD page: auth gate or honesty banner with PVA (331ms)
+  Ô£ô   9 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/continuous-ops renders without crash (283ms)
+  Ô£ô  11 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/enterprise renders without crash (335ms)
+  Ô£ô  10 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/governance renders without crash (400ms)
+  Ô£ô  13 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/ecosystem renders without crash (314ms)
+  Ô£ô  12 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/scale renders without crash (406ms)
+  Ô£ô  14 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/compliance renders without crash (382ms)
+  Ô£ô  15 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/growth renders without crash (439ms)
+  Ô£ô  17 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/m renders without crash (347ms)
+  Ô£ô  16 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/assurance renders without crash (463ms)
+  Ô£ô  18 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/homologation renders without crash (338ms)
+  Ô£ô  19 [chromium] ÔÇ║ e2e\smoke.spec.ts:77:7 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ assurance does not claim SOC2 certified (342ms)
+  Ô£ô  20 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /login has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  22 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/companies has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  21 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/upload has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  23 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /signup has main + h1 and no critical/serious axe violations (1.3s)
+  Ô£ô  24 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/billing has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô  25 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/reconciliation has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  26 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /forgot-password has main + h1 and no critical/serious axe violations (1.3s)
+  Ô£ô  27 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/settings has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  28 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/closing has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  29 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app has main + h1 and no critical/serious axe violations (1.6s)
+  Ô£ô  30 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/batches has main + h1 and no critical/serious axe violations (1.4s)
+
+  30 passed (12.2s)

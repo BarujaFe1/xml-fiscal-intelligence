@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Building2, Pencil, Plus, PowerOff, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Label } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
-import { normalizeCnpj, formatCnpj, isValidCnpj } from "@/lib/fiscal/cnpj";
+import { PageHeader } from "@/components/design-system/PageHeader";
+import { EmptyState } from "@/components/design-system/EmptyState";
+import { DataTable } from "@/components/design-system/DataTable";
+import { FormField } from "@/components/design-system/FormField";
+import { SelectField } from "@/components/design-system/SelectField";
+import { FileUpload } from "@/components/design-system/FileUpload";
+import { ConfirmationDialog } from "@/components/design-system/ConfirmationDialog";
+import { normalizeCnpj, formatCnpj, isValidCnpj, cnpjIncludes, cnpjSearchNeedle } from "@/lib/fiscal/cnpj";
 import {
   deleteCompany,
   ensureDefaultEstablishment,
@@ -20,16 +28,70 @@ import {
   type LocalEstablishment,
 } from "@/lib/store/local-cadastro";
 import { setLastCompanyCnpj } from "@/lib/store/last-company";
+import { syncCompaniesWithCloud } from "@/lib/cloud/companies";
 import {
   extractPdfText,
   parseCompanyDirectoryPdfText,
 } from "@/modules/company-directory";
+
+function CompanyRowActions({ c, onEdit, onUse, onInactivate, onDelete }: {
+  c: LocalCompany;
+  onEdit: (c: LocalCompany) => void;
+  onUse: (c: LocalCompany) => void;
+  onInactivate: (c: LocalCompany) => void;
+  onDelete: (c: LocalCompany) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button type="button" size="sm" variant="secondary" onClick={() => onEdit(c)}>
+        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+        Editar
+      </Button>
+      <Button type="button" size="sm" variant="secondary" onClick={() => onUse(c)}>
+        Usar em obrigações
+      </Button>
+      {c.active !== false && (
+        <Button type="button" size="sm" variant="ghost" onClick={() => onInactivate(c)}>
+          <PowerOff className="h-3.5 w-3.5" aria-hidden="true" />
+          Inativar
+        </Button>
+      )}
+      <Button type="button" size="sm" variant="ghost" onClick={() => onDelete(c)}>
+        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+        Excluir
+      </Button>
+    </div>
+  );
+}
+
+const EDIT_FIELDS = [
+  { key: "name", label: "Razão social" },
+  { key: "ie", label: "IE" },
+  { key: "uf", label: "UF" },
+  { key: "codMun", label: "COD_MUN" },
+  { key: "cep", label: "CEP" },
+  { key: "address", label: "Endereço" },
+  { key: "addressNumber", label: "Número" },
+  { key: "neighborhood", label: "Bairro" },
+  { key: "activityCode", label: "IND_ATIV (0=não ind., 1=industrial)" },
+  { key: "profile", label: "Perfil SPED (A/B/C)" },
+  { key: "purpose", label: "Finalidade (0=normal, 1=retificadora)" },
+  { key: "industrialClass", label: "CLAS_ESTAB_IND (0002)" },
+  { key: "priorCreditBalance", label: "Saldo credor anterior (E110)" },
+  { key: "cnae", label: "CNAE" },
+  { key: "cnaeDescription", label: "Descrição CNAE" },
+  { key: "accountantName", label: "Contabilista — Nome" },
+  { key: "accountantCpf", label: "Contabilista — CPF" },
+  { key: "accountantCrc", label: "Contabilista — CRC" },
+  { key: "accountantEmail", label: "Contabilista — Email" },
+] as const;
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<LocalCompany[]>([]);
   const [establishments, setEstablishments] = useState<LocalEstablishment[]>([]);
   const [name, setName] = useState("");
   const [cnpj, setCnpj] = useState("");
+  const [cnpjError, setCnpjError] = useState<string | undefined>();
   const [estName, setEstName] = useState("");
   const [ie, setIe] = useState("");
   const [uf, setUf] = useState("SP");
@@ -44,10 +106,27 @@ export default function CompaniesPage() {
     address: "",
     addressNumber: "",
     neighborhood: "",
+    activityCode: "",
+    profile: "",
+    purpose: "",
+    industrialClass: "",
+    priorCreditBalance: "",
+    cnae: "",
+    cnaeDescription: "",
+    accountantName: "",
+    accountantCpf: "",
+    accountantCrc: "",
+    accountantEmail: "",
   });
+  const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
+  const [inactivateTarget, setInactivateTarget] = useState<LocalCompany | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LocalCompany | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
   const refresh = useCallback(async () => {
+    await syncCompaniesWithCloud().catch(() => {});
     const c = await listCompanies();
     setCompanies(c.sort((a, b) => a.name.localeCompare(b.name, "pt-BR")));
     setEstablishments(await listEstablishments());
@@ -71,7 +150,7 @@ export default function CompaniesPage() {
     e.preventDefault();
     const n = normalizeCnpj(cnpj);
     if (n && !isValidCnpj(n)) {
-      toast.error("CNPJ inválido (numérico ou alfanumérico)");
+      setCnpjError("CNPJ inválido. Confira os 14 caracteres (numéricos ou alfanuméricos).");
       return;
     }
     if (n) {
@@ -86,12 +165,15 @@ export default function CompaniesPage() {
       await saveCompany({
         id: crypto.randomUUID(),
         name: name.trim() || "Empresa sem nome",
+        active: true,
         createdAt: new Date().toISOString(),
         source: "manual",
       });
     }
     setName("");
     setCnpj("");
+    setCnpjError(undefined);
+    setCreateOpen(false);
     toast.success("Empresa salva localmente");
     await refresh();
   }
@@ -127,7 +209,22 @@ export default function CompaniesPage() {
       address: c.address || "",
       addressNumber: c.addressNumber || "",
       neighborhood: c.neighborhood || "",
+      activityCode: c.activityCode || "",
+      profile: c.profile || "",
+      purpose: c.purpose || "",
+      industrialClass: c.industrialClass || "",
+      priorCreditBalance: c.priorCreditBalance || "",
+      cnae: c.cnae || "",
+      cnaeDescription: c.cnaeDescription || "",
+      accountantName: c.accountantName || "",
+      accountantCpf: c.accountantCpf || "",
+      accountantCrc: c.accountantCrc || "",
+      accountantEmail: c.accountantEmail || "",
     });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
   }
 
   async function saveEdit() {
@@ -144,6 +241,17 @@ export default function CompaniesPage() {
       address: edit.address.trim() || undefined,
       addressNumber: edit.addressNumber.trim() || undefined,
       neighborhood: edit.neighborhood.trim() || undefined,
+      activityCode: edit.activityCode.trim() || undefined,
+      profile: (edit.profile.trim() as "A" | "B" | "C") || undefined,
+      purpose: (edit.purpose.trim() as "0" | "1") || undefined,
+      industrialClass: edit.industrialClass.trim() || undefined,
+      priorCreditBalance: edit.priorCreditBalance.trim() || undefined,
+      cnae: edit.cnae.trim() || undefined,
+      cnaeDescription: edit.cnaeDescription.trim() || undefined,
+      accountantName: edit.accountantName.trim() || undefined,
+      accountantCpf: edit.accountantCpf.trim() || undefined,
+      accountantCrc: edit.accountantCrc.trim() || undefined,
+      accountantEmail: edit.accountantEmail.trim() || undefined,
       updatedAt: new Date().toISOString(),
       source: c.source === "sieg-pdf" || c.source === "xml-lote" ? "merged" : c.source || "manual",
     };
@@ -154,10 +262,24 @@ export default function CompaniesPage() {
     await refresh();
   }
 
-  async function removeCompany(id: string) {
-    if (!confirm("Excluir esta empresa do cadastro local?")) return;
-    await deleteCompany(id);
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    await deleteCompany(deleteTarget.id);
+    setDeleteTarget(null);
     toast.success("Empresa excluída");
+    await refresh();
+  }
+
+  async function confirmInactivate() {
+    if (!inactivateTarget) return;
+    const next: LocalCompany = {
+      ...inactivateTarget,
+      active: false,
+      updatedAt: new Date().toISOString(),
+    };
+    await saveCompany(next);
+    setInactivateTarget(null);
+    toast.success("Empresa inativada");
     await refresh();
   }
 
@@ -169,7 +291,7 @@ export default function CompaniesPage() {
       const parsed = parseCompanyDirectoryPdfText(text);
       const cnpjs = parsed.entries.filter((e) => e.kind === "cnpj");
       if (!cnpjs.length) {
-        toast.error("Nenhum CNPJ no PDF");
+        toast.error("Nenhum CNPJ encontrado no PDF");
         return;
       }
       let n = 0;
@@ -186,7 +308,7 @@ export default function CompaniesPage() {
       await refresh();
       toast.success(`${n} empresa(s) do PDF salvas no cadastro (CPFs ignorados aqui)`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha no PDF");
+      toast.error(err instanceof Error ? err.message : "Falha ao processar o PDF");
     } finally {
       setPdfBusy(false);
     }
@@ -220,7 +342,7 @@ export default function CompaniesPage() {
     });
     const data = (await res.json().catch(() => ({}))) as { error?: string; saved?: number };
     if (!res.ok) {
-      toast.error(data.error || "Falha ao sincronizar empresas (ative FEATURE_CLOUD_PROCESSING)");
+      toast.error(data.error || "Falha ao sincronizar empresas");
       return;
     }
     toast.success(`${data.saved ?? 0} empresa(s) enviada(s) à nuvem`);
@@ -231,36 +353,196 @@ export default function CompaniesPage() {
     toast.success("Empresa marcada como última usada — abra qualquer obrigação");
   }
 
+  const needle = cnpjSearchNeedle(search);
+  const filtered = companies.filter((c) => {
+    if (!showInactive && c.active === false) return false;
+    if (!needle) return true;
+    return c.name.toUpperCase().includes(needle) || cnpjIncludes(c.cnpj, needle);
+  });
+
+  const companyOptions = companies.map((c) => ({ value: c.id, label: c.name }));
+
+  const columns = [
+    {
+      key: "name",
+      header: "Razão social",
+      render: (row: Record<string, unknown>) => (row.company as LocalCompany).name,
+    },
+    {
+      key: "cnpj",
+      header: "CNPJ",
+      render: (row: Record<string, unknown>) => {
+        const c = row.company as LocalCompany;
+        return c.cnpj ? formatCnpj(c.cnpj) : "sem CNPJ";
+      },
+    },
+    {
+      key: "uf",
+      header: "UF",
+      render: (row: Record<string, unknown>) => (row.company as LocalCompany).uf || "—",
+    },
+    {
+      key: "ie",
+      header: "IE",
+      render: (row: Record<string, unknown>) => (row.company as LocalCompany).ie || "—",
+    },
+    ...(showInactive
+      ? [
+          {
+            key: "status",
+            header: "Status",
+            render: (row: Record<string, unknown>) =>
+              (row.company as LocalCompany).active === false ? "Inativa" : "Ativa",
+          },
+        ]
+      : []),
+    {
+      key: "actions",
+      header: "Ações",
+      render: (row: Record<string, unknown>) => {
+        const c = row.company as LocalCompany;
+        return (
+          <CompanyRowActions
+            c={c}
+            onEdit={startEdit}
+            onUse={markForObligations}
+            onInactivate={setInactivateTarget}
+            onDelete={setDeleteTarget}
+          />
+        );
+      },
+    },
+  ];
+
+  const rows = filtered.map((c) => ({ company: c }) as Record<string, unknown>);
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display), sans-serif" }}>
-          Empresas e estabelecimentos
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Cadastro local (IndexedDB), reutilizado em todas as obrigações. Importe o PDF SIEG de
-          clientes ou edite IE/endereço aqui.
-        </p>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        title="Empresas e estabelecimentos"
+        description="Cadastro local, reutilizado em todas as obrigações. Importe o PDF de clientes ou edite IE/endereço aqui."
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void syncCompaniesToCloud()}
+              disabled={!companies.length}
+            >
+              Sincronizar
+            </Button>
+            <Button type="button" onClick={() => setCreateOpen((o) => !o)}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Nova empresa
+            </Button>
+          </>
+        }
+      />
       <LocalPersistenceBanner />
+
+      {createOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Nova empresa</CardTitle>
+            <CardDescription>
+              CNPJ numérico ou alfanumérico (14 posições). Deixe em branco para cadastrar sem CNPJ.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={(e) => void addCompany(e)} className="grid gap-3 sm:grid-cols-2">
+              <FormField id="co-name" label="Razão social" required className="sm:col-span-2">
+                <Input
+                  id="co-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </FormField>
+              <FormField
+                id="co-cnpj"
+                label="CNPJ"
+                hint="Ex.: 12ABC34501DE35 — 14 caracteres, podendo conter letras."
+                error={cnpjError}
+                className="sm:col-span-2"
+              >
+                <Input
+                  id="co-cnpj"
+                  value={cnpj}
+                  onChange={(e) => {
+                    setCnpj(e.target.value);
+                    setCnpjError(undefined);
+                  }}
+                  aria-invalid={cnpjError ? true : undefined}
+                  placeholder="12ABC34501DE35"
+                />
+              </FormField>
+              <div className="sm:col-span-2 flex gap-2">
+                <Button type="submit">Salvar empresa</Button>
+                <Button type="button" variant="secondary" onClick={() => setCreateOpen(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {editingId !== null && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Editar empresa</CardTitle>
+            <CardDescription>Atualize os dados cadastrais da empresa.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void saveEdit();
+              }}
+              className="grid gap-3 sm:grid-cols-2"
+            >
+              {EDIT_FIELDS.map(({ key, label }) => (
+                <FormField key={key} id={`edit-${key}`} label={label}>
+                  <Input
+                    id={`edit-${key}`}
+                    value={edit[key]}
+                    onChange={(e) => setEdit((prev) => ({ ...prev, [key]: e.target.value }))}
+                  />
+                </FormField>
+              ))}
+              <div className="sm:col-span-2 flex gap-2">
+                <Button type="submit">Salvar</Button>
+                <Button type="button" variant="secondary" onClick={cancelEdit}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Importar PDF SIEG</CardTitle>
+          <CardTitle>Importar quadro de clientes (PDF)</CardTitle>
           <CardDescription>
             Mesmo layout da lista «Clientes» do Hub — processado só neste navegador.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <Input
-            type="file"
+        <CardContent className="space-y-3">
+          <FileUpload
+            label="Arquivo PDF do quadro de clientes"
             accept="application/pdf,.pdf"
-            disabled={pdfBusy}
-            onChange={(e) => void importPdf(e.target.files?.[0])}
+            hint="O PDF não traz IE, COD_MUN e endereço — complete depois na edição."
+            onChange={(files) => void importPdf(files?.[0])}
           />
-          <p className="text-xs text-slate-500">
-            Depois complete IE, COD_MUN e endereço (o PDF não traz) e use em{" "}
-            <Link href="/app/obligations" className="text-sky-300 hover:underline">
+          {pdfBusy && (
+            <p className="text-xs text-slate-400" role="status">
+              Processando PDF…
+            </p>
+          )}
+          <p className="text-xs text-slate-300">
+            Após importar, use as empresas em{" "}
+            <Link href="/app/obligations" className="text-sky-300 underline underline-offset-2">
               Obrigações
             </Link>
             .
@@ -270,150 +552,101 @@ export default function CompaniesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Nova empresa</CardTitle>
-          <CardDescription>CNPJ numérico ou alfanumérico (14 posições)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={(e) => void addCompany(e)} className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor="co-name">Razão social</Label>
-              <Input id="co-name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor="co-cnpj">CNPJ</Label>
-              <Input
-                id="co-cnpj"
-                value={cnpj}
-                onChange={(e) => setCnpj(e.target.value)}
-                placeholder="12.ABC.345/01DE-35"
-              />
-            </div>
-            <Button type="submit">Salvar empresa</Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Empresas ({companies.length})</CardTitle>
-          <CardDescription className="flex flex-wrap gap-2 items-center">
-            Cadastro local reutilizado nas obrigações.
-            <Button type="button" size="sm" variant="secondary" onClick={() => void syncCompaniesToCloud()}>
-              Sincronizar com nuvem
-            </Button>
+          <CardTitle>Empresas</CardTitle>
+          <CardDescription>
+            {companies.length} no cadastro{companies.length !== filtered.length ? ` · ${filtered.length} exibida(s)` : ""}.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {!companies.length && <p className="text-slate-500">Nenhuma empresa ainda.</p>}
-          {companies.map((c) => (
-            <div key={c.id} className="rounded-xl border border-white/10 px-3 py-3 space-y-2">
-              {editingId === c.id ? (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(
-                    [
-                      ["name", "Razão social"],
-                      ["ie", "IE"],
-                      ["uf", "UF"],
-                      ["codMun", "COD_MUN"],
-                      ["cep", "CEP"],
-                      ["address", "Endereço"],
-                      ["addressNumber", "Número"],
-                      ["neighborhood", "Bairro"],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <div key={key} className="space-y-1">
-                      <Label>{label}</Label>
-                      <Input
-                        value={edit[key]}
-                        onChange={(e) => setEdit((prev) => ({ ...prev, [key]: e.target.value }))}
-                      />
-                    </div>
-                  ))}
-                  <div className="sm:col-span-2 flex gap-2">
-                    <Button type="button" size="sm" onClick={() => void saveEdit()}>
-                      Salvar
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setEditingId(null)}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
+        <CardContent className="space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="sm:max-w-xs sm:flex-1">
+              <FormField
+                id="company-search"
+                label="Buscar por nome ou CNPJ"
+                className="w-full"
+              >
+                <div className="relative">
+                  <Search
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    id="company-search"
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                    placeholder="Nome ou CNPJ"
+                  />
                 </div>
-              ) : (
-                <>
-                  <div className="font-medium text-slate-100">{c.name}</div>
-                  <div className="text-xs text-slate-500">
-                    {c.cnpj ? formatCnpj(c.cnpj) : "sem CNPJ"}
-                    {c.uf ? ` · ${c.uf}` : ""}
-                    {c.ie ? ` · IE ${c.ie}` : ""}
-                    {c.address ? ` · ${c.address}` : ""}
-                    {c.source ? ` · origem ${c.source}` : ""}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="button" size="sm" variant="secondary" onClick={() => startEdit(c)}>
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => markForObligations(c)}
-                    >
-                      Usar em obrigações
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => void removeCompany(c.id)}
-                    >
-                      Excluir
-                    </Button>
-                  </div>
-                </>
-              )}
+              </FormField>
             </div>
-          ))}
+            <label className="flex items-center gap-2 text-sm text-slate-300">
+              <input
+                type="checkbox"
+                checked={showInactive}
+                onChange={(e) => setShowInactive(e.target.checked)}
+                className="h-4 w-4 rounded border-white/20 bg-slate-950"
+              />
+              Mostrar inativas
+            </label>
+          </div>
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title={companies.length === 0 ? "Nenhuma empresa cadastrada" : "Nenhum resultado"}
+              description={
+                companies.length === 0
+                  ? "Importe um PDF de clientes ou cadastre a primeira empresa manualmente."
+                  : "Ajuste a busca ou mostre as empresas inativas."
+              }
+              action={
+                companies.length === 0 ? (
+                  <Button type="button" onClick={() => setCreateOpen(true)}>
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Nova empresa
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <DataTable columns={columns} rows={rows} />
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Novo estabelecimento</CardTitle>
+          <CardDescription>Víncule um estabelecimento a uma empresa cadastrada.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={(e) => void addEstablishment(e)} className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor="est-co">Empresa</Label>
-              <select
-                id="est-co"
-                className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm"
-                value={companyId}
-                onChange={(e) => setCompanyId(e.target.value)}
-              >
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="est-name">Nome</Label>
+            <SelectField
+              id="est-co"
+              label="Empresa"
+              className="sm:col-span-2"
+              value={companyId}
+              onChange={setCompanyId}
+              options={companyOptions}
+              placeholder="Selecione a empresa"
+              required
+            />
+            <FormField id="est-name" label="Nome">
               <Input id="est-name" value={estName} onChange={(e) => setEstName(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="est-uf">UF</Label>
-              <Input id="est-uf" value={uf} onChange={(e) => setUf(e.target.value)} maxLength={2} />
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor="est-ie">IE</Label>
+            </FormField>
+            <FormField id="est-uf" label="UF">
+              <Input
+                id="est-uf"
+                value={uf}
+                onChange={(e) => setUf(e.target.value)}
+                maxLength={2}
+              />
+            </FormField>
+            <FormField id="est-ie" label="IE" className="sm:col-span-2">
               <Input id="est-ie" value={ie} onChange={(e) => setIe(e.target.value)} />
-            </div>
+            </FormField>
             <Button type="submit" disabled={!companies.length}>
               Salvar estabelecimento
             </Button>
@@ -424,7 +657,7 @@ export default function CompaniesPage() {
               return (
                 <div key={e.id} className="rounded-xl border border-white/10 px-3 py-2">
                   <div className="font-medium">{e.name}</div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-300">
                     {co?.name || "?"} · {e.uf} · IE {e.ie || "—"}
                   </div>
                 </div>
@@ -433,6 +666,34 @@ export default function CompaniesPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={inactivateTarget !== null}
+        title="Inativar empresa?"
+        message={
+          inactivateTarget
+            ? `«${inactivateTarget.name}» será oculta da listagem, mas permanecerá no cadastro local.`
+            : undefined
+        }
+        confirmLabel="Inativar"
+        destructive
+        onConfirm={() => void confirmInactivate()}
+        onCancel={() => setInactivateTarget(null)}
+      />
+
+      <ConfirmationDialog
+        open={deleteTarget !== null}
+        title="Excluir empresa?"
+        message={
+          deleteTarget
+            ? `«${deleteTarget.name}» será removida permanentemente do cadastro local.`
+            : undefined
+        }
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

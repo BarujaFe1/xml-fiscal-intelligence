@@ -6,6 +6,25 @@ import type {
 import type { DocumentItem, DocumentSummary } from "@/types";
 import { moneyToFixed } from "@/lib/money/decimal";
 
+/**
+ * Conforme o Guia Prático do SPED, NF-e cancelada, denegada, inutilizada ou
+ * rejeitada NÃO devem entrar no EFD. O `status` vem do protocolo de autorização
+ * (cStat/xMotivo) quando o XML é um nfeProc completo.
+ * Retorna `true` (usável), `false` (excluir) ou `null` (status desconhecido).
+ */
+export function nfeEfdStatus(doc: DocumentSummary): boolean | null {
+  const s = (doc.status || "").toString().trim();
+  if (!s) return null;
+  const low = s.toLowerCase();
+  const excluded = /(cancel|deneg|inut|rejeit|n[ãa]o autoriz|nao autoriz|negad|uso denegado)/.test(low);
+  if (excluded) return false;
+  const authorized = /(^100$|^135$|^136$|^150$|^151$|^154$|^155$|autoriz|aprov|homolog)/.test(low);
+  if (authorized) return true;
+  // cStat puro fora do conjunto autorizado → rejeição/denegação na maioria dos casos
+  if (/^\d{2,3}$/.test(s)) return false;
+  return true;
+}
+
 export interface EstablishmentFiscalInput {
   workspaceId: string;
   companyId: string;
@@ -31,7 +50,13 @@ export interface EstablishmentFiscalInput {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  cnae?: string;
+  cnaeDescription?: string;
+  industrialClass?: string;
   icmsCodRec?: string;
+  /** Saldo credor anterior informado manualmente (EFD E110). */
+  priorCreditBalance?: string;
   layoutVersion: string;
 }
 
@@ -45,8 +70,19 @@ export function buildObligationContextFromBatch(input: {
   items: DocumentItem[];
 }): ObligationContext {
   const { establishment, documents, items } = input;
+  let excludedCount = 0;
+  let unknownStatusCount = 0;
   const docs: ObligationDocumentInput[] = documents
-    .filter((d) => d.documentType === "NFE" || d.documentType === "NFCE" || d.model === "55")
+    .filter((d) => {
+      if (d.documentType !== "NFE" && d.documentType !== "NFCE" && d.model !== "55") return false;
+      const usable = nfeEfdStatus(d);
+      if (usable === false) {
+        excludedCount += 1;
+        return false;
+      }
+      if (usable === null) unknownStatusCount += 1;
+      return true;
+    })
     .map((d) => {
       const docItems = items.filter((i) => i.documentId === d.id);
       const icmsTot = normalizeIcmsTot(
@@ -147,6 +183,9 @@ export function buildObligationContextFromBatch(input: {
     uf: establishment.uf,
     profile: establishment.profile,
     activityCode: establishment.activityCode,
+    cnae: establishment.cnae,
+    cnaeDescription: establishment.cnaeDescription,
+    industrialClass: establishment.industrialClass,
     purpose: establishment.purpose,
     cnpj: establishment.cnpj,
     ie: establishment.ie,
@@ -163,9 +202,37 @@ export function buildObligationContextFromBatch(input: {
     accountantName: establishment.accountantName,
     accountantCpf: establishment.accountantCpf,
     accountantCrc: establishment.accountantCrc,
+    accountantEmail: establishment.accountantEmail,
     icmsCodRec: establishment.icmsCodRec,
+    priorCreditBalance: establishment.priorCreditBalance,
     documents: docs,
+    excludedDocumentCount: excludedCount,
+    unknownStatusCount: unknownStatusCount,
   };
+}
+
+/**
+ * Recorta os documentos cuja data de emissão está DENTRO do período
+ * (periodStart..periodEnd, inclusivo). Usado na geração para que um único
+ * lote importado (ex.: ZIP mensal) possa gerar EFDs de uma semana, dia,
+ * mês, semestre ou intervalo arbitrário. Documentos sem data não são filtrados.
+ */
+export function filterDocumentsByPeriod(
+  documents: DocumentSummary[],
+  periodStart?: string,
+  periodEnd?: string,
+): { inPeriod: DocumentSummary[]; outOfPeriodCount: number } {
+  if (!periodStart || !periodEnd) return { inPeriod: documents, outOfPeriodCount: 0 };
+  let outOfPeriodCount = 0;
+  const inPeriod = documents.filter((d) => {
+    const issue = (d.issueDate || "").slice(0, 10);
+    if (issue && (issue < periodStart || issue > periodEnd)) {
+      outOfPeriodCount += 1;
+      return false;
+    }
+    return true;
+  });
+  return { inPeriod, outOfPeriodCount };
 }
 
 function flatStr(

@@ -57,7 +57,7 @@ import {
   scaleHealth,
   section28Phase13Report,
 } from "@/modules/scale/platform";
-import type { EnterprisePlanId, MassCampaign } from "@/modules/scale/types";
+import type { EnterprisePlanId, MassCampaign, RegionHealth } from "@/modules/scale/types";
 
 export default function ScalePage() {
   const [workspaceId, setWorkspaceId] = useState("ws_local");
@@ -72,6 +72,9 @@ export default function ScalePage() {
   /** Estável no SSR — env server-only não bate com client (hydration #418) */
   const [secretsMode, setSecretsMode] = useState("env_only");
   const [billingLiveFlag, setBillingLiveFlag] = useState(false);
+  /** Computado só no cliente (useEffect) para evitar mismatch de hidratação (#418). */
+  const [regions, setRegions] = useState<RegionHealth[]>([]);
+  const [health, setHealth] = useState<ReturnType<typeof scaleHealth> | null>(null);
 
   const refresh = useCallback(async () => {
     setCampaigns(await listMassCampaigns(workspaceId));
@@ -88,6 +91,8 @@ export default function ScalePage() {
   useEffect(() => {
     setSecretsMode(resolveSecretsManagerMode());
     setBillingLiveFlag(billingEnterpriseEnabled());
+    setRegions(regionalHealthReport());
+    setHealth(scaleHealth());
     void (async () => {
       const ws =
         typeof localStorage !== "undefined"
@@ -101,9 +106,6 @@ export default function ScalePage() {
       await refresh();
     })();
   }, [refresh]);
-
-  const health = scaleHealth();
-  const regions = regionalHealthReport();
 
   async function runStagingDrill() {
     let drill = createDrDrill({
@@ -221,9 +223,9 @@ export default function ScalePage() {
         <CardHeader>
           <CardTitle>Health</CardTitle>
           <CardDescription>
-            persist={health.persistenceItems} · regions={health.regionsReachable} · secrets=
+            persist={health?.persistenceItems ?? "—"} · regions={health?.regionsReachable ?? "—"} · secrets=
             {secretsMode} · prod=
-            {String(health.anyObligationProduction)}
+            {String(health?.anyObligationProduction ?? "—")}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm space-y-2">

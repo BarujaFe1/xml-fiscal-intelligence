@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SelectField } from "@/components/design-system/SelectField";
 import { idbGetBatchStore, idbListBatches } from "@/lib/store/idb-store";
 import {
   reconcileBatchDocuments,
@@ -14,6 +15,7 @@ export default function ReconciliationPage() {
   const [issues, setIssues] = useState<Array<ReconciliationIssue & { batchName?: string; batchId?: string }>>(
     [],
   );
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,6 +65,21 @@ export default function ReconciliationPage() {
         </p>
       </div>
 
+      {issues.length > 0 && (
+        <SelectField
+          id="severity-filter"
+          label="Filtrar pendências por gravidade"
+          value={severityFilter}
+          onChange={setSeverityFilter}
+          options={[
+            { value: "all", label: "Todas as gravidades" },
+            { value: "error", label: "Erros" },
+            { value: "warning", label: "Avisos" },
+            { value: "info", label: "Informações" },
+          ]}
+        />
+      )}
+
       {!issues.length ? (
         <Card>
           <CardContent className="p-6 text-slate-400">
@@ -74,7 +91,10 @@ export default function ReconciliationPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {issues.slice(0, 200).map((i) => (
+          {issues
+            .filter((i) => severityFilter === "all" || i.severity === severityFilter)
+            .slice(0, 200)
+            .map((i) => (
             <Card key={`${i.batchId}-${i.id}`} className="bg-slate-900/40">
               <CardHeader className="pb-2">
                 <div className="flex flex-wrap gap-2">

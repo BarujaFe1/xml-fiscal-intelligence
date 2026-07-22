@@ -1,0 +1,20 @@
+﻿
+> xml-fiscal-intelligence@0.1.0 test:visual
+> playwright test --config playwright.visual.config.ts
+
+
+Running 11 tests using 3 workers
+
+  Ô£ô   1 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/companies has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô   2 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /login has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô   3 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/upload has main + h1 and no critical/serious axe violations (1.9s)
+  Ô£ô   4 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/billing has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô   5 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /signup has main + h1 and no critical/serious axe violations (1.4s)
+  Ô£ô   6 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/reconciliation has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô   8 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /forgot-password has main + h1 and no critical/serious axe violations (1.3s)
+  Ô£ô   7 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/settings has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô   9 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/closing has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  10 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app has main + h1 and no critical/serious axe violations (1.5s)
+  Ô£ô  11 [chromium] ÔÇ║ e2e\visual\visual.spec.ts:45:9 ÔÇ║ visual + a11y guard (11 routes, chromium desktop) ÔÇ║ /app/batches has main + h1 and no critical/serious axe violations (1.4s)
+
+  11 passed (7.5s)

@@ -24,6 +24,8 @@ export type EfdUfPlugin = {
   adjustmentCodes: UfAdjustmentCodeEntry[];
   /** Resolve COD_REC for E116 when context.icmsCodRec empty — returns undefined if no official row. */
   suggestIcmsCodRec?(ctx: { periodEnd: string }): string | undefined;
+  /** Nível de suporte da obrigação para a UF (registry ObligationSupportLevel). */
+  supportLevel?: import("@/modules/obligations/support-level").ObligationSupportLevel;
 };
 
 export function emptyUfPlugin(uf: string): EfdUfPlugin {

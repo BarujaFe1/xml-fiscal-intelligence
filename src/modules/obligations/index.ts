@@ -47,7 +47,10 @@ export {
 export { reconcileDctfVsReinf, parseDctfWebImportCsv } from "@/modules/obligations/reinf/dctf/reconcile";
 export { stubLocalSign } from "@/modules/obligations/reinf/signer/local-agent";
 export { submitReinfEvent, isReinfSubmitEnabled } from "@/modules/obligations/reinf/ws/client";
-export { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+export {
+  buildObligationContextFromBatch,
+  filterDocumentsByPeriod,
+} from "@/modules/obligations/efd-icms-ipi/from-batch";
 export {
   suggestInformantFromDocuments,
   suggestInformantByCnpj,

@@ -3,6 +3,7 @@ import {
   EFD_ICMS_IPI_LAYOUT_2026,
   efdIcmsIpiPlugin,
   buildObligationContextFromBatch,
+  filterDocumentsByPeriod,
 } from "@/modules/obligations";
 import { assertBooleanEntitlement, getPlanEntitlements } from "@/lib/entitlements";
 import { getStorageProvider } from "@/lib/storage/provider";
@@ -40,6 +41,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "BatchStore sem documentos" }, { status: 400 });
     }
 
+    const periodFilter = filterDocumentsByPeriod(
+      body.store.documents,
+      body.establishment?.periodStart,
+      body.establishment?.periodEnd,
+    );
     const context = buildObligationContextFromBatch({
       establishment: {
         workspaceId: body.workspaceId || body.store.batch.workspaceId || "ws_local",
@@ -48,9 +54,10 @@ export async function POST(req: Request) {
         layoutVersion: EFD_ICMS_IPI_LAYOUT_2026,
         ...body.establishment,
       },
-      documents: body.store.documents,
+      documents: periodFilter.inPeriod,
       items: body.store.items,
     });
+    context.outOfPeriodCount = periodFilter.outOfPeriodCount;
 
     const readiness = await efdIcmsIpiPlugin.detectRequiredData(context);
     if (!readiness.canGenerate) {

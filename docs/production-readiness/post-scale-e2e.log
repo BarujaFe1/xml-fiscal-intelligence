@@ -1,0 +1,6 @@
+﻿
+Running 1 test using 1 worker
+
+  Ô£ô  1 [chromium] ÔÇ║ e2e\smoke.spec.ts:64:9 ÔÇ║ phase surfaces F10ÔÇôF17 ÔÇ║ /app/scale renders without crash (291ms)
+
+  1 passed (3.1s)

@@ -2,7 +2,10 @@
  * Client-side obligation generation — avoids posting full BatchStore to the API
  * (Vercel/Next body limits cause non-JSON "Request Entity Too Large" → Unexpected token 'R').
  */
-import { buildObligationContextFromBatch } from "@/modules/obligations/efd-icms-ipi/from-batch";
+import {
+  buildObligationContextFromBatch,
+  filterDocumentsByPeriod,
+} from "@/modules/obligations/efd-icms-ipi/from-batch";
 import {
   getObligationPlugin,
   isObligationId,
@@ -31,6 +34,27 @@ const emptyReadiness = (): RequiredDataResult => ({
   blockingCount: 1,
 });
 
+function onlyDigits(v?: string | null): string {
+  return (v || "").replace(/\D/g, "");
+}
+
+/**
+ * Restringe um BatchStore às notas de um único CNPJ (informante), seja como
+ * emitente (saídas/próprias) ou destinatário (entradas/terceiros). Evita que a
+ * geração misture CNPJs e gere C100 com CNPJ/IE divergentes do 0000 (causa dos
+ * erros de IE/CNPJ no PVA).
+ */
+export function filterStoreByCnpj(store: BatchStore, cnpjRaw: string): BatchStore {
+  const want = onlyDigits(cnpjRaw);
+  if (!want) return store;
+  const docs = store.documents.filter(
+    (d) => onlyDigits(d.emitterDoc) === want || onlyDigits(d.receiverDoc) === want,
+  );
+  const ids = new Set(docs.map((d) => d.id));
+  const items = store.items.filter((i) => ids.has(i.documentId));
+  return { ...store, documents: docs, items };
+}
+
 export type LocalEstablishmentInput = {
   cnpj: string;
   ie?: string;
@@ -53,6 +77,11 @@ export type LocalEstablishmentInput = {
   accountantName?: string;
   accountantCpf?: string;
   accountantCrc?: string;
+  accountantEmail?: string;
+  industrialClass?: string;
+  priorCreditBalance?: string;
+  cnae?: string;
+  cnaeDescription?: string;
   icmsCodRec?: string;
 };
 
@@ -80,6 +109,8 @@ export async function generateObligationLocal(input: {
   establishment: LocalEstablishmentInput;
   workspaceId?: string;
   extras?: Record<string, unknown>;
+  /** Restringe a geração às notas de um único CNPJ (emitente ou destinatário). */
+  scopeCnpj?: string;
 }): Promise<LocalGenerateResult> {
   if (!isObligationId(input.obligationId)) {
     return {
@@ -116,7 +147,14 @@ export async function generateObligationLocal(input: {
     };
   }
 
-  const store = input.store;
+  const store =
+    input.scopeCnpj && input.store ? filterStoreByCnpj(input.store, input.scopeCnpj) : input.store;
+  const periodStart = input.establishment?.periodStart;
+  const periodEnd = input.establishment?.periodEnd;
+  const periodFilter =
+    store?.documents && store.documents.length
+      ? filterDocumentsByPeriod(store.documents, periodStart, periodEnd)
+      : { inPeriod: store?.documents || [], outOfPeriodCount: 0 };
   const context = buildObligationContextFromBatch({
     establishment: {
       workspaceId: input.workspaceId || store?.batch.workspaceId || "ws_local",
@@ -125,9 +163,10 @@ export async function generateObligationLocal(input: {
       layoutVersion: LAYOUTS[id],
       ...input.establishment,
     },
-    documents: store?.documents || [],
+    documents: periodFilter.inPeriod,
     items: store?.items || [],
   });
+  context.outOfPeriodCount = periodFilter.outOfPeriodCount;
   if (input.extras) context.extras = { ...context.extras, ...input.extras };
 
   const result = await runObligationPlugin(plugin, context);
