@@ -74,10 +74,25 @@ export function buildFieldRegistry(stores: BatchStore[]): ExportFieldDefinition[
     });
   }
 
-  // Discover unknown flattened paths from selected stores
+  // Index curated paths once — O(fields), not O(docs × paths × fields).
+  const coveredExact = new Set<string>();
+  const coveredTags = new Set<string>();
+  for (const def of byId.values()) {
+    for (const p of def.xmlPaths) {
+      coveredExact.add(p);
+      const tag = p.split(".").pop();
+      if (tag) coveredTags.add(tag);
+    }
+  }
+
+  // Discover unknown flattened paths from selected stores (bounded).
+  const DISCOVER_CAP = 2500;
+  let discovered = 0;
   for (const store of stores) {
+    if (discovered >= DISCOVER_CAP) break;
     for (const doc of store.documents) {
-      discoverFromDoc(doc, byId);
+      if (discovered >= DISCOVER_CAP) break;
+      discovered += discoverFromDoc(doc, byId, coveredExact, coveredTags, DISCOVER_CAP - discovered);
     }
   }
 
@@ -89,20 +104,20 @@ export function buildFieldRegistry(stores: BatchStore[]): ExportFieldDefinition[
   });
 }
 
-function discoverFromDoc(doc: DocumentSummary, byId: Map<string, ExportFieldDefinition>) {
+function discoverFromDoc(
+  doc: DocumentSummary,
+  byId: Map<string, ExportFieldDefinition>,
+  coveredExact: Set<string>,
+  coveredTags: Set<string>,
+  remaining: number,
+): number {
+  let added = 0;
   for (const path of Object.keys(doc.flattenedJson || {})) {
+    if (added >= remaining) break;
     const id = `discovered:${path}`;
     if (byId.has(id)) continue;
-    // Skip if any curated field already lists this path
-    let covered = false;
-    for (const def of byId.values()) {
-      if (def.xmlPaths.some((p) => path === p || path.endsWith(`.${p}`) || path.includes(p))) {
-        covered = true;
-        break;
-      }
-    }
-    if (covered) continue;
     const tag = path.split(".").pop() || path;
+    if (coveredExact.has(path) || coveredTags.has(tag)) continue;
     byId.set(id, {
       fieldId: id,
       technicalLabel: path,
@@ -115,7 +130,10 @@ function discoverFromDoc(doc: DocumentSummary, byId: Map<string, ExportFieldDefi
       catalogVersion: "discovered",
       translationStatus: "review_needed",
     });
+    coveredExact.add(path);
+    added += 1;
   }
+  return added;
 }
 
 export function searchFieldRegistry(

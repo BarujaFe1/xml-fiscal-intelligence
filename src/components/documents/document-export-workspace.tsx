@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -96,8 +96,20 @@ export function DocumentExportWorkspace({
     };
   }, [stores]);
 
-  const facetIndex = useMemo(() => buildFacetIndex(stores), [stores]);
-  const registry = useMemo(() => buildFieldRegistry(stores), [stores]);
+  const [facetIndex, setFacetIndex] = useState(() => buildFacetIndex([]));
+  const [registry, setRegistry] = useState(() => buildFieldRegistry([]));
+
+  useEffect(() => {
+    let cancelled = false;
+    startTransition(() => {
+      if (cancelled) return;
+      setFacetIndex(buildFacetIndex(stores));
+      setRegistry(buildFieldRegistry(stores));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [stores]);
 
   const rows = useMemo(
     () => filterWorkspaceDocuments(stores, facets, committed),
