@@ -20,6 +20,10 @@ export type AppliedFacetFilters = {
   ncms: string[];
   cClassTribs: string[];
   parseStatuses: string[];
+  /** CBS: gt0 | zero | absent (never treat absent as zero). */
+  cbsPresence: string[];
+  /** IBS: gt0 | zero | absent */
+  ibsPresence: string[];
 };
 
 export type FilterDraft = {
@@ -54,6 +58,8 @@ export function emptyAppliedFacets(): AppliedFacetFilters {
     ncms: [],
     cClassTribs: [],
     parseStatuses: [],
+    cbsPresence: [],
+    ibsPresence: [],
   };
 }
 
@@ -129,6 +135,8 @@ export function facetsFromSearchParams(params: URLSearchParams): AppliedFacetFil
   f.ncms = decodeFacetParam(params.get("ncms"));
   f.cClassTribs = decodeFacetParam(params.get("cClassTribs"));
   f.parseStatuses = decodeFacetParam(params.get("parse"));
+  f.cbsPresence = decodeFacetParam(params.get("cbs"));
+  f.ibsPresence = decodeFacetParam(params.get("ibs"));
   // Legacy single receiver/emitter doc params
   const legacyReceiver = params.get("receiverDoc");
   if (legacyReceiver && !f.receiverIds.length) {
@@ -156,6 +164,8 @@ export function facetsToSearchParams(facets: AppliedFacetFilters): URLSearchPara
   set("ncms", facets.ncms);
   set("cClassTribs", facets.cClassTribs);
   set("parse", facets.parseStatuses);
+  set("cbs", facets.cbsPresence);
+  set("ibs", facets.ibsPresence);
   return p;
 }
 

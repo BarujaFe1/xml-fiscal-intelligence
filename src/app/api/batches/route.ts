@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listBatchStores } from "@/lib/store/fs-store";
 import { processZipBatch } from "@/lib/store/process";
+import { requireApiSession } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,13 +9,17 @@ export const dynamic = "force-dynamic";
 const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 50);
 
 export async function GET() {
-  const stores = await listBatchStores();
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
+  const stores = await listBatchStores(auth.userId);
   return NextResponse.json({
     batches: stores.map((s) => s.batch),
   });
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
   try {
     const form = await req.formData();
     const file = form.get("file");
@@ -45,6 +50,7 @@ export async function POST(req: NextRequest) {
       cnpjLabel,
       month,
       year,
+      ownerKey: auth.userId,
     });
 
     return NextResponse.json({ batch: store.batch });

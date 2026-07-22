@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LocalPrivateStorage } from "@/lib/storage/provider";
+import { requireApiSession } from "@/lib/auth/api-guard";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Private local download — never use for Supabase/cloud objects.
  * Query: ?w=workspaceId&k=objectKey
+ * Requires session; workspace id must match authenticated user scope in production.
  */
 export async function GET(req: NextRequest) {
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
   const w = req.nextUrl.searchParams.get("w") || "";
   const k = req.nextUrl.searchParams.get("k") || "";
-  if (!w || !k || w.includes("..") || k.includes("..")) {
+  if (!w || !k || w.includes("..") || k.includes("..") || w.includes("/") || k.includes("\\")) {
     return NextResponse.json({ error: "invalid path" }, { status: 400 });
+  }
+  // Prevent cross-user key guessing when owner-scoped local storage is used
+  if (auth.mode === "authenticated" && w !== auth.userId && !w.startsWith(auth.userId)) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
   }
   try {
     const storage = new LocalPrivateStorage();

@@ -10,11 +10,14 @@ export interface ProcessZipInput {
   month?: number;
   year?: number;
   workspaceId?: string;
+  /** Filesystem tenant scope (auth user id). Required for server persist. */
+  ownerKey?: string;
   onProgress?: (progress: number, message: string) => Promise<void> | void;
 }
 
 /** Server-side ZIP processing with filesystem persistence (local / small uploads). */
 export async function processZipBatch(input: ProcessZipInput): Promise<BatchStore> {
+  const ownerKey = input.ownerKey || "local-dev";
   const { store, rawXmls } = await processZipBatchInMemory({
     ...input,
     workspaceId: input.workspaceId || DEFAULT_WORKSPACE_ID,
@@ -26,17 +29,16 @@ export async function processZipBatch(input: ProcessZipInput): Promise<BatchStor
     },
   });
 
-  // Persist original XMLs to filesystem (server path) — exact captured bytes/text.
   for (const raw of rawXmls) {
     const doc = store.documents.find((d) => d.id === raw.documentId);
     if (!doc) continue;
     try {
-      doc.rawXmlPath = await saveRawXml(store.batch.id, raw.fileName, raw.content);
+      doc.rawXmlPath = await saveRawXml(ownerKey, store.batch.id, raw.fileName, raw.content);
     } catch {
       // non-fatal
     }
   }
 
-  await saveBatchStore(store);
+  await saveBatchStore(ownerKey, store);
   return store;
 }

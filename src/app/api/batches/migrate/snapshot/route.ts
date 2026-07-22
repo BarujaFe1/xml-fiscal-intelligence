@@ -5,6 +5,8 @@ import { getFeatureFlags } from "@/lib/feature-flags";
 import { getStorageProvider } from "@/lib/storage/provider";
 import { uuidFromLocalKey } from "@/lib/cloud/stable-uuid";
 import { ensureWorkspace } from "@/modules/repositories/supabase-batch-repository";
+import { requireApiSession } from "@/lib/auth/api-guard";
+import { assertWorkspaceMembership } from "@/lib/auth/workspace-access";
 
 const MAX_SNAPSHOT_CHARS = 12_000_000; // ~12MB JSON text
 
@@ -13,6 +15,9 @@ const MAX_SNAPSHOT_CHARS = 12_000_000; // ~12MB JSON text
  * Does not require original ZIP; uses IndexedDB-derived JSON.
  */
 export async function POST(req: Request) {
+  const auth = await requireApiSession({ requireCloudAuth: true });
+  if (!auth.ok) return auth.response;
+
   const flags = getFeatureFlags();
   if (!flags.cloudProcessing || !isSupabaseConfigured() || !hasServiceRole()) {
     return NextResponse.json(
@@ -35,6 +40,17 @@ export async function POST(req: Request) {
       );
     }
 
+    const workspaceId = await ensureWorkspace(body.workspaceId, "Workspace snapshot", {
+      ownerUserId: auth.userId,
+    });
+    const membership = await assertWorkspaceMembership(auth.userId, workspaceId, [
+      "owner",
+      "admin",
+      "accountant",
+      "operator",
+    ]);
+    if (!membership.ok) return membership.response;
+
     const json = JSON.stringify(body.snapshot);
     if (json.length > MAX_SNAPSHOT_CHARS) {
       return NextResponse.json(
@@ -43,7 +59,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const workspaceId = await ensureWorkspace(body.workspaceId, "Workspace migrate");
     const cloudBatchId = uuidFromLocalKey("batch", body.batchId);
     const period = (body.period || new Date().toISOString().slice(0, 7)).replace(/[^\d-]/g, "");
     const key = `company/_/establishment/_/period/${period}/batches/${cloudBatchId}/snapshot.json`;

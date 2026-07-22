@@ -5,12 +5,17 @@ import { getFeatureFlags } from "@/lib/feature-flags";
 import { uuidFromLocalKey } from "@/lib/cloud/stable-uuid";
 import { ensureWorkspace } from "@/modules/repositories/supabase-batch-repository";
 import type { CloudMigrationStatus } from "@/modules/obligations/efd-icms-ipi/status";
+import { requireApiSession } from "@/lib/auth/api-guard";
+import { assertWorkspaceMembership } from "@/lib/auth/workspace-access";
 
 /**
  * Register local batch metadata into cloud registry.
  * Maps non-UUID local ids → deterministic UUIDs (bugfix for ws_local_demo).
  */
 export async function POST(req: Request) {
+  const auth = await requireApiSession({ requireCloudAuth: true });
+  if (!auth.ok) return auth.response;
+
   const flags = getFeatureFlags();
   if (!flags.cloudProcessing || !isSupabaseConfigured()) {
     return NextResponse.json(
@@ -71,7 +76,15 @@ export async function POST(req: Request) {
     const workspaceId = await ensureWorkspace(
       localWs,
       body.companyLabel || body.establishmentLabel || `Workspace ${localWs}`,
+      { ownerUserId: auth.userId },
     );
+    const membership = await assertWorkspaceMembership(auth.userId, workspaceId, [
+      "owner",
+      "admin",
+      "accountant",
+      "operator",
+    ]);
+    if (!membership.ok) return membership.response;
     const cloudBatchId = uuidFromLocalKey("batch", localBatchId);
     const docCount = body.summary?.documentCount || body.documents?.length || 0;
 

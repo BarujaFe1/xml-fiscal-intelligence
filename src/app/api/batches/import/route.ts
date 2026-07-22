@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBatchStore, saveBatchStore } from "@/lib/store/fs-store";
+import { requireApiSession } from "@/lib/auth/api-guard";
 import type { Batch, BatchStore, DocumentItem, DocumentSummary, ParseError } from "@/types";
 
 export const runtime = "nodejs";
@@ -29,6 +30,8 @@ type ImportBody =
  * Avoids Vercel ~4.5MB request body limit on raw ZIP upload.
  */
 export async function POST(req: NextRequest) {
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
   try {
     const body = (await req.json()) as ImportBody;
 
@@ -41,12 +44,12 @@ export async function POST(req: NextRequest) {
         errors: [],
         exports: [],
       };
-      await saveBatchStore(store);
+      await saveBatchStore(auth.userId, store);
       return NextResponse.json({ batch: store.batch });
     }
 
     if (body.action === "append") {
-      const store = await getBatchStore(body.batchId);
+      const store = await getBatchStore(auth.userId, body.batchId);
       if (!store) return NextResponse.json({ error: "Lote não encontrado" }, { status: 404 });
 
       if (body.documents?.length) store.documents.push(...body.documents);
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
       store.batch.progress = Math.min(95, 10 + Math.round((store.documents.length / Math.max(store.batch.totalXml || 1, 1)) * 80));
       store.batch.progressMessage = `Recebendo documentos… ${store.documents.length}`;
       store.batch.updatedAt = new Date().toISOString();
-      await saveBatchStore(store);
+      await saveBatchStore(auth.userId, store);
       return NextResponse.json({
         ok: true,
         documentCount: store.documents.length,
@@ -65,19 +68,23 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "finalize") {
-      const store = await getBatchStore(body.batchId);
+      const store = await getBatchStore(auth.userId, body.batchId);
       if (!store) return NextResponse.json({ error: "Lote não encontrado" }, { status: 404 });
 
+      // Empty import must not look "Concluído"
+      const empty = store.documents.length === 0 && (body.batch.newDocumentCount ?? body.batch.validXml ?? 0) === 0;
       store.batch = {
         ...body.batch,
         id: body.batchId,
-        status: body.batch.status || "completed",
+        status: empty ? "failed" : body.batch.status || "completed",
         progress: 100,
-        progressMessage: "Processamento concluído",
+        progressMessage: empty
+          ? "Nenhum XML válido foi importado"
+          : "Processamento concluído",
         updatedAt: new Date().toISOString(),
       };
       if (body.errors?.length) store.errors = body.errors;
-      await saveBatchStore(store);
+      await saveBatchStore(auth.userId, store);
       return NextResponse.json({ batch: store.batch });
     }
 

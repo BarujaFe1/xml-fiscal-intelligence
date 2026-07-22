@@ -117,18 +117,11 @@ export async function buildFieldSelectionWorkbook(input: {
     }
 
     const last = Math.max(1, rows.length + 1);
-    try {
-      ws.addTable({
-        name: "tblCamposSelecionados",
-        ref: `A1:${colLetter(headers.length)}${last}`,
-        headerRow: true,
-        totalsRow: false,
-        style: { theme: "TableStyleMedium2", showRowStripes: true },
-        columns: headers.map((name) => ({ name })),
-        rows: [],
-      });
-    } catch {
-      /* optional */
+    if (rows.length > 0) {
+      ws.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: last, column: headers.length },
+      };
     }
     ws.views = [{ state: "frozen", xSplit: 2, ySplit: 1 }];
     headers.forEach((_, i) => {

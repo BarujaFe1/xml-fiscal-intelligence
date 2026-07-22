@@ -5,6 +5,8 @@ import { getFeatureFlags } from "@/lib/feature-flags";
 import { ensureWorkspace } from "@/modules/repositories/supabase-batch-repository";
 import { uuidFromLocalKey } from "@/lib/cloud/stable-uuid";
 import type { LocalCompany } from "@/lib/store/local-cadastro";
+import { requireApiSession } from "@/lib/auth/api-guard";
+import { assertWorkspaceMembership } from "@/lib/auth/workspace-access";
 
 function cloudUnavailable() {
   return NextResponse.json(
@@ -15,6 +17,9 @@ function cloudUnavailable() {
 
 /** Persist local cadastro into cloud_companies (full payload + indexed fiscal columns). */
 export async function POST(req: Request) {
+  const auth = await requireApiSession({ requireCloudAuth: true });
+  if (!auth.ok) return auth.response;
+
   const flags = getFeatureFlags();
   if (!flags.cloudProcessing || !isSupabaseConfigured() || !hasServiceRole()) {
     return cloudUnavailable();
@@ -25,7 +30,16 @@ export async function POST(req: Request) {
     if (!body.workspaceId || !Array.isArray(body.companies)) {
       return NextResponse.json({ error: "workspaceId e companies[] obrigatórios" }, { status: 400 });
     }
-    const workspaceId = await ensureWorkspace(body.workspaceId, "Workspace empresas");
+    const workspaceId = await ensureWorkspace(body.workspaceId, "Workspace empresas", {
+      ownerUserId: auth.userId,
+    });
+    const membership = await assertWorkspaceMembership(auth.userId, workspaceId, [
+      "owner",
+      "admin",
+      "accountant",
+      "operator",
+    ]);
+    if (!membership.ok) return membership.response;
     const supabase = createServiceClient();
     let saved = 0;
     for (const c of body.companies) {

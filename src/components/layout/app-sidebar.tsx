@@ -3,65 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  CalendarDays,
-  CreditCard,
   FileCode2,
   FolderOpen,
   LayoutDashboard,
   ArrowLeftRight,
   Building2,
-  Search,
-  Settings,
-  Shield,
-  ShieldAlert,
   Upload,
-  Landmark,
-  GitBranch,
-  Scale,
-  CloudUpload,
-  HardDrive,
-  Globe,
-  FlaskConical,
+  Settings,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navGroups = [
-  {
-    title: "Operação",
-    links: [
-      { href: "/app", label: "Início", icon: LayoutDashboard },
-      { href: "/app/upload", label: "Importar", icon: Upload },
-      { href: "/app/batches", label: "Lotes", icon: FolderOpen },
-      { href: "/app/documents", label: "Documentos", icon: FileCode2 },
-      { href: "/app/companies", label: "Empresas", icon: Building2 },
-      { href: "/app/reconciliation", label: "Conferir", icon: ArrowLeftRight },
-      { href: "/app/closing", label: "Fechamentos", icon: CalendarDays },
-    ],
-  },
-  {
-    title: "Análise",
-    links: [
-      { href: "/app/search", label: "Busca", icon: Search },
-      { href: "/app/audit", label: "Auditoria", icon: ShieldAlert },
-      { href: "/app/relationships", label: "Relacionamentos", icon: GitBranch },
-      { href: "/app/obligations", label: "Obrigações", icon: Landmark },
-      { href: "/app/masters", label: "Dados mestres", icon: Building2 },
-      { href: "/app/sped", label: "Diagnóstico EFD", icon: Scale },
-    ],
-  },
-  {
-    title: "Plataforma",
-    links: [
-      { href: "/app/migrate", label: "Migrar lotes", icon: CloudUpload },
-      { href: "/app/validators-lab", label: "Validação oficial", icon: FlaskConical },
-      { href: "/app/rtc", label: "Simulação tributária", icon: FlaskConical },
-      { href: "/app/homologation", label: "Homologação", icon: Shield },
-      { href: "/app/continuous-ops", label: "Operações contínuas", icon: CloudUpload },
-      { href: "/app/governance", label: "Governança", icon: ShieldAlert },
-      { href: "/app/billing", label: "Planos", icon: CreditCard },
-      { href: "/app/settings", label: "Configurações", icon: Settings },
-    ],
-  },
+/**
+ * Main navigation for normal users — max 8 primary destinations.
+ * Internal/prototype routes are not listed here.
+ */
+const navLinks = [
+  { href: "/app", label: "Visão geral", icon: LayoutDashboard },
+  { href: "/app/upload", label: "Importar documentos", icon: Upload },
+  { href: "/app/documents", label: "Documentos", icon: FileCode2 },
+  { href: "/app/batches", label: "Lotes", icon: FolderOpen },
+  { href: "/app/companies", label: "Empresas e propriedades", icon: Building2 },
+  { href: "/app/reconciliation", label: "Pendências", icon: ArrowLeftRight },
+  { href: "/app/documents?view=exports", label: "Exportações", icon: Download },
+  { href: "/app/settings", label: "Configurações e ajuda", icon: Settings },
 ] as const;
 
 export function AppSidebar() {
@@ -79,37 +44,29 @@ export function AppSidebar() {
           </div>
         </Link>
       </div>
-      <nav className="p-3 space-y-4 flex-1 overflow-y-auto">
-        {navGroups.map((group) => (
-          <div key={group.title}>
-            <p className="px-3 mb-1 text-[10px] uppercase tracking-[0.18em] text-slate-500">
-              {group.title}
-            </p>
-            <div className="space-y-1">
-              {group.links.map((link) => {
-                const active =
-                  pathname === link.href || (link.href !== "/app" && pathname.startsWith(link.href));
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                      active
-                        ? "bg-sky-500/15 text-sky-200 border border-sky-400/20"
-                        : "text-slate-400 hover:text-slate-100 hover:bg-white/5",
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      <nav className="p-3 space-y-1 flex-1 overflow-y-auto" aria-label="Principal">
+        {navLinks.map((link) => {
+          const base = link.href.split("?")[0]!;
+          const active =
+            pathname === base || (base !== "/app" && pathname.startsWith(base));
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex min-h-10 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                active
+                  ? "bg-sky-500/15 text-sky-200 border border-sky-400/20"
+                  : "text-slate-400 hover:text-slate-100 hover:bg-white/5",
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" aria-hidden />
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
       <div className="p-4 border-t border-white/10 space-y-2 text-xs text-slate-500">
         <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5">

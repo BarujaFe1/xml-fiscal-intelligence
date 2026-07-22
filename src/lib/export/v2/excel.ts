@@ -31,25 +31,13 @@ function styleHeader(row: ExcelJS.Row) {
   row.alignment = { vertical: "middle", wrapText: true };
 }
 
-function addTable(
-  sheet: ExcelJS.Worksheet,
-  name: string,
-  ref: string,
-  columns: Array<{ name: string }>,
-) {
-  // exceljs TableProperties requires `rows` (can be empty when data already on sheet)
-  sheet.addTable({
-    name,
-    ref,
-    headerRow: true,
-    totalsRow: false,
-    style: {
-      theme: "TableStyleMedium2",
-      showRowStripes: true,
-    },
-    columns,
-    rows: [],
-  });
+/**
+ * Prefer autoFilter over ExcelJS structured tables with `rows: []`.
+ * Empty `rows` after writing sheet cells can produce workbooks Excel asks to repair
+ * (exceljs#2678). autoFilter covers the used range without wiping cell values.
+ */
+function applyAutoFilter(sheet: ExcelJS.Worksheet, ref: string) {
+  sheet.autoFilter = ref;
 }
 
 function setupPrint(sheet: ExcelJS.Worksheet, landscape = true) {
@@ -62,7 +50,6 @@ function setupPrint(sheet: ExcelJS.Worksheet, landscape = true) {
     margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
   };
   sheet.views = [{ state: "frozen", xSplit: 2, ySplit: 1, activeCell: "A2" }];
-  sheet.autoFilter = undefined; // table provides filters
 }
 
 /**
@@ -170,14 +157,7 @@ function buildResumo(wb: ExcelJS.Workbook, dataset: ExportDatasetV2) {
   }
   const typeEnd = r - 1;
   if (typeEnd >= typeStart + 1) {
-    try {
-      addTable(ws, "tblResumoTipos", `A${typeStart}:B${typeEnd}`, [
-        { name: "Tipo" },
-        { name: "Quantidade" },
-      ]);
-    } catch {
-      /* table optional if single header */
-    }
+    applyAutoFilter(ws, `A${typeStart}:B${typeEnd}`);
   }
 
   r += 1;
@@ -296,12 +276,7 @@ function buildDocumentos(wb: ExcelJS.Workbook, dataset: ExportDatasetV2) {
   }
 
   const last = Math.max(1, dataset.documents.length + 1);
-  addTable(
-    ws,
-    "tblDocumentos",
-    `A1:AA${last}`,
-    headers.map((name) => ({ name })),
-  );
+  applyAutoFilter(ws, `A1:${colLetter(headers.length)}${last}`);
 
   const widths = [8, 12, 8, 8, 12, 12, 28, 18, 28, 6, 18, 28, 6, 24, 10, 14, 12, 12, 10, 10, 12, 10, 16, 10, 10, 28, 36];
   widths.forEach((w, i) => {
@@ -403,12 +378,7 @@ function buildItens(wb: ExcelJS.Workbook, dataset: ExportDatasetV2) {
   }
 
   const last = dataset.items.length + 1;
-  addTable(
-    ws,
-    "tblItens",
-    `A1:R${last}`,
-    headers.map((name) => ({ name })),
-  );
+  applyAutoFilter(ws, `A1:${colLetter(headers.length)}${last}`);
   const widths = [28, 12, 6, 12, 36, 10, 10, 8, 8, 8, 8, 12, 12, 12, 10, 24, 22, 22];
   widths.forEach((w, i) => {
     ws.getColumn(i + 1).width = w;
@@ -460,12 +430,7 @@ function buildAlertas(wb: ExcelJS.Workbook, dataset: ExportDatasetV2) {
   }
 
   const last = dataset.findings.length + 1;
-  addTable(
-    ws,
-    "tblAlertas",
-    `A1:H${last}`,
-    headers.map((name) => ({ name })),
-  );
+  applyAutoFilter(ws, `A1:${colLetter(headers.length)}${last}`);
   [12, 14, 14, 28, 40, 12, 24, 24].forEach((w, i) => {
     ws.getColumn(i + 1).width = w;
   });
@@ -523,17 +488,29 @@ function buildManifesto(wb: ExcelJS.Workbook, dataset: ExportDatasetV2) {
   setupPrint(ws, false);
 }
 
-/** Reopen and validate a generated workbook buffer. */
+function colLetter(n: number): string {
+  let s = "";
+  let x = n;
+  while (x > 0) {
+    const m = (x - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    x = Math.floor((x - 1) / 26);
+  }
+  return s || "A";
+}
+
+/** Reopen and validate a generated workbook buffer (structural integrity). */
 export async function verifyWorkbookBuffer(buffer: ArrayBuffer | Uint8Array): Promise<{
   ok: boolean;
   sheetNames: string[];
   errors: string[];
   documentRows: number;
   moneySample?: number;
+  headerCount?: number;
+  dataCellSampleOk?: boolean;
 }> {
   const errors: string[] = [];
   const wb = new ExcelJS.Workbook();
-  // exceljs accepts Buffer / Uint8Array
   await wb.xlsx.load(buffer as ExcelJS.Buffer);
   const expected = ["Resumo", "Documentos", "Itens", "Alertas", "Manifesto"];
   const sheetNames = wb.worksheets.map((s) => s.name);
@@ -543,16 +520,49 @@ export async function verifyWorkbookBuffer(buffer: ArrayBuffer | Uint8Array): Pr
   const docs = wb.getWorksheet("Documentos");
   const documentRows = docs ? Math.max(0, docs.rowCount - 1) : 0;
   let moneySample: number | undefined;
+  let headerCount: number | undefined;
+  let dataCellSampleOk: boolean | undefined;
+  if (docs) {
+    const headerRow = docs.getRow(1);
+    headerCount = 0;
+    headerRow.eachCell(() => {
+      headerCount = (headerCount || 0) + 1;
+    });
+    // Structured tables with empty rows must not be present (corruption vector).
+    try {
+      const tables = typeof docs.getTables === "function" ? docs.getTables() : {};
+      for (const [name, table] of Object.entries(tables || {})) {
+        const t = table as { table?: { rows?: unknown[] }; rows?: unknown[] };
+        const rows = t.table?.rows ?? t.rows;
+        if (Array.isArray(rows) && rows.length === 0 && documentRows > 0) {
+          errors.push(`Tabela ${name} com rows vazio apesar de ${documentRows} linhas de dados`);
+        }
+      }
+    } catch {
+      /* getTables not always available after reload */
+    }
+  }
   if (docs && docs.rowCount >= 2) {
-    const cell = docs.getRow(2).getCell(16);
+    const row2 = docs.getRow(2);
+    const cell = row2.getCell(16);
     moneySample = typeof cell.value === "number" ? cell.value : undefined;
     if (typeof cell.value !== "number") {
       errors.push("Valor total da linha 2 de Documentos não é número");
     }
+    // Ensure body cells survived write (not wiped by empty table)
+    const numCell = row2.getCell(2);
+    dataCellSampleOk = numCell.value != null && String(numCell.value).length > 0;
+    if (!dataCellSampleOk) {
+      errors.push("Linha 2 de Documentos sem valor na coluna Número (possível corrupção de tabela)");
+    }
   }
-  const tables = docs?.getTables?.() || [];
-  if (docs && !Object.keys(tables).length && documentRows > 0) {
-    // exceljs may not expose tables the same way after load — soft check
-  }
-  return { ok: errors.length === 0, sheetNames, errors, documentRows, moneySample };
+  return {
+    ok: errors.length === 0,
+    sheetNames,
+    errors,
+    documentRows,
+    moneySample,
+    headerCount,
+    dataCellSampleOk,
+  };
 }

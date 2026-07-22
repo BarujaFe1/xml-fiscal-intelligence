@@ -163,18 +163,8 @@ export function DocumentExportWorkspace({
     });
   }, [draft]);
 
-  // Single store view for legacy export modal (first selected batch or scope)
-  const primaryStore = stores[0] || null;
-  const legacySelectedIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const id of selectedIds) {
-      const parts = id.split(":");
-      const batchId = parts[0];
-      const docId = parts.slice(1).join(":");
-      if (primaryStore && batchId === primaryStore.batch.id) set.add(docId);
-    }
-    return set;
-  }, [selectedIds, primaryStore]);
+  // Selection uses composite batchId:documentId — wizard resolves across all stores.
+  const exportSelectionIds = selectedIds;
 
   async function exportFieldWorkbook() {
     if (!selectedIds.size) return;
@@ -360,6 +350,28 @@ export function DocumentExportWorkspace({
             selectedIds={facets.parseStatuses}
             onChange={(ids) => setFacets((f) => ({ ...f, parseStatuses: ids }))}
           />
+          <FacetMultiSelect
+            label="CBS (valor)"
+            options={[
+              { id: "gt0", label: "Informado > 0", count: 0 },
+              { id: "zero", label: "Informado = 0", count: 0 },
+              { id: "absent", label: "Não informado", count: 0 },
+            ]}
+            selectedIds={facets.cbsPresence}
+            onChange={(ids) => setFacets((f) => ({ ...f, cbsPresence: ids }))}
+            placeholder="Estado CBS…"
+          />
+          <FacetMultiSelect
+            label="IBS (valor)"
+            options={[
+              { id: "gt0", label: "Informado > 0", count: 0 },
+              { id: "zero", label: "Informado = 0", count: 0 },
+              { id: "absent", label: "Não informado", count: 0 },
+            ]}
+            selectedIds={facets.ibsPresence}
+            onChange={(ids) => setFacets((f) => ({ ...f, ibsPresence: ids }))}
+            placeholder="Estado IBS…"
+          />
         </CardContent>
       </Card>
 
@@ -529,12 +541,12 @@ export function DocumentExportWorkspace({
         </div>
       )}
 
-      {primaryStore && (
+      {stores.length > 0 && (
         <DocumentExportModal
           open={exportOpen}
           onClose={() => setExportOpen(false)}
-          store={primaryStore}
-          selectedIds={legacySelectedIds}
+          stores={stores}
+          selectedIds={exportSelectionIds}
           filters={emptyDocFilters()}
           xmlAvailableCount={selectedXmlStats.withXml}
           xmlMissingCount={selectedXmlStats.withoutXml}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBatchStore, readRawXml } from "@/lib/store/fs-store";
+import { requireApiSession } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,8 +9,10 @@ export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ id: string; documentId: string }> },
 ) {
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
   const { id, documentId } = await ctx.params;
-  const store = await getBatchStore(id);
+  const store = await getBatchStore(auth.userId, id);
   if (!store) return NextResponse.json({ error: "Lote não encontrado" }, { status: 404 });
   const doc = store.documents.find((d) => d.id === documentId);
   if (!doc) return NextResponse.json({ error: "Documento não encontrado" }, { status: 404 });

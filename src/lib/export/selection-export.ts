@@ -22,6 +22,7 @@ import { selectionExportFilename } from "@/lib/export/filenames";
 import { buildSelectedXmlZip } from "@/lib/export/xml-zip";
 import { uniqueZipEntryName } from "@/lib/export/filenames";
 import type { RawXmlRecord } from "@/lib/store/raw-xml-store";
+import { resolveSelectionAcrossStores } from "@/lib/export/resolve-selection";
 
 export type SelectionExportFormat =
   | "xml-zip"
@@ -60,7 +61,14 @@ export function downloadBlob(blob: Blob, filename: string) {
 }
 
 export type RunSelectionExportInput = {
-  store: BatchStore;
+  /** Preferred: all workspace stores for multilote parity. */
+  stores?: BatchStore[];
+  /** Legacy single-store export. Used when `stores` is omitted. */
+  store?: BatchStore;
+  /**
+   * Document ids or composite `batchId:documentId` selection ids.
+   * Multilote must use composite ids.
+   */
   selectedIds: string[];
   format: SelectionExportFormat;
   filters?: Record<string, unknown>;
@@ -71,7 +79,6 @@ export type RunSelectionExportInput = {
   csvProfile?: ExportCsvProfile;
   jsonProfile?: ExportJsonProfile;
   packageArtifacts?: PackageArtifact[];
-  /** Required when preflight.requiresCompetenceAck */
   competenceAcknowledged?: boolean;
   signal?: AbortSignal;
   onProgress?: (step: SelectionExportProgress, detail?: string) => void;
@@ -87,17 +94,43 @@ export type RunSelectionExportResult = {
   preflight?: ExportPreflight;
   generationId?: string;
   requiresCompetenceAck?: boolean;
+  batchCount?: number;
 };
 
+function resolveStoreAndIds(input: RunSelectionExportInput): {
+  store: BatchStore;
+  documentIds: string[];
+  batchCount: number;
+  missingCompositeIds: string[];
+} {
+  const stores = input.stores?.length
+    ? input.stores
+    : input.store
+      ? [input.store]
+      : [];
+  if (!stores.length) {
+    throw new Error("Nenhum lote informado para exportação");
+  }
+  const resolved = resolveSelectionAcrossStores(stores, input.selectedIds);
+  return {
+    store: resolved.store,
+    documentIds: resolved.documentIds,
+    batchCount: resolved.batchCount,
+    missingCompositeIds: resolved.missingCompositeIds,
+  };
+}
+
 export function previewExportPreflight(
-  store: BatchStore,
+  storeOrStores: BatchStore | BatchStore[],
   selectedIds: string[],
   options: BuildExportDatasetOptions = {},
 ): ExportPreflight {
+  const stores = Array.isArray(storeOrStores) ? storeOrStores : [storeOrStores];
+  const resolved = resolveSelectionAcrossStores(stores, selectedIds);
   const rawXmlAvailability = (options.rawXmlAvailability || []).length
     ? options.rawXmlAvailability
     : undefined;
-  const dataset = buildExportDataset(store, selectedIds, {
+  const dataset = buildExportDataset(resolved.store, resolved.documentIds, {
     ...options,
     rawXmlAvailability,
   });
@@ -108,8 +141,6 @@ export async function runSelectionExport(
   input: RunSelectionExportInput,
 ): Promise<RunSelectionExportResult> {
   const {
-    store,
-    selectedIds,
     format,
     filters,
     rawByDocumentId,
@@ -134,7 +165,9 @@ export async function runSelectionExport(
   onProgress?.("preparing", "Montando dataset canônico");
   throwIfCanceled();
 
-  // XML ZIP requires operational_full — masking filenames does not anonymize XML content.
+  const { store, documentIds, batchCount, missingCompositeIds } = resolveStoreAndIds(input);
+  const selectedIds = documentIds;
+
   const effectivePrivacy: ExportPrivacyProfile =
     format === "xml-zip" || (format === "package" && packageArtifacts.includes("xml"))
       ? "operational_full"
@@ -159,6 +192,11 @@ export async function runSelectionExport(
     includeRawStructures: jsonProfile === "audit_full" || format === "json-flat",
     rawXmlAvailability: rawAvail,
   });
+  if (missingCompositeIds.length) {
+    dataset.selection.missingIds = [
+      ...new Set([...dataset.selection.missingIds, ...missingCompositeIds]),
+    ];
+  }
 
   onProgress?.("preflight", "Verificando pré-voo");
   const preflight = buildExportPreflight(dataset, csvProfile);
@@ -169,6 +207,7 @@ export async function runSelectionExport(
       message: "Nenhum documento válido na seleção (IDs inexistentes ou excluídos).",
       missingIds: dataset.selection.missingIds,
       preflight,
+      batchCount,
     };
   }
 
@@ -180,6 +219,7 @@ export async function runSelectionExport(
         "A competência informada diverge do período real dos documentos. Confirme para continuar.",
       preflight,
       generationId: dataset.manifest.generationId,
+      batchCount,
     };
   }
 
@@ -189,9 +229,6 @@ export async function runSelectionExport(
   throwIfCanceled();
 
   if (format === "xml-zip") {
-    if (privacyProfile !== "operational_full") {
-      // Soft warning path — still force full because XML cannot be masked meaningfully
-    }
     onProgress?.("reading_xml", "Lendo XMLs locais");
     throwIfCanceled();
     const result = await buildSelectedXmlZip({
@@ -210,6 +247,7 @@ export async function runSelectionExport(
         message: result.message,
         missingXmlIds: result.missingDocumentIds,
         preflight,
+        batchCount,
       };
     }
     const filename = selectionExportFilename("xml-zip", batchLabel, new Date(), gid);
@@ -223,6 +261,7 @@ export async function runSelectionExport(
       missingXmlIds: result.missingDocumentIds,
       preflight,
       generationId: gid,
+      batchCount,
     };
   }
 
@@ -237,7 +276,14 @@ export async function runSelectionExport(
       filename,
     );
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "csv-docs") {
@@ -246,7 +292,14 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "csv-items") {
@@ -255,7 +308,14 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "csv-zip") {
@@ -264,7 +324,14 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(blob, filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "json" || format === "json-flat") {
@@ -285,7 +352,14 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(new Blob([text], { type: "application/json" }), filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "jsonl") {
@@ -294,7 +368,14 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(new Blob([text], { type: "application/x-ndjson" }), filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "html") {
@@ -303,11 +384,17 @@ export async function runSelectionExport(
     onProgress?.("downloading", filename);
     downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), filename);
     onProgress?.("done");
-    return { ok: true, filename, missingIds: dataset.selection.missingIds, preflight, generationId: gid };
+    return {
+      ok: true,
+      filename,
+      missingIds: dataset.selection.missingIds,
+      preflight,
+      generationId: gid,
+      batchCount,
+    };
   }
 
   if (format === "keys-txt") {
-    // Keys must be full 44-digit for interoperability — use raw keys from store
     const rawKeys = new Map<string, string>();
     for (const d of store.documents) {
       if (dataset.selection.foundIds.includes(d.id) && d.accessKey) {
@@ -320,6 +407,7 @@ export async function runSelectionExport(
         message:
           "TXT de chaves exige perfil operacional completo (chaves de 44 dígitos para sistemas externos).",
         preflight,
+        batchCount,
       };
     }
     const keys = buildKeysTxtFromDataset(dataset, { rawKeysByDocumentId: rawKeys });
@@ -334,6 +422,7 @@ export async function runSelectionExport(
       withoutKey: keys.withoutKey,
       preflight,
       generationId: gid,
+      batchCount,
     };
   }
 
@@ -345,6 +434,7 @@ export async function runSelectionExport(
         message:
           "ZIP de XML no pacote completo exige privacidade operacional (conteúdo XML não pode ser mascarado).",
         preflight,
+        batchCount,
       };
     }
 
@@ -384,8 +474,9 @@ export async function runSelectionExport(
       missingIds: dataset.selection.missingIds,
       preflight,
       generationId: gid,
+      batchCount,
     };
   }
 
-  return { ok: false, message: `Formato não suportado: ${format}`, preflight };
+  return { ok: false, message: `Formato não suportado: ${format}`, preflight, batchCount };
 }

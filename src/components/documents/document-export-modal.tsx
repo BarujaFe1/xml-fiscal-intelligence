@@ -135,6 +135,7 @@ export function DocumentExportModal({
   open,
   onClose,
   store,
+  stores,
   selectedIds,
   filters,
   xmlAvailableCount,
@@ -142,7 +143,10 @@ export function DocumentExportModal({
 }: {
   open: boolean;
   onClose: () => void;
-  store: BatchStore;
+  /** @deprecated Prefer `stores` for multilote parity. */
+  store?: BatchStore;
+  stores?: BatchStore[];
+  /** Prefer composite `batchId:documentId` ids for multilote. */
   selectedIds: ReadonlySet<string>;
   filters: DocFilterState;
   xmlAvailableCount: number;
@@ -169,23 +173,32 @@ export function DocumentExportModal({
   const abortRef = useRef<AbortController | null>(null);
   const lockedRef = useRef(false);
 
+  const allStores = useMemo(() => {
+    if (stores?.length) return stores;
+    if (store) return [store];
+    return [];
+  }, [stores, store]);
+
   const snapshot = useMemo(() => snapshotSelectionIds(selectedIds), [selectedIds]);
 
   const preflight: ExportPreflight | null = useMemo(() => {
-    if (!open || !snapshot.length) return null;
+    if (!open || !snapshot.length || !allStores.length) return null;
     try {
-      return previewExportPreflight(store, snapshot, {
+      return previewExportPreflight(allStores, snapshot, {
         filters: { ...filters },
         privacyProfile: privacy,
-        rawXmlAvailability: snapshot.map((id) => ({
-          documentId: id,
-          available: true, // optimistic for estimate; real check on generate for XML
-        })),
+        rawXmlAvailability: snapshot.map((id) => {
+          const documentId = id.includes(":") ? id.slice(id.indexOf(":") + 1) : id;
+          return {
+            documentId,
+            available: true,
+          };
+        }),
       });
     } catch {
       return null;
     }
-  }, [open, store, snapshot, filters, privacy]);
+  }, [open, snapshot, allStores, filters, privacy]);
 
   // Adjust XML availability estimate from props
   const preflightView = useMemo(() => {
@@ -250,7 +263,25 @@ export function DocumentExportModal({
 
       if (needsXml) {
         setStep("reading_xml");
-        rawByDocumentId = await idbGetRawXmlsForDocuments(store.batch.id, snapshot);
+        const merged = new Map<string, RawXmlRecord>();
+        for (const s of allStores) {
+          const docIds = snapshot
+            .map((raw) => {
+              if (!raw.includes(":")) return raw;
+              const [batchId, ...rest] = raw.split(":");
+              if (batchId !== s.batch.id) return null;
+              return rest.join(":");
+            })
+            .filter((x): x is string => Boolean(x));
+          if (!docIds.length && allStores.length === 1) {
+            const part = await idbGetRawXmlsForDocuments(s.batch.id, snapshot.map((id) => (id.includes(":") ? id.slice(id.indexOf(":") + 1) : id)));
+            for (const [k, v] of part) merged.set(k, v);
+          } else if (docIds.length) {
+            const part = await idbGetRawXmlsForDocuments(s.batch.id, docIds);
+            for (const [k, v] of part) merged.set(k, v);
+          }
+        }
+        rawByDocumentId = merged;
         if (rawByDocumentId.size === 0) {
           setError(
             "XML original indisponível; reimporte o ZIP. Lotes antigos não possuem rawXml no IndexedDB.",
@@ -267,7 +298,7 @@ export function DocumentExportModal({
       }
 
       const result = await runSelectionExport({
-        store,
+        stores: allStores,
         selectedIds: snapshot,
         format,
         filters: { ...filters },
@@ -377,9 +408,9 @@ export function DocumentExportModal({
                   XML local disponível: {xmlAvailableCount} · indisponível: {xmlMissingCount}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Lote: {store.batch.name}
-                  {store.batch.month && store.batch.year
-                    ? ` · competência informada ${String(store.batch.month).padStart(2, "0")}/${store.batch.year}`
+                  Lotes: {allStores.length}
+                  {allStores[0]?.batch.month && allStores[0]?.batch.year
+                    ? ` · competência informada ${String(allStores[0].batch.month).padStart(2, "0")}/${allStores[0].batch.year}`
                     : ""}
                 </p>
               </CardContent>

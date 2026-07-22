@@ -86,13 +86,49 @@ function rowToBatch(row: Record<string, unknown>): Batch {
   };
 }
 
-export async function ensureWorkspace(workspaceLocalKey: string, name: string): Promise<string> {
+export async function ensureWorkspace(
+  workspaceLocalKey: string,
+  name: string,
+  options?: { ownerUserId?: string },
+): Promise<string> {
   const supabase = createServiceClient();
   const id = uuidFromLocalKey("workspace", workspaceLocalKey);
   const { data } = await supabase.from("workspaces").select("id").eq("id", id).maybeSingle();
   if (!data) {
     const { error } = await supabase.from("workspaces").insert({ id, name });
     if (error) throw new Error(error.message);
+    if (options?.ownerUserId) {
+      const { error: memErr } = await supabase.from("workspace_members").insert({
+        workspace_id: id,
+        user_id: options.ownerUserId,
+        role: "owner",
+      });
+      if (memErr && !/duplicate|unique/i.test(memErr.message)) {
+        throw new Error(memErr.message);
+      }
+    }
+  } else if (options?.ownerUserId) {
+    // Ensure creator has membership if missing (idempotent)
+    const { data: mem } = await supabase
+      .from("workspace_members")
+      .select("user_id")
+      .eq("workspace_id", id)
+      .eq("user_id", options.ownerUserId)
+      .maybeSingle();
+    if (!mem) {
+      // Do not auto-join existing foreign workspaces — only attach when empty membership
+      const { count } = await supabase
+        .from("workspace_members")
+        .select("*", { count: "exact", head: true })
+        .eq("workspace_id", id);
+      if ((count ?? 0) === 0) {
+        await supabase.from("workspace_members").insert({
+          workspace_id: id,
+          user_id: options.ownerUserId,
+          role: "owner",
+        });
+      }
+    }
   }
   return id;
 }

@@ -2,6 +2,16 @@ import type { BatchStore, DocumentSummary } from "@/types";
 import type { AppliedFacetFilters, FilterDraft, WorkspaceDocument } from "@/lib/documents/workspace-types";
 import { selectionId } from "@/lib/documents/workspace-types";
 import { moneyAdd, moneyToFixed } from "@/lib/money/decimal";
+import { detectDocumentRtcLabels } from "@/lib/documents/rtc-labels";
+
+function rtcPresenceState(has: boolean, amount: string | number | undefined): string {
+  if (!has && (amount == null || amount === "")) return "absent";
+  if (!has) return "absent";
+  const n = typeof amount === "number" ? amount : Number(String(amount).replace(",", "."));
+  if (!Number.isFinite(n)) return "absent";
+  if (n === 0) return "zero";
+  return "gt0";
+}
 
 function partyMatches(
   selectedIds: string[],
@@ -104,6 +114,17 @@ function matchDoc(
       ([k, v]) => /cClassTrib$/i.test(k) && set.has(String(v)),
     );
     if (!hit) return false;
+  }
+  if (facets.cbsPresence.length || facets.ibsPresence.length) {
+    const rtc = detectDocumentRtcLabels(d);
+    if (facets.cbsPresence.length) {
+      const state = rtcPresenceState(rtc.hasCbs, rtc.somaCbs);
+      if (!facets.cbsPresence.includes(state)) return false;
+    }
+    if (facets.ibsPresence.length) {
+      const state = rtcPresenceState(rtc.hasIbs, rtc.somaIbs);
+      if (!facets.ibsPresence.includes(state)) return false;
+    }
   }
 
   if (committed.number && !(d.number || "").includes(committed.number)) return false;

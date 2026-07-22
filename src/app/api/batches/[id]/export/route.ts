@@ -5,6 +5,7 @@ import { buildDocumentsCsvFromDataset, buildItemsCsvFromDataset } from "@/lib/ex
 import { buildHtmlFromDataset } from "@/lib/export/v2/html";
 import { buildJsonFromDataset } from "@/lib/export/v2/json";
 import { getBatchStore } from "@/lib/store/fs-store";
+import { requireApiSession } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,8 +14,10 @@ export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireApiSession();
+  if (!auth.ok) return auth.response;
   const { id } = await ctx.params;
-  const store = await getBatchStore(id);
+  const store = await getBatchStore(auth.userId, id);
   if (!store) return NextResponse.json({ error: "Lote não encontrado" }, { status: 404 });
 
   const type = req.nextUrl.searchParams.get("type") || "xlsx";
