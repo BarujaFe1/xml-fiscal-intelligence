@@ -14,6 +14,7 @@
 | Billing events | Per Stripe + local copy 24 months | |
 | PVA validation runs | 5 years suggested (fiscal cycle) | User-supplied reports |
 | Local IndexedDB | Until user clears browser / migrates | Not a backup strategy |
+| Local `rawXml` store (IDB v2) | Same lifetime as batch; deleted with batch | Original XML text only; never reconstructed |
 
 ## Deletion flows (target)
 
@@ -24,6 +25,7 @@
 
 ## Current implementation status
 
-- Local mode: user can delete batch from IndexedDB UI/API.  
+- Local mode: user can delete batch from IndexedDB UI/API; cascade removes `rawXml` rows for that batch.  
 - Cloud purge automation: **not live** until Supabase project + jobs exist.  
 - Backup/restore tested procedure: see `BACKUP_AND_RESTORE.md`.
+- IndexedDB schema: v1 batches → v2 adds `rawXml` object store (compatible upgrade; old batches lack originals until reimport).

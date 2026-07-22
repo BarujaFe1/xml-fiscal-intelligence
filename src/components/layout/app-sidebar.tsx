@@ -32,6 +32,7 @@ const navGroups = [
       { href: "/app", label: "Início", icon: LayoutDashboard },
       { href: "/app/upload", label: "Importar", icon: Upload },
       { href: "/app/batches", label: "Lotes", icon: FolderOpen },
+      { href: "/app/documents", label: "Documentos", icon: FileCode2 },
       { href: "/app/companies", label: "Empresas", icon: Building2 },
       { href: "/app/reconciliation", label: "Conferir", icon: ArrowLeftRight },
       { href: "/app/closing", label: "Fechamentos", icon: CalendarDays },

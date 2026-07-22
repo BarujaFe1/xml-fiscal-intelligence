@@ -12,13 +12,14 @@ describe("real ZIP smoke (local only)", () => {
       return;
     }
     const buffer = fs.readFileSync(realZip);
-    const store = await processZipBatchInMemory({
+    const { store } = await processZipBatchInMemory({
       buffer,
       fileName: "202606 NFe.zip",
       month: 6,
       year: 2026,
       keepRawJson: false,
       keepFields: false,
+      captureRawXml: false,
     });
     expect(store.batch.totalXml).toBeGreaterThan(0);
     expect(store.batch.validXml + store.batch.invalidXml).toBe(store.documents.length);

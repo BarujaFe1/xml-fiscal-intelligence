@@ -39,7 +39,7 @@ async function main() {
   writeFileSync(zipPath, buffer);
 
   const t0 = performance.now();
-  const store = await processZipBatchInMemory({
+  const { store } = await processZipBatchInMemory({
     buffer,
     fileName: `bench-${count}.zip`,
     name: `perf-${count}`,

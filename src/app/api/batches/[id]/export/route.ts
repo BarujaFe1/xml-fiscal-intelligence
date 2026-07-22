@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  buildBatchWorkbook,
-  buildDocumentsCsv,
-  buildHtmlReport,
-  buildItemsCsv,
-} from "@/lib/export/excel";
+import { buildExportDataset } from "@/lib/export/v2/dataset";
+import { buildWorkbookFromDataset } from "@/lib/export/v2/excel";
+import { buildDocumentsCsvFromDataset, buildItemsCsvFromDataset } from "@/lib/export/v2/csv";
+import { buildHtmlFromDataset } from "@/lib/export/v2/html";
+import { buildJsonFromDataset } from "@/lib/export/v2/json";
 import { getBatchStore } from "@/lib/store/fs-store";
 
 export const runtime = "nodejs";
@@ -19,9 +18,17 @@ export async function GET(
   if (!store) return NextResponse.json({ error: "Lote não encontrado" }, { status: 404 });
 
   const type = req.nextUrl.searchParams.get("type") || "xlsx";
+  const privacy =
+    (req.nextUrl.searchParams.get("privacy") as "operational_full" | "shareable_masked" | null) ||
+    "operational_full";
+  const allIds = store.documents.map((d) => d.id);
+  const dataset = buildExportDataset(store, allIds, {
+    privacyProfile: privacy === "shareable_masked" ? "shareable_masked" : "operational_full",
+    includeRawStructures: type === "json-flat",
+  });
 
   if (type === "xlsx") {
-    const buffer = await buildBatchWorkbook(store);
+    const buffer = await buildWorkbookFromDataset(dataset);
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -31,7 +38,7 @@ export async function GET(
   }
 
   if (type === "csv-documents") {
-    const csv = buildDocumentsCsv(store);
+    const csv = buildDocumentsCsvFromDataset(dataset, "excel_pt_br");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
@@ -41,7 +48,7 @@ export async function GET(
   }
 
   if (type === "csv-items") {
-    const csv = buildItemsCsv(store);
+    const csv = buildItemsCsvFromDataset(dataset, "excel_pt_br");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
@@ -51,28 +58,27 @@ export async function GET(
   }
 
   if (type === "json") {
-    return NextResponse.json(store, {
+    const body = buildJsonFromDataset(dataset, "compact");
+    return new NextResponse(body, {
       headers: {
+        "Content-Type": "application/json; charset=utf-8",
         "Content-Disposition": `attachment; filename="lote-${id}.json"`,
       },
     });
   }
 
   if (type === "json-flat") {
-    const flat = store.documents.map((d) => ({
-      id: d.id,
-      type: d.documentType,
-      ...d.flattenedJson,
-    }));
-    return NextResponse.json(flat, {
+    const body = buildJsonFromDataset(dataset, "flat");
+    return new NextResponse(body, {
       headers: {
+        "Content-Type": "application/json; charset=utf-8",
         "Content-Disposition": `attachment; filename="flat-${id}.json"`,
       },
     });
   }
 
   if (type === "html") {
-    const html = buildHtmlReport(store);
+    const html = buildHtmlFromDataset(dataset);
     return new NextResponse(html, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",

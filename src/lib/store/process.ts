@@ -1,6 +1,5 @@
 import { DEFAULT_WORKSPACE_ID, saveBatchStore, saveRawXml } from "@/lib/store/fs-store";
 import { processZipBatchInMemory } from "@/lib/store/process-memory";
-import { extractXmlFromZip } from "@/lib/zip/extract";
 import type { BatchStore } from "@/types";
 
 export interface ProcessZipInput {
@@ -16,31 +15,26 @@ export interface ProcessZipInput {
 
 /** Server-side ZIP processing with filesystem persistence (local / small uploads). */
 export async function processZipBatch(input: ProcessZipInput): Promise<BatchStore> {
-  const store = await processZipBatchInMemory({
+  const { store, rawXmls } = await processZipBatchInMemory({
     ...input,
     workspaceId: input.workspaceId || DEFAULT_WORKSPACE_ID,
     keepRawJson: true,
     keepFields: true,
+    captureRawXml: true,
     onProgress: async (progress, message) => {
-      // Persist lightweight progress snapshot when possible
       await input.onProgress?.(progress, message);
     },
   });
 
-  // Persist raw XMLs for download
-  try {
-    const extracted = await extractXmlFromZip(input.buffer);
-    for (const file of extracted.xmlFiles) {
-      const doc = store.documents.find((d) => d.fileName === file.fileName);
-      if (!doc) continue;
-      try {
-        doc.rawXmlPath = await saveRawXml(store.batch.id, file.fileName, file.content);
-      } catch {
-        // non-fatal
-      }
+  // Persist original XMLs to filesystem (server path) — exact captured bytes/text.
+  for (const raw of rawXmls) {
+    const doc = store.documents.find((d) => d.id === raw.documentId);
+    if (!doc) continue;
+    try {
+      doc.rawXmlPath = await saveRawXml(store.batch.id, raw.fileName, raw.content);
+    } catch {
+      // non-fatal
     }
-  } catch {
-    // non-fatal
   }
 
   await saveBatchStore(store);

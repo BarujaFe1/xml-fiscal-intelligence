@@ -10,13 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BatchTabs } from "@/components/batches/batch-tabs";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
-import {
-  buildBatchJsonEnvelope,
-  buildBatchWorkbook,
-  buildDocumentsCsv,
-  buildHtmlReport,
-  buildItemsCsv,
-} from "@/lib/export/excel";
+import { buildExportDataset } from "@/lib/export/v2/dataset";
+import { buildWorkbookFromDataset } from "@/lib/export/v2/excel";
+import { buildDocumentsCsvFromDataset, buildItemsCsvFromDataset } from "@/lib/export/v2/csv";
+import { buildHtmlFromDataset } from "@/lib/export/v2/html";
+import { buildJsonFromDataset } from "@/lib/export/v2/json";
 import { useBatchStore } from "@/lib/store/use-batch-store";
 import type { BatchStore } from "@/types";
 
@@ -194,8 +192,13 @@ async function exportPreset(store: BatchStore, preset: string) {
     return;
   }
 
+  const allIds = store.documents.map((d) => d.id);
+  const dataset = buildExportDataset(store, allIds, {
+    privacyProfile: "operational_full",
+  });
+
   if (preset === "xlsx") {
-    const buffer = await buildBatchWorkbook(store);
+    const buffer = await buildWorkbookFromDataset(dataset);
     downloadBlob(
       new Blob([new Uint8Array(buffer)], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -205,24 +208,46 @@ async function exportPreset(store: BatchStore, preset: string) {
     return;
   }
   if (preset === "csv-documents") {
-    downloadBlob(new Blob([buildDocumentsCsv(store)], { type: "text/csv;charset=utf-8" }), `documentos-${id}.csv`);
+    downloadBlob(
+      new Blob([buildDocumentsCsvFromDataset(dataset, "excel_pt_br")], {
+        type: "text/csv;charset=utf-8",
+      }),
+      `documentos-${id}.csv`,
+    );
     return;
   }
   if (preset === "csv-items") {
-    downloadBlob(new Blob([buildItemsCsv(store)], { type: "text/csv;charset=utf-8" }), `itens-${id}.csv`);
+    downloadBlob(
+      new Blob([buildItemsCsvFromDataset(dataset, "excel_pt_br")], {
+        type: "text/csv;charset=utf-8",
+      }),
+      `itens-${id}.csv`,
+    );
     return;
   }
   if (preset === "json") {
-    downloadBlob(new Blob([JSON.stringify(buildBatchJsonEnvelope(store), null, 2)], { type: "application/json" }), `lote-${id}.json`);
+    downloadBlob(
+      new Blob([buildJsonFromDataset(dataset, "compact")], { type: "application/json" }),
+      `lote-${id}.json`,
+    );
     return;
   }
   if (preset === "json-flat") {
-    const flat = store.documents.map((d) => ({ id: d.id, type: d.documentType, ...d.flattenedJson }));
-    downloadBlob(new Blob([JSON.stringify(flat, null, 2)], { type: "application/json" }), `flat-${id}.json`);
+    const flatDs = buildExportDataset(store, allIds, {
+      privacyProfile: "operational_full",
+      includeRawStructures: true,
+    });
+    downloadBlob(
+      new Blob([buildJsonFromDataset(flatDs, "flat")], { type: "application/json" }),
+      `flat-${id}.json`,
+    );
     return;
   }
   if (preset === "html") {
-    downloadBlob(new Blob([buildHtmlReport(store)], { type: "text/html;charset=utf-8" }), `relatorio-${id}.html`);
+    downloadBlob(
+      new Blob([buildHtmlFromDataset(dataset)], { type: "text/html;charset=utf-8" }),
+      `relatorio-${id}.html`,
+    );
   }
 }
 

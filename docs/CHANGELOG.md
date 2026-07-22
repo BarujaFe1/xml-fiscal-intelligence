@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — documents selection & export hub
+
+### Added
+- Documents page: virtualized table, column picker, extended filters (period, number, series, UF origin/dest, protocol, duplicate, quality…), sticky selection bar.
+- Select all **filtered** results (not only visible rows); tri-state header checkbox; selection survives filter changes.
+- Selection export modal: ZIP of original XMLs, XLSX, CSV (`;`), CSV ZIP, JSON, HTML, TXT access keys.
+- IndexedDB v2 `rawXml` store preserving exact import XML; cascade delete with batch; quota error handling.
+- Unit tests: filters, selection, selected subset store, exports, ZIP collision/Zip Slip, rawXml repo.
+- E2E: filter → select filtered → TXT download → clear selection.
+
 ## 2026-07-13 — `chore/portfolio-quality-pass`
 
 ### Added

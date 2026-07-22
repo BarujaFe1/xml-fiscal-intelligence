@@ -1,4 +1,8 @@
-import { processZipBatchInMemory, type ProcessZipMemoryInput } from "@/lib/store/process-memory";
+import {
+  processZipBatchInMemory,
+  type CapturedRawXml,
+  type ProcessZipMemoryInput,
+} from "@/lib/store/process-memory";
 import type { BatchStore } from "@/types";
 import type { ImportWorkerInbound, ImportWorkerOutbound } from "@/lib/import/worker-messages";
 
@@ -16,6 +20,11 @@ export interface RunImportOptions extends Omit<
   forceMainThread?: boolean;
 }
 
+export type RunImportResult = {
+  store: BatchStore;
+  rawXmls: CapturedRawXml[];
+};
+
 function serializeHashIndex(
   index: RunImportOptions["knownHashIndex"],
 ): Record<string, { documentId: string; batchId: string }> | undefined {
@@ -28,7 +37,7 @@ function serializeHashIndex(
  * Prefer Web Worker for ZIP parse so the UI stays responsive.
  * Falls back to main-thread `processZipBatchInMemory` when Worker is unavailable.
  */
-export async function runImportPipeline(options: RunImportOptions): Promise<BatchStore> {
+export async function runImportPipeline(options: RunImportOptions): Promise<RunImportResult> {
   const knownHashes = Array.from(
     options.knownHashes instanceof Set ? options.knownHashes : options.knownHashes || [],
   );
@@ -43,7 +52,7 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
     });
   }
 
-  return new Promise<BatchStore>((resolve, reject) => {
+  return new Promise<RunImportResult>((resolve, reject) => {
     let worker: Worker;
     try {
       worker = new Worker(new URL("./import.worker.ts", import.meta.url), { type: "module" });
@@ -92,7 +101,7 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
       }
       if (msg.type === "done") {
         cleanup();
-        resolve(msg.store);
+        resolve({ store: msg.store, rawXmls: msg.rawXmls || [] });
       }
     };
 
@@ -126,6 +135,7 @@ export async function runImportPipeline(options: RunImportOptions): Promise<Batc
       workspaceId: options.workspaceId,
       keepRawJson: options.keepRawJson,
       keepFields: options.keepFields,
+      captureRawXml: options.captureRawXml ?? true,
       incremental: options.incremental,
       knownHashes,
       knownHashIndex,

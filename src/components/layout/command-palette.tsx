@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
   FileSearch,
+  FileCode2,
   FolderOpen,
   GitCompare,
   LayoutDashboard,
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/app", label: "Visão geral", icon: LayoutDashboard },
   { href: "/app/upload", label: "Importações", icon: Upload },
   { href: "/app/batches", label: "Histórico de lotes", icon: FolderOpen },
+  { href: "/app/documents", label: "Documentos / exportações", icon: FileCode2 },
   { href: "/app/search", label: "Busca global", icon: Search },
   { href: "/app/audit", label: "Auditoria fiscal", icon: FileSearch },
   { href: "/app/relationships", label: "Relacionamentos", icon: GitCompare },

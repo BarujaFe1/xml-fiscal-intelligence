@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xml-fiscal-intelligence.local/schemas/export-dataset-compact-2.0.0.json",
+  "title": "ExportDatasetV2 compact profile",
+  "type": "object",
+  "required": ["schemaVersion", "manifest", "summary", "documents", "items", "profile"],
+  "properties": {
+    "schemaVersion": { "const": "2.0.0" },
+    "profile": { "const": "compact" },
+    "manifest": {
+      "type": "object",
+      "required": ["generationId", "totals", "counts", "privacy"],
+      "properties": {
+        "emptyReason": { "type": ["string", "null"] },
+        "totals": {
+          "type": "object",
+          "required": ["totalValue"],
+          "properties": {
+            "totalValue": { "type": "string", "pattern": "^-?\\d+\\.\\d{2}$" }
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "documentType", "totalValue"],
+        "properties": {
+          "rawJson": false,
+          "flattenedJson": false,
+          "totalValue": { "type": "string", "pattern": "^-?\\d+\\.\\d{2}$" }
+        }
+      }
+    },
+    "items": { "type": "array" },
+    "findings": { "type": "array" },
+    "relationships": { "type": "array" }
+  }
+}

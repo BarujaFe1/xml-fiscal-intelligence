@@ -6,7 +6,7 @@ import { generateObligationLocal } from "../src/modules/obligations/generate-loc
 async function main() {
   const zip = path.join(process.env.USERPROFILE || "", "Downloads", "202606 NFe.zip");
   const buffer = readFileSync(zip);
-  const s = await processZipBatchInMemory({
+  const { store: s } = await processZipBatchInMemory({
     buffer,
     fileName: "202606 NFe.zip",
     name: "202606",

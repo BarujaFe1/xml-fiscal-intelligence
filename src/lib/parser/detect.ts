@@ -19,7 +19,54 @@ function collectKeys(obj: unknown, keys = new Set<string>(), depth = 0): Set<str
 }
 
 /**
+ * Prefer ide/mod from the parsed tree (canonical). Falls back to raw heuristics.
+ * Model 55 → NFE, model 65 → NFCE. Never classify mod=55 as NFCE.
+ */
+export function extractIdeMod(parsed: unknown): string | undefined {
+  const found = findFirstByLocalName(parsed, "mod", 0, 12);
+  if (found === undefined || found === null) return undefined;
+  if (typeof found === "object" && found !== null && "#text" in (found as object)) {
+    return String((found as { "#text": unknown })["#text"]).trim();
+  }
+  const s = String(found).trim();
+  return s || undefined;
+}
+
+function findFirstByLocalName(
+  obj: unknown,
+  localName: string,
+  depth: number,
+  maxDepth: number,
+): unknown {
+  if (!obj || typeof obj !== "object" || depth > maxDepth) return undefined;
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const hit = findFirstByLocalName(item, localName, depth + 1, maxDepth);
+      if (hit !== undefined) return hit;
+    }
+    return undefined;
+  }
+  for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+    const clean = (k.includes(":") ? k.split(":").pop()! : k).toLowerCase();
+    if (clean === localName.toLowerCase()) return v;
+    // Prefer ide.mod by descending into ide first when present
+    if (clean === "ide") {
+      const inIde = findFirstByLocalName(v, localName, depth + 1, maxDepth);
+      if (inIde !== undefined) return inIde;
+    }
+  }
+  for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+    const clean = (k.includes(":") ? k.split(":").pop()! : k).toLowerCase();
+    if (clean === "ide") continue;
+    const hit = findFirstByLocalName(v, localName, depth + 1, maxDepth);
+    if (hit !== undefined) return hit;
+  }
+  return undefined;
+}
+
+/**
  * Detect fiscal document family from parsed XML object and/or raw string.
+ * For NF-e family, `ide/mod` prevails over loose raw heuristics.
  */
 export function detectDocumentType(parsed: unknown, rawXml = ""): DocumentType {
   const raw = rawXml.toLowerCase();
@@ -66,9 +113,15 @@ export function detectDocumentType(parsed: unknown, rawXml = ""): DocumentType {
     score(nfseSignals) +
     (hasAny(raw, ["compnfse", "infnfse", "prestadorservico", "abrasf"]) ? 2 : 0);
 
-  // NFC-e: model 65
+  // NF-e family: model from ide/mod prevails
   if (nfeScore >= cteScore && nfeScore >= nfseScore && nfeScore > 0) {
-    if (hasAny(raw, [">65<", "<mod>65</mod>", "nfc-e", "nfce"])) return "NFCE";
+    const mod = extractIdeMod(parsed);
+    if (mod === "65") return "NFCE";
+    if (mod === "55") return "NFE";
+    // Fallback heuristics only when mod absent
+    if (hasAny(raw, ["<mod>65</mod>", "nfc-e", "nfce"])) return "NFCE";
+    // Avoid treating bare ">65<" as decisive when mod=55 may exist elsewhere
+    if (!mod && hasAny(raw, [">65<"])) return "NFCE";
     return "NFE";
   }
   if (keys.has("cteproc") || keys.has("cte")) {
@@ -80,7 +133,11 @@ export function detectDocumentType(parsed: unknown, rawXml = ""): DocumentType {
 
   const max = Math.max(nfeScore, cteScore, nfseScore);
   if (max === 0) return "UNKNOWN";
-  if (max === nfeScore) return "NFE";
+  if (max === nfeScore) {
+    const mod = extractIdeMod(parsed);
+    if (mod === "65") return "NFCE";
+    return "NFE";
+  }
   if (max === cteScore) return "CTE";
   if (max === nfseScore) return "NFSE";
   return "UNKNOWN";

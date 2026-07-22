@@ -46,7 +46,7 @@ async function main() {
   const zip = path.join(process.env.USERPROFILE || "", "Downloads", "202606 NFe.zip");
   const buf = readFileSync(zip);
   console.log("importing zip…");
-  const store = await processZipBatchInMemory({
+  const { store } = await processZipBatchInMemory({
     buffer: buf,
     fileName: "z.zip",
     name: "t",

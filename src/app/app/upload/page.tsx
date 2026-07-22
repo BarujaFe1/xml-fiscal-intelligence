@@ -12,6 +12,7 @@ import { Input, Label } from "@/components/ui/input";
 import { LocalPersistenceBanner } from "@/components/feedback/honesty-banners";
 import { runImportPipeline } from "@/lib/import/run-import-worker";
 import { idbCollectKnownHashIndex, idbSaveBatchStore } from "@/lib/store/idb-store";
+import { idbPutRawXmls, RawXmlQuotaError } from "@/lib/store/raw-xml-store";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function UploadPage() {
       }
 
       setProgressMessage("Processando (Web Worker quando disponível)…");
-      const store = await runImportPipeline({
+      const { store, rawXmls } = await runImportPipeline({
         buffer,
         fileName: file.name,
         name: name || undefined,
@@ -87,6 +88,7 @@ export default function UploadPage() {
         year: year ? Number(year) : undefined,
         keepRawJson: false,
         keepFields: false,
+        captureRawXml: true,
         incremental,
         knownHashIndex,
         signal: ac.signal,
@@ -107,6 +109,31 @@ export default function UploadPage() {
       setProgress(97);
       setProgressMessage("Salvando lote no navegador…");
       await idbSaveBatchStore(store);
+
+      if (rawXmls.length) {
+        setProgressMessage("Preservando XMLs originais localmente…");
+        try {
+          await idbPutRawXmls(
+            rawXmls.map((r) => ({
+              batchId: store.batch.id,
+              documentId: r.documentId,
+              fileName: r.fileName,
+              xmlHash: r.xmlHash,
+              content: r.content,
+            })),
+          );
+        } catch (err) {
+          if (err instanceof RawXmlQuotaError) {
+            toast.warning(
+              "Lote salvo, mas a quota local não coube os XMLs originais. Reimporte com menos arquivos ou libere espaço para exportar ZIP de XMLs.",
+            );
+          } else {
+            toast.warning(
+              "Lote salvo sem XMLs originais persistidos. Exportação ZIP de XML pode ficar indisponível.",
+            );
+          }
+        }
+      }
 
       try {
         await fetch("/api/batches/import", {

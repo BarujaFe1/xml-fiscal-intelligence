@@ -17,6 +17,20 @@ import { createAnalysisGeneration, PARSER_RUNTIME_VERSION } from "@/lib/analysis
 import { QUALITY_FORMULA_VERSION } from "@/lib/quality";
 import { redactMetadata, redactSensitiveText } from "@/lib/security/redaction";
 
+/** Original XML captured during import — never reconstructed from normalized JSON. */
+export type CapturedRawXml = {
+  documentId: string;
+  fileName: string;
+  xmlHash: string;
+  content: string;
+};
+
+export type ProcessZipMemoryResult = {
+  store: BatchStore;
+  /** Exact original XML text for each accepted document (excludes incremental skips). */
+  rawXmls: CapturedRawXml[];
+};
+
 export interface ProcessZipMemoryInput {
   buffer: ArrayBuffer | Buffer;
   fileName: string;
@@ -29,6 +43,11 @@ export interface ProcessZipMemoryInput {
   keepRawJson?: boolean;
   /** Persist key-value fields array. Default false — UI can derive from flattenedJson. */
   keepFields?: boolean;
+  /**
+   * Capture original XML text for local IndexedDB persistence.
+   * Default true — required for ZIP export of originals. Does not embed XML into BatchStore.
+   */
+  captureRawXml?: boolean;
   /** Skip XMLs whose SHA-256 already exists in prior batches. */
   incremental?: boolean;
   /** Known XML hashes from previous imports (workspace). */
@@ -60,17 +79,20 @@ function log(
 
 /**
  * Process a ZIP entirely in memory (browser or server).
- * Does not touch the filesystem — caller persists the store.
+ * Does not touch the filesystem — caller persists the store and optional rawXmls.
+ * Original XML is never reconstructed from rawJson/flattenedJson.
  */
 export async function processZipBatchInMemory(
   input: ProcessZipMemoryInput,
-): Promise<BatchStore> {
+): Promise<ProcessZipMemoryResult> {
   const workspaceId = input.workspaceId || "ws_local_demo";
   const batchId = uuidv4();
   const now = new Date().toISOString();
   const keepRawJson = input.keepRawJson ?? false;
   const keepFields = input.keepFields ?? false;
+  const captureRawXml = input.captureRawXml ?? true;
   const incremental = input.incremental ?? false;
+  const rawXmls: CapturedRawXml[] = [];
   const hashIndex = new Map<string, { documentId: string; batchId: string }>();
   if (input.knownHashIndex instanceof Map) {
     for (const [h, e] of input.knownHashIndex) hashIndex.set(h, e);
@@ -242,6 +264,15 @@ export async function processZipBatchInMemory(
       result.document.rawJson = {};
     }
 
+    if (captureRawXml) {
+      rawXmls.push({
+        documentId: result.document.id,
+        fileName: file.fileName,
+        xmlHash,
+        content: file.content,
+      });
+    }
+
     store.documents.push(result.document);
     store.items.push(...result.items);
     if (keepFields) store.fields.push(...result.fields);
@@ -361,7 +392,7 @@ export async function processZipBatchInMemory(
   store.batch = batch;
   store.importLogs = importLogs;
   await input.onProgress?.(100, batch.progressMessage);
-  return store;
+  return { store, rawXmls };
 }
 
 /** Rebuild a nested object from flattened paths for the tree viewer. */

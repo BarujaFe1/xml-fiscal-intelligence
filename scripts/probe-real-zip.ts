@@ -46,7 +46,7 @@ async function main() {
   console.log("bytes:", buffer.length);
 
   const t0 = performance.now();
-  const store = await processZipBatchInMemory({
+  const { store } = await processZipBatchInMemory({
     buffer,
     fileName: "202606 NFe.zip",
     name: "202606-NFe-probe",

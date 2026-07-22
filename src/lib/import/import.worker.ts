@@ -20,7 +20,7 @@ self.onmessage = async (event: MessageEvent<ImportWorkerInbound>) => {
 
   canceled = false;
   try {
-    const store = await processZipBatchInMemory({
+    const { store, rawXmls } = await processZipBatchInMemory({
       buffer: data.buffer,
       fileName: data.fileName,
       name: data.name,
@@ -30,6 +30,7 @@ self.onmessage = async (event: MessageEvent<ImportWorkerInbound>) => {
       workspaceId: data.workspaceId,
       keepRawJson: data.keepRawJson,
       keepFields: data.keepFields,
+      captureRawXml: data.captureRawXml ?? true,
       incremental: data.incremental,
       knownHashes: data.knownHashes,
       knownHashIndex: data.knownHashIndex,
@@ -55,8 +56,10 @@ self.onmessage = async (event: MessageEvent<ImportWorkerInbound>) => {
       summary: {
         documentCount: store.documents.length,
         itemCount: store.items.length,
+        rawXmlCount: rawXmls.length,
       },
       store,
+      rawXmls,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Falha no worker de importação";

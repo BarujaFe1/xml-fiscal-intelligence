@@ -13,6 +13,7 @@ export function VirtualList<T>({
   overscan = 8,
   renderRow,
   empty,
+  getItemKey,
 }: {
   items: T[];
   estimateSize?: number;
@@ -20,6 +21,7 @@ export function VirtualList<T>({
   overscan?: number;
   renderRow: (item: T, index: number) => ReactNode;
   empty?: ReactNode;
+  getItemKey?: (item: T, index: number) => string | number;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -53,7 +55,7 @@ export function VirtualList<T>({
           const index = start + i;
           return (
             <div
-              key={index}
+              key={getItemKey ? getItemKey(item, index) : index}
               role="listitem"
               style={{
                 position: "absolute",
